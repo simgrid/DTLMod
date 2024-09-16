@@ -8,10 +8,7 @@ project(dtlmod VERSION 0.1 DESCRIPTION "Data Transport Layer Module")
 include(GNUInstallDirs)
 find_package(SimGrid 3.35.1 REQUIRED)
 find_package(FSMod REQUIRED)
-find_package(nlohmann_json REQUIRED 
-    CONFIG
-    PATHS "/usr/lib/cmake/nhlomann_json"
-)
+find_package(nlohmann_json REQUIRED)
 
 include_directories(
   ${CMAKE_SOURCE_DIR}/include
