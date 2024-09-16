@@ -1,6 +1,6 @@
 [![License: LGPL v2.1](https://img.shields.io/badge/License-LGPL_v2.1-blue.svg)](https://www.gnu.org/licenses/lgpl-2.1)
 [![Build-Linux](https://github.com/simgrid/DTLMod/actions/workflows/build.yml/badge.svg)](https://github.com/simgrid/DTLMod/actions/workflows/build.yml)
-[![Doc](https://readthedocs.org/projects/pip/badge/?version=stable)](https://simgrid.github.io//)
+[![Doc](https://readthedocs.org/projects/pip/badge/?version=stable)](https://simgrid.github.io/DTLMod/)
 [![codecov](https://codecov.io/gh/simgrid/DTLMod/graph/badge.svg?token=6x9KmpEvpS)](https://codecov.io/gh/simgrid/DTLMod)
 [![CodeFactor](https://www.codefactor.io/repository/github/simgrid/DTLMod/badge)](https://www.codefactor.io/repository/github/simgrid/DTLMod)
 
