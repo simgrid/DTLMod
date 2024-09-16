@@ -37,7 +37,7 @@ jobs:
 
       - name: Install FSMod
         run: |
-          git clone https://framagit.org/simgrid/file-system-module.git
+          git clone https://github.com/simgrid/file-system-module.git
           cd file-system-module
           mkdir build
           cd build
