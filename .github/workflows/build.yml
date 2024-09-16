@@ -1,0 +1,111 @@
+name: Build-Linux
+
+on:
+  push:
+    paths-ignore:
+      - 'doc/**'
+      - '**.md'
+      - '**.rst'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      BUILD_WRAPPER_OUT_DIR: bw-outputs
+    steps:
+      - uses: actions/checkout@master
+        with:
+          fetch-depth: 0
+      - name: Install prereqs
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgraphviz-dev libboost-all-dev
+
+      - name: Install SimGrid
+        run: |
+          git clone https://framagit.org/simgrid/simgrid.git
+          cd simgrid
+          mkdir build
+          cd build
+          cmake -Denable_smpi=OFF -Denable_model-checking=OFF ..
+          make -j4
+          sudo make install
+
+      - name: Install FSMod
+        run: |
+          git clone https://framagit.org/simgrid/file-system-module.git
+          cd file-system-module
+          mkdir build
+          cd build
+          cmake ..
+          make -j4
+          sudo make install
+
+      - name: Install Google Tests
+        run: |
+          wget https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz
+          tar xf release-1.11.0.tar.gz
+          cd googletest-release-1.11.0
+          cmake .
+          make -j4
+          sudo make install
+
+      - name: Install lcov and gcovr
+        run: |
+          sudo apt-get -y install lcov gcovr
+
+      - name: Run tests, compute coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          git clone https://github.com/simgrid/DTLMod.git
+          cd DTLMod
+          mkdir build
+          cd build
+          cmake ..
+          make -j4
+          sudo make install
+          make -j4 unit_tests
+          ./unit_tests
+          lcov --directory . --directory examples/ --capture --output-file coverage.info
+          lcov --remove coverage.info '*/test/*' '*/examples/*' '*/include/*'
+          bash <(curl -s https://codecov.io/bash) -f coverage.info -t ${CODECOV_TOKEN}
+
+
+      - name: Install Doxygen and Sphinx
+        run: |
+          sudo apt-get -y install doxygen
+          sudo apt-get -y install python3-sphinx
+          pip install sphinx_rtd_theme
+          pip install recommonmark
+          pip install breathe
+          pip install defusedxml
+
+      - name: Build and Deploy Documentation
+        env:
+          TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
+        run: |
+          #git clone https://github.com/simgrid/DTLMod.git
+          echo "Building documentation..."
+          cd DTLMod/build
+          pwd
+          cmake ..
+          make doc
+          mkdir $HOME/gh-pages-to-deploy
+          cp -r ./docs/latest/* $HOME/gh-pages-to-deploy/
+          cd ../..
+          echo "Updating gh-pages branch..."
+          git config --global user.email "actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git clone --quiet --branch=gh-pages https://${TOKEN_GITHUB}@github.com/henricasanova/file-system-module.git gh-pages > /dev/null
+          cd gh-pages
+          cp -Rf $HOME/gh-pages-to-deploy/* .
+          touch .nojekyll
+          git add -f .
+          git diff-index --quiet HEAD || git commit -m "GitHub build $GITHUB_RUN_NUMBER"
+          git push -fq origin gh-pages > /dev/null
+          echo "Done updating gh-pages!"
