@@ -1,0 +1,18 @@
+{
+    "streams": [
+        {
+            "name": "Stream1",
+            "engine": {
+                "type": "File",
+                "transport_method": "File"
+            }
+        },
+        {
+            "name": "Stream2",
+            "engine": {
+                "type": "Staging",
+                "transport_method": "MQ"
+            }
+        }
+    ]
+}
