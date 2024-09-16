@@ -10,7 +10,7 @@ find_package(SimGrid 3.35.1 REQUIRED)
 find_package(FSMod REQUIRED)
 find_package(nlohmann_json REQUIRED 
     CONFIG
-    PATHS "/usr/lib/cmake/"
+    PATHS "/usr/lib/cmake/nhlomann_json"
 )
 
 include_directories(
