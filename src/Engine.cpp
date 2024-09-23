@@ -160,8 +160,8 @@ void Engine::pub_close()
   if (pub_barrier_ && pub_barrier_->wait()) {
     XBT_DEBUG("All publishers have called the Engine::close() function");
 
-    XBT_DEBUG("Export metadata");
-    export_metadata_to_file();
+//    XBT_DEBUG("Export metadata");
+//    export_metadata_to_file();
     stream_->close();
     if (std::dynamic_pointer_cast<FileTransport>(transport_) != nullptr) {
       XBT_DEBUG("Closing opened files");
