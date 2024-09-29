@@ -138,7 +138,7 @@ void Engine::end_pub_transaction()
 void Engine::pub_close()
 {
   auto self = sg4::Actor::self();
-  XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());
+  XBT_DEBUG("Publisher '%s' is closing the engine", self->get_cname());
   if (not pub_closing_) {
     // I'm the first to close
     pub_closing_ = true;
@@ -221,7 +221,7 @@ void Engine::end_sub_transaction()
 void Engine::sub_close()
 {
   auto self               = sg4::Actor::self();
-  XBT_DEBUG("Subscriber '%s' is closing the engine '%s'", self->get_cname(), get_cname());
+  XBT_DEBUG("Subscriber '%s' is closing the engine", self->get_cname());
   if (not sub_closing_) {
     // I'm the first to close
     sub_closing_ = true;

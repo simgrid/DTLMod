@@ -234,7 +234,7 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
       XBT_INFO("Start a Transaction");
       ASSERT_NO_THROW(engine->begin_transaction());
       XBT_INFO("Transition can start as publishers have finished writing");
-      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 15.701431842993127);
+      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 15.651431842993127);
       XBT_INFO("Get the entire Variable 'var' from the DTL");
       ASSERT_NO_THROW(engine->get(var_sub));
       XBT_INFO("End a Transaction");

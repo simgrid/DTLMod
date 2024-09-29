@@ -133,7 +133,6 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
   dtl_->lock();
 
   if (not engine_) {
-    XBT_DEBUG("Create Engine"); 
     if (engine_type_ == Engine::Type::Staging) {
       engine_ = std::make_shared<StagingEngine>(name, this);
     } else if (engine_type_ == Engine::Type::File) {
@@ -146,7 +145,7 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
   dtl_->unlock();
 
   while (not engine_)
-    sg4::this_actor::sleep_for(0.01);
+    sg4::this_actor::sleep_for(0.05);
 
   // Then we register the actors calling Stream::open as publishers or subscribers in the newly created Engine.
   if (mode == dtlmod::Stream::Mode::Publish) {
@@ -155,11 +154,9 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
     engine_->add_subscriber(sg4::Actor::self(), rendez_vous_);
   }
 
-  XBT_DEBUG("Stream '%s' uses engine '%s' of type '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(), engine_->get_cname(),
-	    get_engine_type_str(), get_transport_method_str(), engine_->get_num_publishers(), engine_->get_num_subscribers());
+  XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(), get_engine_type_str(),
+            get_transport_method_str(), engine_->get_num_publishers(), engine_->get_num_subscribers());
 
-  sg4::this_actor::sleep_for(0.05);
- 
   return engine_;
 }
 
