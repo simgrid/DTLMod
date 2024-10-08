@@ -138,15 +138,15 @@ void Engine::end_pub_transaction()
 void Engine::pub_close()
 {
   auto self = sg4::Actor::self();
-  XBT_DEBUG("Publisher '%s' is closing the engine", self->get_cname());
+  XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());
   if (not pub_closing_) {
     // I'm the first to close
     pub_closing_ = true;
-    XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
-              pub_transaction_.size());
+    XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction",
+              get_cname(), pub_transaction_.size());
     pub_transaction_.wait_all();
     pub_transaction_.clear();
-    XBT_DEBUG("last publish transaction is over");
+    XBT_DEBUG("[%s] last publish transaction is over", get_cname());
     pub_transaction_id_++;
     if (type_ == Type::File) {
       if (get_num_subscribers() > 0 && pub_transaction_id_ >= sub_transaction_id_) {
