@@ -219,13 +219,17 @@ std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) cons
   if (var == variables_.end())
     throw UnknownVariableException(XBT_THROW_POINT, name);
 
-  auto new_var    = std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape());
-  auto subscriber = sg4::Actor::self();
-  new_var->set_local_start(subscriber, std::vector<size_t>(0, var->second->get_shape().size()));
-  new_var->set_local_count(subscriber, std::vector<size_t>(0, var->second->get_shape().size()));
-  new_var->set_metadata(var->second->get_metadata());
+  auto actor = sg4::Actor::self();
+  if (not engine_  || engine_->is_publisher(actor))
+    return var->second;
+  else {
+    auto new_var    = std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape());
+    new_var->set_local_start(actor, std::vector<size_t>(0, var->second->get_shape().size()));
+    new_var->set_local_count(actor, std::vector<size_t>(0, var->second->get_shape().size()));
+    new_var->set_metadata(var->second->get_metadata());
 
-  return new_var;
+    return new_var;
+  }
 }
 
 bool Stream::remove_variable(const std::string& name)
