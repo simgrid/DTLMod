@@ -35,7 +35,7 @@ FileEngine::FileEngine(const std::string& fullpath, Stream* stream) : Engine(ful
 
   partition_ = file_system_->get_partition_for_path_or_null(tokens[2]);
   if (not partition_)
-    throw std::invalid_argument("Cannot find a partition for that name");
+    throw std::invalid_argument("Cannot find a partition for that name: " + tokens[2]);
 
   auto simplified_path                   = sgfs::PathUtil::simplify_path_string(tokens[2]);
   auto path_at_mp                        = sgfs::PathUtil::path_at_mount_point(simplified_path, partition_->get_name());
