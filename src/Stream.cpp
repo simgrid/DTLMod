@@ -144,8 +144,8 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
   }
   dtl_->unlock();
 
-  while (not engine_)
-    sg4::this_actor::sleep_for(0.05);
+  while (not engine_ || (engine_ && engine_type_ == Engine::Type::Staging && mode == Mode::Subscribe && engine_->get_num_publishers() == 0))
+    sg4::this_actor::sleep_for(0.001);
 
   // Then we register the actors calling Stream::open as publishers or subscribers in the newly created Engine.
   if (mode == dtlmod::Stream::Mode::Publish) {
