@@ -99,7 +99,6 @@ void Engine::begin_pub_transaction()
   // Only one publisher has to do this
   std::unique_lock<sg4::Mutex> lock(*pub_mutex_);
   if (not pub_transaction_in_progress_) {
-    XBT_DEBUG("Publish Transaction %u started by %s", pub_transaction_id_, sg4::Actor::self()->get_cname());
     pub_transaction_in_progress_ = true;
     if (not pub_barrier_) {          // This is the first transaction.
       if (not publishers_.empty()) { // Assume all publishers have opened the stream and create a barrier
@@ -107,19 +106,30 @@ void Engine::begin_pub_transaction()
         pub_barrier_ = sg4::Barrier::create(publishers_.size());
         first_pub_transaction_started_->notify_all();
       }
+
     } else {
       // Wait for the completion of the Publish activities from the previous transaction
       XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
                 pub_transaction_.size());
       pub_transaction_.wait_all();
       XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
-      pub_transaction_.clear();
       pub_transaction_id_++;
+      XBT_DEBUG("%u sub activities pending", sub_transaction_.size());
       if (pub_transaction_id_ >= sub_transaction_id_) {
+      pub_transaction_.clear();
         // We may have subscribers waiting for a transaction to be over. Notify them
-        first_pub_transaction_completed_->notify_all();
+        pub_transaction_completed_->notify_all();
       }
     }
+    XBT_DEBUG("Publish Transaction %u started by %s", pub_transaction_id_, sg4::Actor::self()->get_cname());
+  }
+  if (type_ == Type::Staging) {
+     XBT_DEBUG("Maybe I should wait: %zu subscribers and %u <= %u" , get_num_subscribers(), pub_transaction_id_, sub_transaction_id_ -1);
+     while (get_num_subscribers() == 0 || pub_transaction_id_ < sub_transaction_id_ -1 ) {
+       XBT_DEBUG("Wait");
+       sub_transaction_started_->wait(lock);
+     }
+
   }
 }
 
@@ -151,7 +161,7 @@ void Engine::pub_close()
     if (type_ == Type::File) {
       if (get_num_subscribers() > 0 && pub_transaction_id_ >= sub_transaction_id_) {
         // We may have subscribers waiting for a transaction to be over. Notify them
-        first_pub_transaction_completed_->notify_all();
+        pub_transaction_completed_->notify_all();
       }
     }
   }
@@ -183,10 +193,11 @@ void Engine::begin_sub_transaction()
   // We have publishers on that stream, wait for them to complete a transaction first
   if (type_ == Type::File && get_num_publishers() > 0) {
     while (pub_transaction_id_ < sub_transaction_id_)
-      first_pub_transaction_completed_->wait(lock);
+      pub_transaction_completed_->wait(lock);
   }
-
   if (not sub_transaction_in_progress_) {
+    if (type_ == Type::Staging && pub_transaction_id_ == sub_transaction_id_ -1)
+      sub_transaction_started_->notify_all();
     XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
     sub_transaction_in_progress_ = true;
     if (not sub_barrier_) {           // This is the first transaction.
@@ -194,13 +205,6 @@ void Engine::begin_sub_transaction()
         XBT_DEBUG("Create a barrier for %zu subscribers", subscribers_.size());
         sub_barrier_ = sg4::Barrier::create(subscribers_.size());
       }
-    } else {
-      // wait for the completion of the Subscribe activities from the previous transaction
-      XBT_DEBUG("Wait for the completion of %u subscribe activities from the previous transaction",
-                sub_transaction_.size());
-      sub_transaction_.wait_all();
-      XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
-      sub_transaction_.clear();
     }
   }
 }
@@ -208,14 +212,18 @@ void Engine::begin_sub_transaction()
 void Engine::end_sub_transaction()
 {
   if (sub_barrier_ && sub_barrier_->wait()) { // I'm the last subscriber entering the barrier
-    XBT_DEBUG("Start the %d subscribe activities for the transaction", sub_transaction_.size());
+    XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
     for (unsigned int i = 0; i < sub_transaction_.size(); i++)
-      sub_transaction_.at(i)->resume();
-
+      sub_transaction_.at(i)->resume()->wait();
+    XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
+    sub_transaction_.clear();
     // Mark this transaction as over
     sub_transaction_in_progress_ = false;
     sub_transaction_id_++;
   }
+  // Prevent subscribers to start a new transaction before this one is really over
+  if (sub_barrier_)
+    sub_barrier_->wait();
 }
 
 void Engine::sub_close()
@@ -225,12 +233,6 @@ void Engine::sub_close()
   if (not sub_closing_) {
     // I'm the first to close
     sub_closing_ = true;
-    XBT_DEBUG("Wait for the completion of %u subscribe activities from the previous transaction",
-              sub_transaction_.size());
-    sub_transaction_.wait_all();
-    sub_transaction_.clear();
-    XBT_DEBUG("last subscribe transaction is over");
-    sub_transaction_id_++;
   }
   rm_subscriber(self);
 

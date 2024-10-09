@@ -70,7 +70,8 @@ private:
   sg4::ActivitySet sub_transaction_;
   sg4::MutexPtr sub_mutex_;
   sg4::ConditionVariablePtr first_pub_transaction_started_;
-  sg4::ConditionVariablePtr first_pub_transaction_completed_;
+  sg4::ConditionVariablePtr sub_transaction_started_;
+  sg4::ConditionVariablePtr pub_transaction_completed_;
 
   unsigned int sub_transaction_id_  = 1;
   bool sub_transaction_in_progress_ = false;
@@ -113,7 +114,8 @@ public:
       , pub_mutex_(sg4::Mutex::create())
       , sub_mutex_(sg4::Mutex::create())
       , first_pub_transaction_started_(sg4::ConditionVariable::create())
-      , first_pub_transaction_completed_(sg4::ConditionVariable::create())
+      , sub_transaction_started_(sg4::ConditionVariable::create())
+      , pub_transaction_completed_(sg4::ConditionVariable::create())
   {
   }
   virtual ~Engine() = default;
