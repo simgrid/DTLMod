@@ -207,7 +207,7 @@ void Engine::begin_sub_transaction()
 
 void Engine::end_sub_transaction()
 {
-  if (sub_barrier_ && sub_barrier_->wait()) { // I'm the last publisher entering the barrier
+  if (sub_barrier_ && sub_barrier_->wait()) { // I'm the last subscriber entering the barrier
     XBT_DEBUG("Start the %d subscribe activities for the transaction", sub_transaction_.size());
     for (unsigned int i = 0; i < sub_transaction_.size(); i++)
       sub_transaction_.at(i)->resume();
