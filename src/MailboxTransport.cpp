@@ -59,7 +59,8 @@ void MailboxTransport::put(std::shared_ptr<Variable> var, size_t simulated_size_
       auto comm = mboxes_[mbox_name]->put_async(req_size, *req_size);
       // Add callback to release memory allocated for the payload on completion
       comm->on_this_completion_cb([this, req_size](sg4::Comm const&) { delete req_size; });
-      e->pub_transaction_.push(comm->suspend());
+      comm->suspend();
+      e->pub_transaction_.push(comm);
     }
   }
 }
@@ -81,12 +82,15 @@ void MailboxTransport::get(std::shared_ptr<Variable> var)
     XBT_DEBUG("Have to exchange data of size %llu from '%s' to '%s' using the '%s' mailbox", size,
               publisher_name.c_str(), self->get_cname(), mbox_name.c_str());
 
-    // Update the payload of the put request to send to this publisher.
-    delete put_requests[publisher_name];
-    put_requests[publisher_name] = new size_t(size);
-
-    // Add an activity to the transaction.
-    e->sub_transaction_.push(mboxes_[mbox_name]->get_async()->suspend());
+    // Update the payload of the put request to send to this publisher if necessary.
+    if (size > 0) {
+      delete put_requests[publisher_name];
+      put_requests[publisher_name] = new size_t(size);
+      // Add an activity to the transaction.
+      auto comm = mboxes_[mbox_name]->get_async();
+      comm->suspend();
+      e->sub_transaction_.push(comm);
+    }
   }
 
   // Send the put requests for that get to all publishers in the Stream in a detached mode.
