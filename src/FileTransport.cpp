@@ -53,7 +53,8 @@ void FileTransport::get(std::shared_ptr<Variable> var)
     auto file = e->get_file_system()->open(filename, "r");
     // Keep track of the files opened by subscribers for this engine to properly close them later
     subscribers_to_files_[self] = file;
-    e->sub_transaction_.push(file->read_async(size)->suspend());
+    if (size > 0)
+      e->sub_transaction_.push(file->read_async(size)->suspend());
   }
 }
 
