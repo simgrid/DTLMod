@@ -60,14 +60,13 @@ void FileTransport::get(std::shared_ptr<Variable> var)
 
 void FileTransport::close_files()
 {
-  auto fs = static_cast<FileEngine*>(get_engine())->get_file_system();
   for (auto [actor, file] : publishers_to_files_) {
     XBT_DEBUG("Closing %s", file->get_path().c_str());
-    fs->close(file);
+    file->close();
   }
   for (auto [actor, file] : subscribers_to_files_) {
     XBT_DEBUG("Closing %s", file->get_path().c_str());
-    fs->close(file);
+    file->close();
   }
 }
 
