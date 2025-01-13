@@ -55,6 +55,15 @@ public:
   /// @param name The name of the Stream to add to the DTL.
   /// @return A handler on the newly created Stream object.
   std::shared_ptr<Stream> add_stream(const std::string& name);
+
+  /// @brief Retrieve  all streams declared in the Data Transport by its name.
+  /// @return a map of handlers on Stream objects with their names as keys.
+  std::unordered_map<std::string, std::shared_ptr<Stream>> get_all_streams() const { return streams_; }
+
+  /// @brief Retrieve a data stream from the Data Transport Layer by its name.
+  /// @param name The name of the Stream to retrieve.
+  /// @return A handler on the Stream object or nullptr if it doesn't exist.
+  std::shared_ptr<Stream> get_stream_by_name_or_null(const std::string& name) const;
 };
 
 } // namespace dtlmod

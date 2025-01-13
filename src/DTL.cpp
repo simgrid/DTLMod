@@ -138,4 +138,12 @@ std::shared_ptr<Stream> DTL::add_stream(const std::string& name)
   return streams_[name];
 }
 
+std::shared_ptr<Stream> DTL::get_stream_by_name_or_null(const std::string& name) const
+{
+  auto it = streams_.find(name);
+  if (it == streams_.end())
+    return nullptr;
+  return it->second;
+
+}
 } // namespace dtlmod
