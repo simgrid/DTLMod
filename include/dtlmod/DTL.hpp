@@ -58,7 +58,7 @@ public:
 
   /// @brief Retrieve  all streams declared in the Data Transport by its name.
   /// @return a map of handlers on Stream objects with their names as keys.
-  std::unordered_map<std::string, std::shared_ptr<Stream>> get_all_streams() const { return streams_; }
+  const std::unordered_map<std::string, std::shared_ptr<Stream>>& get_all_streams() const { return streams_; }
 
   /// @brief Retrieve a data stream from the Data Transport Layer by its name.
   /// @param name The name of the Stream to retrieve.
