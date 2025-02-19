@@ -3,9 +3,9 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
+#include <boost/algorithm/string/replace.hpp>
 #include <chrono>
 #include <fstream>
-#include <boost/algorithm/string/replace.hpp>
 
 #include <simgrid/s4u/Actor.hpp>
 #include <simgrid/s4u/MessageQueue.hpp>
@@ -116,7 +116,7 @@ void Engine::begin_pub_transaction()
       pub_transaction_id_++;
       XBT_DEBUG("%u sub activities pending", sub_transaction_.size());
       if (pub_transaction_id_ >= sub_transaction_id_) {
-      pub_transaction_.clear();
+        pub_transaction_.clear();
         // We may have subscribers waiting for a transaction to be over. Notify them
         pub_transaction_completed_->notify_all();
       }
@@ -124,12 +124,12 @@ void Engine::begin_pub_transaction()
     XBT_DEBUG("Publish Transaction %u started by %s", pub_transaction_id_, sg4::Actor::self()->get_cname());
   }
   if (type_ == Type::Staging) {
-     XBT_DEBUG("Maybe I should wait: %zu subscribers and %u <= %u" , get_num_subscribers(), pub_transaction_id_, sub_transaction_id_ -1);
-     while (get_num_subscribers() == 0 || pub_transaction_id_ < sub_transaction_id_ -1 ) {
-       XBT_DEBUG("Wait");
-       sub_transaction_started_->wait(lock);
-     }
-
+    XBT_DEBUG("Maybe I should wait: %zu subscribers and %u <= %u", get_num_subscribers(), pub_transaction_id_,
+              sub_transaction_id_ - 1);
+    while (get_num_subscribers() == 0 || pub_transaction_id_ < sub_transaction_id_ - 1) {
+      XBT_DEBUG("Wait");
+      sub_transaction_started_->wait(lock);
+    }
   }
 }
 
@@ -152,8 +152,8 @@ void Engine::pub_close()
   if (not pub_closing_) {
     // I'm the first to close
     pub_closing_ = true;
-    XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction",
-              get_cname(), pub_transaction_.size());
+    XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
+              pub_transaction_.size());
     pub_transaction_.wait_all();
     pub_transaction_.clear();
     XBT_DEBUG("[%s] last publish transaction is over", get_cname());
@@ -170,8 +170,8 @@ void Engine::pub_close()
   if (pub_barrier_ && pub_barrier_->wait()) {
     XBT_DEBUG("All publishers have called the Engine::close() function");
 
-//    XBT_DEBUG("Export metadata");
-//    export_metadata_to_file();
+    //    XBT_DEBUG("Export metadata");
+    //    export_metadata_to_file();
     stream_->close();
     if (std::dynamic_pointer_cast<FileTransport>(transport_) != nullptr) {
       XBT_DEBUG("Closing opened files");
@@ -196,7 +196,7 @@ void Engine::begin_sub_transaction()
       pub_transaction_completed_->wait(lock);
   }
   if (not sub_transaction_in_progress_) {
-    if (type_ == Type::Staging && pub_transaction_id_ == sub_transaction_id_ -1)
+    if (type_ == Type::Staging && pub_transaction_id_ == sub_transaction_id_ - 1)
       sub_transaction_started_->notify_all();
     XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
     sub_transaction_in_progress_ = true;
@@ -228,7 +228,7 @@ void Engine::end_sub_transaction()
 
 void Engine::sub_close()
 {
-  auto self               = sg4::Actor::self();
+  auto self = sg4::Actor::self();
   XBT_DEBUG("Subscriber '%s' is closing the engine", self->get_cname());
   if (not sub_closing_) {
     // I'm the first to close
@@ -252,7 +252,8 @@ void Engine::sub_close()
 void Engine::export_metadata_to_file()
 {
   std::string filename = boost::replace_all_copy(name_, "/", "#");
-  std::ofstream metadata_export(filename + "#md." + std::to_string(std::chrono::system_clock::now().time_since_epoch().count()),
+  std::ofstream metadata_export(filename + "#md." +
+                                    std::to_string(std::chrono::system_clock::now().time_since_epoch().count()),
                                 std::ofstream::out);
   for (const auto& [name, v] : stream_->get_all_variables())
     v->get_metadata()->export_to_file(metadata_export);

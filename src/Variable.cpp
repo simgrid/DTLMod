@@ -90,7 +90,7 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
     size_t size_to_get              = element_size_;
     auto [block_start, block_count] = block_info;
     auto [where, actor]             = location;
-    bool something_to_get = false;
+    bool something_to_get           = false;
     // Determine whether some elements have to be retrieved from this particular block
     for (unsigned i = 0; i < start.size(); i++) {
       XBT_DEBUG("Dimension %u: wanted [%zu, %zu] vs. in block [%zu, %zu]", i, start[i], count[i], block_start[i],
@@ -98,13 +98,13 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
       size_t size_in_dim = 0;
       bool element_found = false;
       if (start[i] <= block_start[i]) {
-        if ((block_start[i] - start[i]) <= count[i]){
-          size_in_dim = std::min(block_count[i], count[i] - (block_start[i] - start[i]));
+        if ((block_start[i] - start[i]) <= count[i]) {
+          size_in_dim   = std::min(block_count[i], count[i] - (block_start[i] - start[i]));
           element_found = true;
         }
       } else {
         if ((start[i] - block_start[i]) <= block_count[i]) {
-          size_in_dim = std::min(count[i], block_count[i] - (start[i] - block_start[i]));
+          size_in_dim   = std::min(count[i], block_count[i] - (start[i] - block_start[i]));
           element_found = true;
         }
       }

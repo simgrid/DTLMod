@@ -18,7 +18,7 @@ void Metadata::export_to_file(std::ofstream& ostream) const
   ostream << variable_->get_element_size() << "\t" << variable_->get_cname() << "\t" << transaction_infos_.size();
   ostream << "*{";
   auto shape = variable_->get_shape();
-  for (unsigned int i = 0; i < shape.size() -1; i++)
+  for (unsigned int i = 0; i < shape.size() - 1; i++)
     ostream << shape[i] << ",";
   ostream << shape[shape.size() - 1] << "}" << std::endl;
 
@@ -32,7 +32,7 @@ void Metadata::export_to_file(std::ofstream& ostream) const
       ostream << "    " << where.c_str() << ": [";
       XBT_DEBUG("    Actor %s wrote:", actor->get_cname());
       unsigned int last = block_start.size() - 1;
-      for (unsigned int i = 0; i < last ; i++) {
+      for (unsigned int i = 0; i < last; i++) {
         ostream << block_start[i] << ":" << block_start[i] + block_count[i] << ", ";
         XBT_DEBUG("      Dimension %u : [%zu..%zu]", i + 1, block_start[i], block_start[i] + block_count[i]);
       }

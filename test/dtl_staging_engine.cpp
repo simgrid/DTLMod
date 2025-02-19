@@ -56,7 +56,7 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
+    auto* engine   = sg4::Engine::get_instance();
     auto* pub_host = sg4::Host::by_name("host-0.prod");
     auto* sub_host = sg4::Host::by_name("host-0.cons");
 
@@ -123,7 +123,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
     auto* engine = sg4::Engine::get_instance();
-    
+
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("host-0.prod"), sg4::Host::by_name("host-1.prod")};
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("host-0.cons"), sg4::Host::by_name("host-0.cons")};
 
@@ -188,7 +188,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance(); 
+    auto* engine                      = sg4::Engine::get_instance();
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("host-0.prod"), sg4::Host::by_name("host-1.prod")};
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("host-0.cons"), sg4::Host::by_name("host-0.cons")};
 

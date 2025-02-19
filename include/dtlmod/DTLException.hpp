@@ -8,7 +8,7 @@
 
 #include <simgrid/Exception.hpp>
 
-#define DECLARE_DTLMOD_EXCEPTION(AnyException, msg_prefix, ...)                                                       \
+#define DECLARE_DTLMOD_EXCEPTION(AnyException, msg_prefix, ...)                                                        \
   class AnyException : public simgrid::Exception {                                                                     \
   public:                                                                                                              \
     using simgrid::Exception::Exception;                                                                               \
@@ -40,10 +40,10 @@ DECLARE_DTLMOD_EXCEPTION(MultipleEngineTypeException, "Stream can only use one e
 DECLARE_DTLMOD_EXCEPTION(UnknownTransportMethodException, "Unknown Transport Method");
 DECLARE_DTLMOD_EXCEPTION(UndefinedTransportMethodException, "Undefined Transport Method. Cannot open Stream");
 DECLARE_DTLMOD_EXCEPTION(MultipleTransportMethodException,
-                          "Stream can only use one transport method. Check your code.");
+                         "Stream can only use one transport method. Check your code.");
 
 DECLARE_DTLMOD_EXCEPTION(InvalidEngineAndTransportCombinationException,
-                          "Invalid combination between Engine::Type and Transport::Method");
+                         "Invalid combination between Engine::Type and Transport::Method");
 DECLARE_DTLMOD_EXCEPTION(OpenStreamFailureException, "Failed to open Stream");
 
 DECLARE_DTLMOD_EXCEPTION(UnknownOpenModeException, "Unknown open mode. Should be Publish or Subscribe");
@@ -51,10 +51,10 @@ DECLARE_DTLMOD_EXCEPTION(UnknownOpenModeException, "Unknown open mode. Should be
 DECLARE_DTLMOD_EXCEPTION(UnknownVariableException, "Unknown Variable");
 DECLARE_DTLMOD_EXCEPTION(MultipleVariableDefinitionException, "Multiple Variable Definition");
 DECLARE_DTLMOD_EXCEPTION(InconsistentVariableDefinitionException,
-                          "Insconsistent Variable Definition. The 'shape', 'start', and 'count' vectors must "
-                          "have the same size");
+                         "Insconsistent Variable Definition. The 'shape', 'start', and 'count' vectors must "
+                         "have the same size");
 DECLARE_DTLMOD_EXCEPTION(IncorrectPathDefinitionException, "Fullpath must be structured as follows: "
-                                                            "netzone_name:file_system_name:/path/to/file_name");
+                                                           "netzone_name:file_system_name:/path/to/file_name");
 
 DECLARE_DTLMOD_EXCEPTION(GetWhenNoTransactionException, "Impossible to get. No transaction exists for variable");
 

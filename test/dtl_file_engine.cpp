@@ -75,8 +75,8 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
     auto* engine = sg4::Engine::get_instance();
-    auto* host = sg4::Host::by_name("node-0");
-    
+    auto* host   = sg4::Host::by_name("node-0");
+
     engine->add_actor("TestActor", host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
@@ -100,7 +100,8 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
       ASSERT_NO_THROW(engine->close());
 
       auto file_system =
-          sgfs::FileSystem::get_file_systems_by_netzone(sg4::Engine::get_instance()->netzone_by_name_or_null("cluster")).at("my_fs");
+          sgfs::FileSystem::get_file_systems_by_netzone(sg4::Engine::get_instance()->netzone_by_name_or_null("cluster"))
+              .at("my_fs");
       std::string dirname = "/node-0/scratch/my-working-dir/my-output";
       auto file_list      = file_system->list_files_in_directory(dirname);
       XBT_INFO("List contents of %s", dirname.c_str());
@@ -124,7 +125,7 @@ TEST_F(DTLFileEngineTest, SinglePubSingleSubLocalStorage)
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
     auto* engine = sg4::Engine::get_instance();
-    auto* host = sg4::Host::by_name("node-0");
+    auto* host   = sg4::Host::by_name("node-0");
     engine->add_actor("TestActor", host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
@@ -196,7 +197,8 @@ TEST_F(DTLFileEngineTest, SinglePubSingleSubLocalStorage)
 TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
 {
   DO_TEST_WITH_FORK([this]() {
-    this->setup_platform();auto* engine = sg4::Engine::get_instance();
+    this->setup_platform();
+    auto* engine                      = sg4::Engine::get_instance();
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("node-0"), sg4::Host::by_name("node-1")};
     auto* sub_host                    = sg4::Host::by_name("node-2");
 
@@ -260,7 +262,7 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
+    auto* engine                      = sg4::Engine::get_instance();
     auto* pub_host                    = sg4::Host::by_name("node-0");
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("node-1"), sg4::Host::by_name("node-2")};
 
@@ -324,7 +326,7 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
     auto* engine = sg4::Engine::get_instance();
-    auto* host = sg4::Host::by_name("node-0");
+    auto* host   = sg4::Host::by_name("node-0");
     engine->add_actor("TestActor", host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")

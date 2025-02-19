@@ -75,7 +75,7 @@ private:
 
   unsigned int sub_transaction_id_  = 1;
   bool sub_transaction_in_progress_ = false;
-  bool sub_closing_          = false;
+  bool sub_closing_                 = false;
   void begin_sub_transaction();
   void end_sub_transaction();
   void sub_close();

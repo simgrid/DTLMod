@@ -144,7 +144,8 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
   }
   dtl_->unlock();
 
-  while (not engine_ || (engine_ && engine_type_ == Engine::Type::Staging && mode == Mode::Subscribe && engine_->get_num_publishers() == 0))
+  while (not engine_ || (engine_ && engine_type_ == Engine::Type::Staging && mode == Mode::Subscribe &&
+                         engine_->get_num_publishers() == 0))
     sg4::this_actor::sleep_for(0.001);
 
   // Then we register the actors calling Stream::open as publishers or subscribers in the newly created Engine.
@@ -220,10 +221,10 @@ std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) cons
     throw UnknownVariableException(XBT_THROW_POINT, name);
 
   auto actor = sg4::Actor::self();
-  if (not engine_  || engine_->is_publisher(actor))
+  if (not engine_ || engine_->is_publisher(actor))
     return var->second;
   else {
-    auto new_var    = std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape());
+    auto new_var = std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape());
     new_var->set_local_start(actor, std::vector<size_t>(0, var->second->get_shape().size()));
     new_var->set_local_count(actor, std::vector<size_t>(0, var->second->get_shape().size()));
     new_var->set_metadata(var->second->get_metadata());
