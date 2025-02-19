@@ -27,7 +27,7 @@ public:
 
   void setup_platform()
   {
-    auto* root = sg4::create_full_zone("root");
+    auto* root = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_full("root");
     host_      = root->create_host("host", "1Gf");
     auto* disk = host_->create_disk("disk", "1kBps", "2kBps");
     root->seal();
@@ -46,7 +46,8 @@ TEST_F(DTLConfigTest, ConfigFile)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    sg4::Actor::create("TestActor", host_, [this]() {
+    auto* engine = sg4::Engine::get_instance();
+    engine->add_actor("TestActor", host_, [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -80,6 +81,6 @@ TEST_F(DTLConfigTest, ConfigFile)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }

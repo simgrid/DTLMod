@@ -28,7 +28,7 @@ public:
 
   void setup_platform()
   {
-    sg4::NetZone* cluster = sg4::create_star_zone("cluster");
+    sg4::NetZone* cluster = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_star("cluster");
     auto pfs_server       = cluster->create_host("pfs_server", "1Gf");
     std::vector<sg4::Disk*> pfs_disks;
     for (int i = 0; i < 4; i++)
@@ -74,8 +74,10 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
+    auto* engine = sg4::Engine::get_instance();
     auto* host = sg4::Host::by_name("node-0");
-    sg4::Actor::create("TestActor", host, [this]() {
+    
+    engine->add_actor("TestActor", host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_transport_method(dtlmod::Transport::Method::File)
@@ -98,7 +100,7 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
       ASSERT_NO_THROW(engine->close());
 
       auto file_system =
-          sgfs::FileSystem::get_file_systems_by_netzone(sg4::Engine::get_instance()->get_netzone_root()).at("my_fs");
+          sgfs::FileSystem::get_file_systems_by_netzone(sg4::Engine::get_instance()->netzone_by_name_or_null("cluster")).at("my_fs");
       std::string dirname = "/node-0/scratch/my-working-dir/my-output";
       auto file_list      = file_system->list_files_in_directory(dirname);
       XBT_INFO("List contents of %s", dirname.c_str());
@@ -113,7 +115,7 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
@@ -121,8 +123,9 @@ TEST_F(DTLFileEngineTest, SinglePubSingleSubLocalStorage)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
+    auto* engine = sg4::Engine::get_instance();
     auto* host = sg4::Host::by_name("node-0");
-    sg4::Actor::create("TestActor", host, [this]() {
+    engine->add_actor("TestActor", host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_transport_method(dtlmod::Transport::Method::File)
@@ -186,19 +189,19 @@ TEST_F(DTLFileEngineTest, SinglePubSingleSubLocalStorage)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
 TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
 {
   DO_TEST_WITH_FORK([this]() {
-    this->setup_platform();
+    this->setup_platform();auto* engine = sg4::Engine::get_instance();
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("node-0"), sg4::Host::by_name("node-1")};
     auto* sub_host                    = sg4::Host::by_name("node-2");
 
     for (long unsigned int i = 0; i < 2; i++) {
-      sg4::Actor::create(pub_hosts[i]->get_name() + "_pub", pub_hosts[i], [this, i]() {
+      engine->add_actor(pub_hosts[i]->get_name() + "_pub", pub_hosts[i], [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
         auto stream = dtl->add_stream("my-output")
                           ->set_transport_method(dtlmod::Transport::Method::File)
@@ -223,7 +226,7 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
       });
     }
 
-    sg4::Actor::create("node-2_sub", sub_host, [this]() {
+    engine->add_actor("node-2_sub", sub_host, [this]() {
       auto dtl = dtlmod::DTL::connect();
       XBT_INFO("Wait for 10s before becoming a Subscriber. It's not enough for the publishers to finish writing");
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(10));
@@ -249,7 +252,7 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
@@ -257,10 +260,11 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
+    auto* engine = sg4::Engine::get_instance();
     auto* pub_host                    = sg4::Host::by_name("node-0");
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("node-1"), sg4::Host::by_name("node-2")};
 
-    sg4::Actor::create("node-0_pub", pub_host, [this]() {
+    engine->add_actor("node-0_pub", pub_host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_transport_method(dtlmod::Transport::Method::File)
@@ -285,7 +289,7 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
     });
 
     for (long unsigned int i = 0; i < 2; i++) {
-      sg4::Actor::create(sub_hosts[i]->get_name() + "_sub", sub_hosts[i], [this, i]() {
+      engine->add_actor(sub_hosts[i]->get_name() + "_sub", sub_hosts[i], [this, i]() {
         auto dtl = dtlmod::DTL::connect();
         XBT_INFO("Wait for 10s before becoming a Subscriber");
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(10));
@@ -311,7 +315,7 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
     }
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
@@ -319,8 +323,9 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
+    auto* engine = sg4::Engine::get_instance();
     auto* host = sg4::Host::by_name("node-0");
-    sg4::Actor::create("TestActor", host, [this]() {
+    engine->add_actor("TestActor", host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_transport_method(dtlmod::Transport::Method::File)
@@ -374,6 +379,6 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }

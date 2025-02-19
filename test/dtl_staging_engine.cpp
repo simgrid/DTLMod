@@ -18,9 +18,9 @@ class DTLStagingEngineTest : public ::testing::Test {
 public:
   DTLStagingEngineTest() = default;
 
-  sg4::NetZone* create_cluster(const sg4::NetZone* root, const std::string& suffix, const int num_hosts)
+  sg4::NetZone* create_cluster(sg4::NetZone* root, const std::string& suffix, const int num_hosts)
   {
-    auto* cluster = sg4::create_star_zone("cluster" + suffix)->set_parent(root);
+    auto* cluster = root->add_netzone_star("cluster" + suffix);
 
     cluster->set_gateway(cluster->create_router("cluster" + suffix + "-router"));
     auto* backbone = cluster->create_link("backbone" + suffix, "100Gbps")->set_latency("100us");
@@ -38,7 +38,7 @@ public:
 
   void setup_platform()
   {
-    auto* root     = sg4::create_full_zone("world");
+    auto* root     = sg4::Engine::get_instance()->get_netzone_root();
     auto* internet = root->create_link("internet", "500MBps")->set_latency("1ms");
 
     auto* prod_cluster = create_cluster(root, ".prod", 16);
@@ -56,11 +56,11 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-
+    auto* engine = sg4::Engine::get_instance();
     auto* pub_host = sg4::Host::by_name("host-0.prod");
     auto* sub_host = sg4::Host::by_name("host-0.cons");
 
-    sg4::Actor::create("PubTestActor", pub_host, [this]() {
+    engine->add_actor("PubTestActor", pub_host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_engine_type(dtlmod::Engine::Type::Staging)
@@ -85,7 +85,7 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
       dtlmod::DTL::disconnect();
     });
 
-    sg4::Actor::create("SubTestActor", sub_host, [this]() {
+    engine->add_actor("SubTestActor", sub_host, [this]() {
       auto dtl     = dtlmod::DTL::connect();
       auto stream  = dtl->add_stream("my-output");
       auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
@@ -114,7 +114,7 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
@@ -122,12 +122,13 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-
+    auto* engine = sg4::Engine::get_instance();
+    
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("host-0.prod"), sg4::Host::by_name("host-1.prod")};
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("host-0.cons"), sg4::Host::by_name("host-0.cons")};
 
     for (long unsigned int i = 0; i < 2; i++) {
-      sg4::Actor::create("Pub" + std::to_string(i), pub_hosts[i], [this, i]() {
+      engine->add_actor("Pub" + std::to_string(i), pub_hosts[i], [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
         auto stream = dtl->add_stream("my-output")
                           ->set_engine_type(dtlmod::Engine::Type::Staging)
@@ -154,7 +155,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
     }
 
     for (long unsigned int i = 0; i < 2; i++) {
-      sg4::Actor::create("Sub" + std::to_string(i), sub_hosts[i], [this, i]() {
+      engine->add_actor("Sub" + std::to_string(i), sub_hosts[i], [this, i]() {
         auto dtl     = dtlmod::DTL::connect();
         auto stream  = dtl->add_stream("my-output");
         auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
@@ -179,7 +180,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
     }
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
@@ -187,12 +188,12 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-
+    auto* engine = sg4::Engine::get_instance(); 
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("host-0.prod"), sg4::Host::by_name("host-1.prod")};
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("host-0.cons"), sg4::Host::by_name("host-0.cons")};
 
     for (long unsigned int i = 0; i < 2; i++) {
-      sg4::Actor::create("Pub" + std::to_string(i), pub_hosts[i], [this, i]() {
+      engine->add_actor("Pub" + std::to_string(i), pub_hosts[i], [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
         auto stream = dtl->add_stream("my-output")
                           ->set_engine_type(dtlmod::Engine::Type::Staging)
@@ -219,7 +220,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
     }
 
     for (long unsigned int i = 0; i < 2; i++) {
-      sg4::Actor::create("Sub" + std::to_string(i), sub_hosts[i], [this, i]() {
+      engine->add_actor("Sub" + std::to_string(i), sub_hosts[i], [this, i]() {
         auto dtl     = dtlmod::DTL::connect();
         auto stream  = dtl->add_stream("my-output");
         auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
@@ -244,6 +245,6 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
     }
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }

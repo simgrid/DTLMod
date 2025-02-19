@@ -29,7 +29,7 @@ public:
 
   void setup_platform()
   {
-    auto* zone      = sg4::create_full_zone("zone");
+    auto* zone      = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_full("zone");
     prod_host_      = zone->create_host("prod_host", "1Gf")->set_core_count(2);
     cons_host_      = zone->create_host("cons_host", "1Gf");
     auto* prod_disk = prod_host_->create_disk("disk", "1kBps", "2kBps");
@@ -61,7 +61,8 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    sg4::Actor::create("TestProducerActor", prod_host_, [this]() {
+    auto* engine = sg4::Engine::get_instance();
+    engine->add_actor("TestProducerActor", prod_host_, [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> no_engine_type_stream;
       std::shared_ptr<dtlmod::Stream> no_transport_method_stream;
@@ -83,7 +84,7 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
@@ -91,7 +92,8 @@ TEST_F(DTLStreamTest, PublishFileStreamOpenClose)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    sg4::Actor::create("TestProducerActor", prod_host_, [this]() {
+    auto* engine = sg4::Engine::get_instance();
+    engine->add_actor("TestProducerActor", prod_host_, [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -117,7 +119,7 @@ TEST_F(DTLStreamTest, PublishFileStreamOpenClose)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
@@ -125,7 +127,8 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    sg4::Actor::create("TestProducerActor", prod_host_, [this]() {
+    auto* engine = sg4::Engine::get_instance();
+    engine->add_actor("TestProducerActor", prod_host_, [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -147,7 +150,7 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
 
-    sg4::Actor::create("TestConsumerActor", cons_host_, [this]() {
+    engine->add_actor("TestConsumerActor", cons_host_, [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -171,7 +174,7 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
 
@@ -179,8 +182,9 @@ TEST_F(DTLStreamTest, OpenWithRendezVous)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
+    auto* engine = sg4::Engine::get_instance();
     for (int i = 0; i < 2; i++) {
-      sg4::Actor::create("TestProducerActor_" + std::to_string(i), prod_host_, [this]() {
+      engine->add_actor("TestProducerActor_" + std::to_string(i), prod_host_, [this]() {
         std::shared_ptr<dtlmod::DTL> dtl;
         std::shared_ptr<dtlmod::Stream> stream;
         std::shared_ptr<dtlmod::Engine> engine;
@@ -205,7 +209,7 @@ TEST_F(DTLStreamTest, OpenWithRendezVous)
       });
     }
 
-    sg4::Actor::create("TestConsumerActor", cons_host_, [this]() {
+    engine->add_actor("TestConsumerActor", cons_host_, [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -226,6 +230,6 @@ TEST_F(DTLStreamTest, OpenWithRendezVous)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_NO_THROW(engine->run());
   });
 }
