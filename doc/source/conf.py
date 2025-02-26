@@ -6,7 +6,7 @@ import sys
 # -- Project information -----------------------------------------------------
 
 project = 'DTLMOD'
-copyright = '2024, SWAT'
+copyright = '2024-2025, SWAT'
 author = 'SWAT Team'
 
 # -- General configuration ---------------------------------------------------
