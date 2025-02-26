@@ -30,20 +30,20 @@ public:
   void setup_platform()
   {
     auto* zone      = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_full("zone");
-    prod_host_      = zone->create_host("prod_host", "1Gf")->set_core_count(2);
-    cons_host_      = zone->create_host("cons_host", "1Gf");
-    auto* prod_disk = prod_host_->create_disk("disk", "1kBps", "2kBps");
-    auto* cons_disk = cons_host_->create_disk("disk", "1kBps", "2kBps");
+    prod_host_      = zone->add_host("prod_host", "1Gf")->set_core_count(2);
+    cons_host_      = zone->add_host("cons_host", "1Gf");
+    auto* prod_disk = prod_host_->add_disk("disk", "1kBps", "2kBps");
+    auto* cons_disk = cons_host_->add_disk("disk", "1kBps", "2kBps");
 
-    auto pfs_server = zone->create_host("pfs_server", "1Gf");
+    auto pfs_server = zone->add_host("pfs_server", "1Gf");
     std::vector<sg4::Disk*> pfs_disks;
     for (int i = 0; i < 4; i++)
-      pfs_disks.push_back(pfs_server->create_disk("pfs_disk" + std::to_string(i), "200MBps", "100MBps"));
+      pfs_disks.push_back(pfs_server->add_disk("pfs_disk" + std::to_string(i), "200MBps", "100MBps"));
     auto remote_storage = sgfs::JBODStorage::create("pfs_storage", pfs_disks);
     remote_storage->set_raid_level(sgfs::JBODStorage::RAID::RAID5);
 
-    const auto* prod_link = zone->create_link("prod_link", 120e6 / 0.97)->set_latency(0);
-    const auto* cons_link = zone->create_link("cons_link", 120e6 / 0.97)->set_latency(0);
+    const auto* prod_link = zone->add_link("prod_link", 120e6 / 0.97)->set_latency(0);
+    const auto* cons_link = zone->add_link("cons_link", 120e6 / 0.97)->set_latency(0);
     zone->add_route(prod_host_, pfs_server, {prod_link});
     zone->add_route(cons_host_, pfs_server, {cons_link});
     zone->seal();

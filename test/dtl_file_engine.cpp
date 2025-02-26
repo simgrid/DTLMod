@@ -29,25 +29,25 @@ public:
   void setup_platform()
   {
     sg4::NetZone* cluster = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_star("cluster");
-    auto pfs_server       = cluster->create_host("pfs_server", "1Gf");
+    auto pfs_server       = cluster->add_host("pfs_server", "1Gf");
     std::vector<sg4::Disk*> pfs_disks;
     for (int i = 0; i < 4; i++)
-      pfs_disks.push_back(pfs_server->create_disk("pfs_disk" + std::to_string(i), "2.5GBps", "1.2GBps"));
+      pfs_disks.push_back(pfs_server->add_disk("pfs_disk" + std::to_string(i), "2.5GBps", "1.2GBps"));
     auto remote_storage = sgfs::JBODStorage::create("pfs_storage", pfs_disks);
     remote_storage->set_raid_level(sgfs::JBODStorage::RAID::RAID5);
 
     std::vector<std::shared_ptr<sgfs::OneDiskStorage>> local_storages;
     for (int i = 0; i < 4; i++) {
       std::string hostname = std::string("node-") + std::to_string(i);
-      auto* host           = cluster->create_host(hostname, "1Gf");
-      sg4::Disk* disk      = host->create_disk(hostname + "_disk", "5.5GBps", "2.1GBps");
+      auto* host           = cluster->add_host(hostname, "1Gf");
+      sg4::Disk* disk      = host->add_disk(hostname + "_disk", "5.5GBps", "2.1GBps");
       local_storages.push_back(sgfs::OneDiskStorage::create(hostname + "_local_storage", disk));
 
       std::string linkname = std::string("link_") + std::to_string(i);
-      auto* link_up        = cluster->create_link(linkname + "_UP", "1Gbps");
-      auto* link_down      = cluster->create_link(linkname + "_DOWN", "1Gbps");
+      auto* link_up        = cluster->add_link(linkname + "_UP", "1Gbps");
+      auto* link_down      = cluster->add_link(linkname + "_DOWN", "1Gbps");
       auto* loopback =
-          cluster->create_link(hostname + "_loopback", "10Gbps")->set_sharing_policy(sg4::Link::SharingPolicy::FATPIPE);
+          cluster->add_link(hostname + "_loopback", "10Gbps")->set_sharing_policy(sg4::Link::SharingPolicy::FATPIPE);
 
       cluster->add_route(host, nullptr, {sg4::LinkInRoute(link_up)}, false);
       cluster->add_route(nullptr, host, {sg4::LinkInRoute(link_down)}, false);

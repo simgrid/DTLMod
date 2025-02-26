@@ -18,17 +18,17 @@ class DTLStagingEngineTest : public ::testing::Test {
 public:
   DTLStagingEngineTest() = default;
 
-  sg4::NetZone* create_cluster(sg4::NetZone* root, const std::string& suffix, const int num_hosts)
+  sg4::NetZone* add_cluster(sg4::NetZone* root, const std::string& suffix, const int num_hosts)
   {
     auto* cluster = root->add_netzone_star("cluster" + suffix);
 
-    cluster->set_gateway(cluster->create_router("cluster" + suffix + "-router"));
-    auto* backbone = cluster->create_link("backbone" + suffix, "100Gbps")->set_latency("100us");
+    cluster->set_gateway(cluster->add_router("cluster" + suffix + "-router"));
+    auto* backbone = cluster->add_link("backbone" + suffix, "100Gbps")->set_latency("100us");
 
     for (int i = 0; i < num_hosts; i++) {
       std::string name = "host-" + std::to_string(i) + suffix;
-      const auto* host = cluster->create_host(name, "1Gf");
-      const auto* link = cluster->create_link(name + "_link", "10Gbps")->set_latency("10us");
+      const auto* host = cluster->add_host(name, "1Gf");
+      const auto* link = cluster->add_link(name + "_link", "10Gbps")->set_latency("10us");
       cluster->add_route(host, nullptr, {link, backbone});
     }
 
@@ -39,10 +39,10 @@ public:
   void setup_platform()
   {
     auto* root     = sg4::Engine::get_instance()->get_netzone_root();
-    auto* internet = root->create_link("internet", "500MBps")->set_latency("1ms");
+    auto* internet = root->add_link("internet", "500MBps")->set_latency("1ms");
 
-    auto* prod_cluster = create_cluster(root, ".prod", 16);
-    auto* cons_cluster = create_cluster(root, ".cons", 4);
+    auto* prod_cluster = add_cluster(root, ".prod", 16);
+    auto* cons_cluster = add_cluster(root, ".cons", 4);
 
     root->add_route(prod_cluster, cons_cluster, {internet});
     root->seal();

@@ -26,13 +26,13 @@ public:
     for (int i = 0; i < 4; i++) {
       std::string hostname = std::string("node-") + std::to_string(i);
 
-      const auto* host = cluster->create_host(hostname, "1Gf");
+      const auto* host = cluster->add_host(hostname, "1Gf");
 
       std::string linkname = std::string("cluster") + "_link_" + std::to_string(i);
-      auto* link_up        = cluster->create_link(linkname + "_UP", "1Gbps");
-      auto* link_down      = cluster->create_link(linkname + "_DOWN", "1Gbps");
+      auto* link_up        = cluster->add_link(linkname + "_UP", "1Gbps");
+      auto* link_down      = cluster->add_link(linkname + "_DOWN", "1Gbps");
       auto* loopback =
-          cluster->create_link(hostname + "_loopback", "10Gbps")->set_sharing_policy(sg4::Link::SharingPolicy::FATPIPE);
+          cluster->add_link(hostname + "_loopback", "10Gbps")->set_sharing_policy(sg4::Link::SharingPolicy::FATPIPE);
 
       cluster->add_route(host, nullptr, {sg4::LinkInRoute(link_up)}, false);
       cluster->add_route(nullptr, host, {sg4::LinkInRoute(link_down)}, false);

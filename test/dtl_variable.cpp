@@ -27,8 +27,8 @@ public:
   void setup_platform()
   {
     auto* root = sg4::Engine::get_instance()->get_netzone_root();
-    host_      = root->create_host("host", "1Gf");
-    disk_      = host_->create_disk("disk", "1kBps", "2kBps");
+    host_      = root->add_host("host", "1Gf");
+    disk_      = host_->add_disk("disk", "1kBps", "2kBps");
     root->seal();
 
     // Create the DTL

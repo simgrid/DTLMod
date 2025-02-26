@@ -28,8 +28,8 @@ public:
   void setup_platform()
   {
     auto* root = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_full("root");
-    host_      = root->create_host("host", "1Gf");
-    auto* disk = host_->create_disk("disk", "1kBps", "2kBps");
+    host_      = root->add_host("host", "1Gf");
+    auto* disk = host_->add_disk("disk", "1kBps", "2kBps");
     root->seal();
 
     auto local_storage = sgfs::OneDiskStorage::create("local_storage", disk);
