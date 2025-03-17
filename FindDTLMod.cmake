@@ -36,7 +36,7 @@
 #  Since DTLMOD header files require C++17, so we set CMAKE_CXX_STANDARD to 17.
 #    Change this variable in your own file if you need a later standard.
 
-cmake_minimum_required(VERSION 2.8.12)
+cmake_minimum_required(VERSION 3.12)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -64,7 +64,7 @@ find_package_handle_standard_args(DTLMod
         )
 
 
-if (DTLMOD_FOUND AND NOT CMAKE_VERSION VERSION_LESS 2.8.12)
+if (DTLMOD_FOUND AND NOT CMAKE_VERSION VERSION_LESS 3.12)
 
     add_library(DTLMOD::DTLMOD SHARED IMPORTED)
     set_target_properties(DTLMOD::DTLMOD PROPERTIES
