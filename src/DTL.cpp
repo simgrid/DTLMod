@@ -59,7 +59,7 @@ void DTL::connect(sg4::Actor* actor)
 {
   if (active_connections_.find(actor) == active_connections_.end()) {
     active_connections_.insert(actor);
-    XBT_DEBUG("Connection to internal DTL server: %zu active connections", active_connections_.size());
+    XBT_DEBUG("Connection of %s to internal DTL server: %zu active connections", actor->get_cname(), active_connections_.size());
   } else
     XBT_WARN("%s is already connected to the DTL. Check your code", actor->get_cname());
 }

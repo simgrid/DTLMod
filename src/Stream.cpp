@@ -130,8 +130,8 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
 
   // Only the first Actor calling Stream::open has to create the corresponding Engine and Transport method.
   // Hence, we use a critical section.
+  XBT_DEBUG("%s takes lock", sg4::this_actor::get_cname());
   dtl_->lock();
-
   if (not engine_) {
     if (engine_type_ == Engine::Type::Staging) {
       engine_ = std::make_shared<StagingEngine>(name, this);
@@ -143,10 +143,13 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
     engine_->create_transport(transport_method_);
   }
   dtl_->unlock();
+  XBT_DEBUG("%s releases lock", sg4::this_actor::get_cname());
 
   while (not engine_ || (engine_ && engine_type_ == Engine::Type::Staging && mode == Mode::Subscribe &&
-                         engine_->get_num_publishers() == 0))
+                         engine_->get_num_publishers() == 0)) {
+    XBT_DEBUG("%s waits", sg4::this_actor::get_cname());
     sg4::this_actor::sleep_for(0.001);
+  }
 
   // Then we register the actors calling Stream::open as publishers or subscribers in the newly created Engine.
   if (mode == dtlmod::Stream::Mode::Publish) {

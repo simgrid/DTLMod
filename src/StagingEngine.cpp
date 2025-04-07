@@ -21,6 +21,7 @@ namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 void StagingEngine::create_transport(const Transport::Method& transport_method)
 {
+  XBT_DEBUG("Create a new Staging Engine");
   if (transport_method == Transport::Method::Mailbox) {
     XBT_DEBUG("Creating mailbox '%s'", get_cname());
     set_transport(std::make_shared<MailboxTransport>(get_name() + "-mbox", this));
