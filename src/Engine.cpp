@@ -85,13 +85,13 @@ void Engine::add_subscriber(sg4::ActorPtr actor, bool rendez_vous)
   subscribers_.insert(actor);
   if (rendez_vous) // Notify publishers that there is a subscriber now
     open_sync_->notify_all();
-
+    
+  transport_->add_subscriber(subscribers_.size());
   // Then block the subscriber until at least one publisher initiates a transaction (and thus creates pub_barrier_)
   std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
   while (not publishers_.empty() && not pub_barrier_)
     first_pub_transaction_started_->wait(lock);
 
-  transport_->add_subscriber(subscribers_.size());
 }
 
 void Engine::begin_pub_transaction()
