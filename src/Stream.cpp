@@ -100,14 +100,6 @@ Stream* Stream::set_transport_method(const Transport::Method& transport_method)
   return this;
 }
 
-/// Setting the rendez-vous mode for a Stream imposes that publishers must wait for at least one Subscriber to open
-/// that Stream to completer their own open.
-Stream* Stream::set_rendez_vous()
-{
-  rendez_vous_ = true;
-  return this;
-}
-
 /****** Engine Factory ******/
 
 /// When multiple actors open the same Stream, only the first one to call this function is in charge of creating an
@@ -145,17 +137,16 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
   dtl_->unlock();
   XBT_DEBUG("%s releases lock", sg4::this_actor::get_cname());
 
-  while (not engine_ || (engine_ && engine_type_ == Engine::Type::Staging && mode == Mode::Subscribe &&
-                         engine_->get_num_publishers() == 0)) {
-    XBT_DEBUG("%s waits", sg4::this_actor::get_cname());
+  while (not engine_) {
+    XBT_DEBUG("%s waits for the creation of the engine", sg4::this_actor::get_cname());
     sg4::this_actor::sleep_for(0.001);
   }
 
   // Then we register the actors calling Stream::open as publishers or subscribers in the newly created Engine.
   if (mode == dtlmod::Stream::Mode::Publish) {
-    engine_->add_publisher(sg4::Actor::self(), rendez_vous_);
+    engine_->add_publisher(sg4::Actor::self());
   } else {
-    engine_->add_subscriber(sg4::Actor::self(), rendez_vous_);
+    engine_->add_subscriber(sg4::Actor::self());
   }
 
   XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(), get_engine_type_str(),

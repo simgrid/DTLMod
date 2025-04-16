@@ -34,8 +34,6 @@ class Stream {
   Transport::Method transport_method_ = Transport::Method::Undefined;
   sg4::MutexPtr mutex_;
 
-  bool rendez_vous_ = false;
-
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
 
 public:
@@ -89,9 +87,6 @@ public:
   /// @param transport_method the Transport methode to use when opening the Stream.
   /// @return The calling Stream (enable method chaining).
   Stream* set_transport_method(const Transport::Method& transport_method);
-  /// @brief Stream configuration function: use a rendez-vous mode
-  /// @return The calling Stream (enable method chaining).
-  Stream* set_rendez_vous();
 
   /******* Engine Factory *******/
 

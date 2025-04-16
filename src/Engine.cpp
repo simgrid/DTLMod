@@ -68,24 +68,15 @@ void Engine::close()
 ////////////////////////////////////////////
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
-void Engine::add_publisher(sg4::ActorPtr actor, bool rendez_vous)
+void Engine::add_publisher(sg4::ActorPtr actor)
 {
   transport_->add_publisher(publishers_.size());
   publishers_.insert(actor);
-
-  if (rendez_vous) {
-    std::unique_lock<sg4::Mutex> lock(*pub_mutex_);
-    while (subscribers_.empty())
-      open_sync_->wait(lock);
-  }
 }
 
-void Engine::add_subscriber(sg4::ActorPtr actor, bool rendez_vous)
+void Engine::add_subscriber(sg4::ActorPtr actor)
 {
   subscribers_.insert(actor);
-  if (rendez_vous) // Notify publishers that there is a subscriber now
-    open_sync_->notify_all();
-
   // Then block the subscriber until at least one publisher initiates a transaction (and thus creates pub_barrier_)
   std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
   while (not publishers_.empty() && not pub_barrier_)

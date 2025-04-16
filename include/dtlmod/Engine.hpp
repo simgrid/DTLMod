@@ -53,7 +53,6 @@ private:
   Type type_                            = Type::Undefined;
   std::shared_ptr<Transport> transport_ = nullptr;
   Stream* stream_;
-  sg4::ConditionVariablePtr open_sync_;
   std::set<sg4::ActorPtr> publishers_;
   sg4::BarrierPtr pub_barrier_ = nullptr;
   sg4::ActivitySet pub_transaction_;
@@ -90,14 +89,14 @@ protected:
   void set_transport(std::shared_ptr<Transport> transport) { transport_ = transport; }
   [[nodiscard]] std::shared_ptr<Transport> get_transport() const { return transport_; }
 
-  void add_publisher(sg4::ActorPtr actor, bool rendez_vous);
+  void add_publisher(sg4::ActorPtr actor);
   void rm_publisher(sg4::ActorPtr actor) { publishers_.erase(actor); }
   void add_publish_activity(sg4::ActivityPtr a) { pub_transaction_.push(a); }
   [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const { return publishers_; }
   [[nodiscard]] size_t get_num_publishers() const { return publishers_.size(); }
   [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const { return publishers_.find(actor) != publishers_.end(); }
 
-  void add_subscriber(sg4::ActorPtr actor, bool rendez_vous);
+  void add_subscriber(sg4::ActorPtr actor);
   void add_subscribe_activity(sg4::ActivityPtr a) { sub_transaction_.push(a); }
   void rm_subscriber(sg4::ActorPtr actor) { subscribers_.erase(actor); }
   [[nodiscard]] size_t get_num_subscribers() const { return subscribers_.size(); }
@@ -110,7 +109,6 @@ public:
       : name_(name)
       , type_(type)
       , stream_(stream)
-      , open_sync_(sg4::ConditionVariable::create())
       , pub_mutex_(sg4::Mutex::create())
       , sub_mutex_(sg4::Mutex::create())
       , first_pub_transaction_started_(sg4::ConditionVariable::create())
