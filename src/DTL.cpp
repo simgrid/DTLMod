@@ -16,6 +16,8 @@
 #include <nlohmann/json.hpp>
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod, "DTLMod internal logging");
+XBT_LOG_NEW_SUBCATEGORY(dtl, dtlmod, "DTL logging");
+
 
 namespace sg4 = simgrid::s4u;
 namespace dtlmod {
