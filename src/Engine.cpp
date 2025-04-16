@@ -14,6 +14,7 @@
 #include "dtlmod/FileTransport.hpp"
 
 XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
+XBT_LOG_NEW_SUBCATEGORY(dtl_engine, dtlmod, "DTL logging about Engines");
 
 namespace sg4 = simgrid::s4u;
 
@@ -76,13 +77,8 @@ void Engine::add_publisher(sg4::ActorPtr actor)
 
 void Engine::add_subscriber(sg4::ActorPtr actor)
 {
-  subscribers_.insert(actor);
-  // Then block the subscriber until at least one publisher initiates a transaction (and thus creates pub_barrier_)
-  std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
-  while (not publishers_.empty() && not pub_barrier_)
-    first_pub_transaction_started_->wait(lock);
-
   transport_->add_subscriber(subscribers_.size());
+  subscribers_.insert(actor);
 }
 
 void Engine::begin_pub_transaction()
@@ -95,7 +91,6 @@ void Engine::begin_pub_transaction()
       if (not publishers_.empty()) { // Assume all publishers have opened the stream and create a barrier
         XBT_DEBUG("Create a barrier for %zu publishers", publishers_.size());
         pub_barrier_ = sg4::Barrier::create(publishers_.size());
-        first_pub_transaction_started_->notify_all();
       }
 
     } else {
@@ -169,8 +164,6 @@ void Engine::pub_close()
       std::static_pointer_cast<FileTransport>(transport_)->close_files();
     }
   }
-  // Notify subscribers that may hanging on the beginning of a first transaction ... which never happened.
-  first_pub_transaction_started_->notify_all();
 
   XBT_DEBUG("Engine '%s' is now closed for all publishers ", get_cname());
   pub_closing_ = false;

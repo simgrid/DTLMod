@@ -11,6 +11,7 @@
 #include "dtlmod/Variable.hpp"
 
 XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
+XBT_LOG_NEW_SUBCATEGORY(dtl_stream, dtlmod, "DTL logging about Streams");
 
 namespace dtlmod {
 
@@ -122,7 +123,6 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
 
   // Only the first Actor calling Stream::open has to create the corresponding Engine and Transport method.
   // Hence, we use a critical section.
-  XBT_DEBUG("%s takes lock", sg4::this_actor::get_cname());
   dtl_->lock();
   if (not engine_) {
     if (engine_type_ == Engine::Type::Staging) {
@@ -135,7 +135,6 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
     engine_->create_transport(transport_method_);
   }
   dtl_->unlock();
-  XBT_DEBUG("%s releases lock", sg4::this_actor::get_cname());
 
   while (not engine_) {
     XBT_DEBUG("%s waits for the creation of the engine", sg4::this_actor::get_cname());
