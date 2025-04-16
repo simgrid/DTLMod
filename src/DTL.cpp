@@ -24,21 +24,29 @@ namespace dtlmod {
 DTL::DTL(const std::string& filename)
 {
   mutex_ = sg4::Mutex::create();
+  // No configuration file has been provided. Nothing else to do
   if (filename.empty())
     return;
+
+  // Parse the configuration file
   std::ifstream f(filename);
   auto data = nlohmann::json::parse(f);
 
+  // Get the list of declared Streams
   for (auto const& stream : data["streams"]) {
+    // Get the Stream name
+    auto name = stream["name"].get<std::string>();
+    // Parse the Engine type
     Engine::Type type;
-    Transport::Method transport_method;
     if (stream["engine"]["type"] == "File")
-      type = Engine::Type::File;
+    type = Engine::Type::File;
     else if (stream["engine"]["type"] == "Staging")
-      type = Engine::Type::Staging;
+    type = Engine::Type::Staging;
     else
       throw UnkownEngineTypeException(XBT_THROW_POINT, "");
 
+    // Parse the Transport Method
+    Transport::Method transport_method;
     if (stream["engine"]["transport_method"] == "File")
       transport_method = Transport::Method::File;
     else if (stream["engine"]["transport_method"] == "Mailbox")
@@ -48,9 +56,10 @@ DTL::DTL(const std::string& filename)
     else
       throw UnknownTransportMethodException(XBT_THROW_POINT, "");
 
-    auto name = stream["name"].get<std::string>();
+      // If the Stream doesn't exist yet, create it
     if (streams_.find(name) == streams_.end())
       streams_.emplace(name, std::make_shared<Stream>(name, this));
+    // And set its engine type and transport method
     streams_[name]->set_engine_type(type)->set_transport_method(transport_method);
   }
 }
@@ -134,6 +143,8 @@ void DTL::disconnect()
 
 std::shared_ptr<Stream> DTL::add_stream(const std::string& name)
 {
+  // This has to be done in critical section to avoid concurrent creation. First actor to get the lock creates the
+  // Stream. Other actors will retrieve it from the map.
   std::unique_lock<sg4::Mutex> lock(*mutex_);
   if (streams_.find(name) == streams_.end())
     streams_.emplace(name, std::make_shared<Stream>(name, this));
