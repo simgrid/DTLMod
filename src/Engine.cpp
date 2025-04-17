@@ -81,50 +81,6 @@ void Engine::add_subscriber(sg4::ActorPtr actor)
   subscribers_.insert(actor);
 }
 
-void Engine::end_pub_transaction()
-{
-  // This is the end of the first transaction, create a barrier
-  if (not pub_barrier_) {
-    XBT_DEBUG("Create a barrier for %zu publishers", publishers_.size());
-    pub_barrier_ = sg4::Barrier::create(publishers_.size());
-  }
-
-  if (is_last_publisher()) {
-    XBT_DEBUG("Start the %d publish activities for the transaction", pub_transaction_.size());
-    for (unsigned int i = 0; i < pub_transaction_.size(); i++)
-      pub_transaction_.at(i)->resume();
-
-    // Mark this transaction as over
-    pub_transaction_in_progress_ = false;
-    // A new pub transaction has been completed
-    completed_pub_transaction_id_++;
-  }
-}
-
-void Engine::end_sub_transaction()
-{
-  // This is the end of the first transaction, create a barrier
-  if (not sub_barrier_) {  
-      XBT_DEBUG("Create a barrier for %zu subscribers", subscribers_.size());
-      sub_barrier_ = sg4::Barrier::create(subscribers_.size());
-  }
-  
-  if (is_last_subscriber()) {
-    XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
-    for (unsigned int i = 0; i < sub_transaction_.size(); i++)
-      sub_transaction_.at(i)->resume()->wait();
-    XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
-    sub_transaction_.clear();
-    // Mark this transaction as over
-    sub_transaction_in_progress_ = false;
-    sub_transaction_id_++;
-  }
-  // FIXME: Should not be necessary
-  // Prevent subscribers to start a new transaction before this one is really over
-   if (sub_barrier_)
-    sub_barrier_->wait();
-}
-
 void Engine::export_metadata_to_file()
 {
   std::string filename = boost::replace_all_copy(name_, "/", "#");

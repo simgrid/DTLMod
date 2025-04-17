@@ -20,7 +20,7 @@ void MailboxTransport::add_publisher(unsigned int /*publisher_id*/)
 
 void MailboxTransport::add_subscriber(unsigned int /*publisher_id*/)
 {
-  auto* e   = get_engine();
+  auto* e              = get_engine();
   auto subscriber_name = sg4::Actor::self()->get_cname();
   XBT_DEBUG("Actor '%s' is creating new mailboxes", subscriber_name);
   for (const auto& pub : e->get_publishers()) {

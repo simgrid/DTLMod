@@ -17,10 +17,12 @@ namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class StagingEngine : public Engine {
 protected:
-void begin_pub_transaction() override;
-void pub_close() override;
-void begin_sub_transaction() override;
-void sub_close() override;
+  void begin_pub_transaction() override;
+  void end_pub_transaction() override;
+  void pub_close() override;
+  void begin_sub_transaction() override;
+  void end_sub_transaction() override;
+  void sub_close() override;
 
 public:
   explicit StagingEngine(const std::string& name, Stream* stream) : Engine(name, stream, Engine::Type::Staging) {}

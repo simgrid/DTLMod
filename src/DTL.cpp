@@ -18,7 +18,6 @@
 XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod, "DTLMod internal logging");
 XBT_LOG_NEW_SUBCATEGORY(dtl, dtlmod, "DTL logging");
 
-
 namespace sg4 = simgrid::s4u;
 namespace dtlmod {
 
@@ -41,9 +40,9 @@ DTL::DTL(const std::string& filename)
     // Parse the Engine type
     Engine::Type type;
     if (stream["engine"]["type"] == "File")
-    type = Engine::Type::File;
+      type = Engine::Type::File;
     else if (stream["engine"]["type"] == "Staging")
-    type = Engine::Type::Staging;
+      type = Engine::Type::Staging;
     else
       throw UnkownEngineTypeException(XBT_THROW_POINT, "");
 
@@ -58,7 +57,7 @@ DTL::DTL(const std::string& filename)
     else
       throw UnknownTransportMethodException(XBT_THROW_POINT, "");
 
-      // If the Stream doesn't exist yet, create it
+    // If the Stream doesn't exist yet, create it
     if (streams_.find(name) == streams_.end())
       streams_.emplace(name, std::make_shared<Stream>(name, this));
     // And set its engine type and transport method
@@ -70,7 +69,8 @@ void DTL::connect(sg4::Actor* actor)
 {
   if (active_connections_.find(actor) == active_connections_.end()) {
     active_connections_.insert(actor);
-    XBT_DEBUG("Connection of %s to internal DTL server: %zu active connections", actor->get_cname(), active_connections_.size());
+    XBT_DEBUG("Connection of %s to internal DTL server: %zu active connections", actor->get_cname(),
+              active_connections_.size());
   } else
     XBT_WARN("%s is already connected to the DTL. Check your code", actor->get_cname());
 }

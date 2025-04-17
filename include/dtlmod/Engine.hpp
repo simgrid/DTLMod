@@ -57,15 +57,15 @@ public:
   sg4::MutexPtr pub_mutex_;
   std::set<sg4::ActorPtr> publishers_;
   sg4::ActivitySet pub_transaction_;
-  
-  sg4::BarrierPtr pub_barrier_ = nullptr;
-  unsigned int current_pub_transaction_id_    = 0;
-  unsigned int completed_pub_transaction_id_  = 0;
-  bool pub_transaction_in_progress_           = false;
-  bool pub_closing_                           = false;
-  virtual void begin_pub_transaction()        = 0;
-  virtual void end_pub_transaction()          ;
-  virtual void pub_close()                    = 0;
+
+  sg4::BarrierPtr pub_barrier_               = nullptr;
+  unsigned int current_pub_transaction_id_   = 0;
+  unsigned int completed_pub_transaction_id_ = 0;
+  bool pub_transaction_in_progress_          = false;
+  bool pub_closing_                          = false;
+  virtual void begin_pub_transaction()       = 0;
+  virtual void end_pub_transaction()         = 0;
+  virtual void pub_close() = 0;
 
   std::set<sg4::ActorPtr> subscribers_;
   sg4::BarrierPtr sub_barrier_ = nullptr;
@@ -74,12 +74,12 @@ public:
   sg4::ConditionVariablePtr sub_transaction_started_;
   sg4::ConditionVariablePtr pub_transaction_completed_;
 
-  unsigned int sub_transaction_id_  = 1;
-  bool sub_transaction_in_progress_ = false;
-  bool sub_closing_                 = false;
+  unsigned int sub_transaction_id_     = 0;
+  bool sub_transaction_in_progress_    = false;
+  bool sub_closing_                    = false;
   virtual void begin_sub_transaction() = 0;
-  void end_sub_transaction();
-  virtual void sub_close() = 0;
+  virtual void end_sub_transaction()   = 0;
+  virtual void sub_close()             = 0;
   void export_metadata_to_file();
 
 protected:
@@ -107,8 +107,8 @@ protected:
   [[nodiscard]] size_t get_num_subscribers() const { return subscribers_.size(); }
   [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const { return subscribers_.find(actor) != subscribers_.end(); }
   // Synchronize subscribers on engine closing
-  [[nodiscard]] int is_last_subscriber() { return (sub_barrier_ && sub_barrier_->wait()); }
-/// \endcond
+  [[nodiscard]] int is_last_subscriber() { return subscribers_.empty(); }
+  /// \endcond
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION

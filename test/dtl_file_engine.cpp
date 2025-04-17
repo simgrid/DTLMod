@@ -4,6 +4,8 @@
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
 #include <gtest/gtest.h>
+#include <cmath>
+
 
 #include <fsmod/FileSystem.hpp>
 #include <fsmod/FileSystemException.hpp>
@@ -238,15 +240,15 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
 
       XBT_INFO("Start a Transaction");
       ASSERT_NO_THROW(engine->begin_transaction());
-      XBT_INFO("Transition can start as publishers have finished writing");
-      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 15.651431842993127);
+      XBT_INFO("Transition can start as publishers stored metadata");
+      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 10);
       XBT_INFO("Get the entire Variable 'var' from the DTL");
       ASSERT_NO_THROW(engine->get(var_sub));
       XBT_INFO("End a Transaction");
       ASSERT_NO_THROW(engine->end_transaction());
       XBT_INFO("Check local size of var_sub. Should be 3,200,000,000 bytes");
       ASSERT_DOUBLE_EQ(var_sub->get_local_size(), 8. * 20000 * 20000);
-
+      ASSERT_DOUBLE_EQ(std::round(sg4::Engine::get_clock() * 1e6) / 1e6, 42.469851);
       XBT_INFO("Close the engine");
       ASSERT_NO_THROW(engine->close());
       XBT_INFO("Disconnect the actor");

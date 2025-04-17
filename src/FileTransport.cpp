@@ -15,11 +15,16 @@ XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 
+////////////////////////////////////////////
+////////////// PUBLISHER SIDE //////////////
+////////////////////////////////////////////
+
 void FileTransport::add_publisher(unsigned int publisher_id)
 {
   auto* e       = static_cast<FileEngine*>(get_engine());
   auto self     = sg4::Actor::self();
   auto filename = e->get_path_to_dataset() + "data." + std::to_string(publisher_id);
+  // Publishers write everything in a single file.
   XBT_DEBUG("Actor '%s' is opening file '%s'", self->get_cname(), filename.c_str());
   // Keep track of the files opened by publishers for this engine to properly close them later
   // Files are opened in 'append' mode to prevent overwritting
@@ -36,35 +41,45 @@ void FileTransport::put(std::shared_ptr<Variable> var, size_t size)
   var->add_transaction_metadata(tid, self, file->get_path());
 
   XBT_DEBUG("Actor '%s' is writing %lu bytes into file '%s'", self->get_cname(), size, file->get_path().c_str());
-  // Create an I/O activity by writing 'size' bytes in 'file' and suspend it immediatly.
-  // Indeed, write_async starts the I/O activity, while we want to start it (then resume it) only at the end of the
-  // transaction.
-  get_engine()->pub_transaction_.push(file->write_async(size)->suspend());
+  to_write_in_transaction_[self].push_back(std::make_pair(file, size));
 }
 
-void FileTransport::get(std::shared_ptr<Variable> var)
-{
-  auto* e     = static_cast<FileEngine*>(get_engine());
-  auto self   = sg4::Actor::self();
-  auto blocks = check_selection_and_get_blocks_to_get(var);
-
-  for (auto [filename, size] : blocks) {
-    // Files are opened in read mode.
-    auto file = e->get_file_system()->open(filename, "r");
-    // Keep track of the files opened by subscribers for this engine to properly close them later
-    subscribers_to_files_[self] = file;
-    if (size > 0)
-      e->sub_transaction_.push(file->read_async(size)->suspend());
-  }
-}
-
-void FileTransport::close_files()
+void FileTransport::close_pub_files()
 {
   for (auto [actor, file] : publishers_to_files_) {
     XBT_DEBUG("Closing %s", file->get_path().c_str());
     file->close();
   }
-  for (auto [actor, file] : subscribers_to_files_) {
+}
+
+////////////////////////////////////////////
+///////////// SUBSCRIBER SIDE //////////////
+////////////////////////////////////////////
+
+void FileTransport::get(std::shared_ptr<Variable> var)
+{
+  auto self = sg4::Actor::self();
+  auto fs   = static_cast<FileEngine*>(get_engine())->get_file_system();
+
+  // Determine which files contain blocks of the requested (selection of) the variable
+  auto blocks = check_selection_and_get_blocks_to_get(var);
+
+  for (auto [filename, size] : blocks) {
+    // if there is indeed something to read in this block
+    if (size > 0) {
+      // open the corresponding file in read mode.
+      XBT_DEBUG("Actor '%s' is opening file '%s'", self->get_cname(), filename.c_str());
+      auto file = fs->open(filename, "r");
+      // Keep track of what to read from this file for this get
+      to_read_in_transaction_[self].push_back(std::make_pair(file, size));
+    }
+  }
+}
+
+// Called at the end of a transaction. Each actor closes the files it opened in calls to get()
+void FileTransport::close_sub_files(sg4::ActorPtr self)
+{
+  for (auto [file, size] : to_read_in_transaction_[self]) {
     XBT_DEBUG("Closing %s", file->get_path().c_str());
     file->close();
   }

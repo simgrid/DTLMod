@@ -53,12 +53,33 @@ void StagingEngine::begin_pub_transaction()
     }
     XBT_DEBUG("Publish Transaction %u started by %s", current_pub_transaction_id_, sg4::Actor::self()->get_cname());
   }
-  
+
   XBT_DEBUG("Maybe I should wait: %zu subscribers and %u <= %u", get_num_subscribers(), current_pub_transaction_id_,
             sub_transaction_id_ - 1);
   while (get_num_subscribers() == 0 || current_pub_transaction_id_ < sub_transaction_id_ - 1) {
     XBT_DEBUG("Wait");
     sub_transaction_started_->wait(lock);
+  }
+}
+
+void StagingEngine::end_pub_transaction()
+{
+  // This is the end of the first transaction, create a barrier
+  if (not pub_barrier_) {
+    XBT_DEBUG("Create a barrier for %zu publishers", publishers_.size());
+    pub_barrier_ = sg4::Barrier::create(publishers_.size());
+  }
+
+  if (is_last_publisher()) {
+    XBT_DEBUG("Start the %d publish activities for the transaction", pub_transaction_.size());
+    for (unsigned int i = 0; i < pub_transaction_.size(); i++)
+      pub_transaction_.at(i)->resume();
+
+    // Mark this transaction as over
+    pub_transaction_in_progress_ = false;
+    // A new pub transaction has been completed
+    completed_pub_transaction_id_++;
+    pub_transaction_completed_->notify_all();
   }
 }
 
@@ -97,6 +118,30 @@ void StagingEngine::begin_sub_transaction()
   }
 }
 
+void StagingEngine::end_sub_transaction()
+{
+  // This is the end of the first transaction, create a barrier
+  if (not sub_barrier_) {
+    XBT_DEBUG("Create a barrier for %zu subscribers", subscribers_.size());
+    sub_barrier_ = sg4::Barrier::create(subscribers_.size());
+  }
+
+  if (is_last_subscriber()) {
+    XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
+    for (unsigned int i = 0; i < sub_transaction_.size(); i++)
+      sub_transaction_.at(i)->resume()->wait();
+    XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
+    sub_transaction_.clear();
+    // Mark this transaction as over
+    sub_transaction_in_progress_ = false;
+    sub_transaction_id_++;
+  }
+  // FIXME: Should not be necessary
+  // Prevent subscribers to start a new transaction before this one is really over
+  if (sub_barrier_)
+    sub_barrier_->wait();
+}
+
 void StagingEngine::sub_close()
 {
   auto self = sg4::Actor::self();
@@ -110,7 +155,7 @@ void StagingEngine::sub_close()
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     sub_transaction_.clear();
   }
-  
+
   rm_subscriber(self);
 
   if (is_last_subscriber()) {
