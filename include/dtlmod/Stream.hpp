@@ -26,6 +26,8 @@ class DTL;
 
 class Stream {
   friend class Engine;
+  friend class FileEngine;
+  friend class StagingEngine;
 
   const std::string name_;
   DTL* dtl_                           = nullptr;

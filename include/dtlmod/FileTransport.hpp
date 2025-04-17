@@ -18,6 +18,7 @@ namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class FileTransport : public Transport {
   friend class Engine;
+  friend class FileEngine;
   std::unordered_map<sg4::ActorPtr, std::shared_ptr<sgfs::File>> publishers_to_files_;
   std::unordered_map<sg4::ActorPtr, std::shared_ptr<sgfs::File>> subscribers_to_files_;
 

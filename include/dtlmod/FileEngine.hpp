@@ -36,6 +36,10 @@ protected:
   void create_transport(const Transport::Method& transport_method);
   std::shared_ptr<sgfs::FileSystem> get_file_system() const { return file_system_; }
   std::string get_path_to_dataset() const;
+  void begin_pub_transaction() override;
+  void pub_close() override;
+  void begin_sub_transaction() override;
+  void sub_close() override;
 
 public:
   explicit FileEngine(const std::string& fullpath, Stream* stream);

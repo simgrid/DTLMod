@@ -43,7 +43,6 @@ public:
     Staging
   };
 
-private:
   friend class Stream;
   friend class FileTransport;
   friend class MailboxTransport;
@@ -53,6 +52,8 @@ private:
   Type type_                            = Type::Undefined;
   std::shared_ptr<Transport> transport_ = nullptr;
   Stream* stream_;
+
+public:
   std::set<sg4::ActorPtr> publishers_;
   sg4::BarrierPtr pub_barrier_ = nullptr;
   sg4::ActivitySet pub_transaction_;
@@ -60,9 +61,9 @@ private:
   unsigned int pub_transaction_id_  = 0;
   bool pub_transaction_in_progress_ = false;
   bool pub_closing_                 = false;
-  void begin_pub_transaction();
+  virtual void begin_pub_transaction() = 0;
   void end_pub_transaction();
-  void pub_close();
+  virtual void pub_close() = 0;
 
   std::set<sg4::ActorPtr> subscribers_;
   sg4::BarrierPtr sub_barrier_ = nullptr;
@@ -74,14 +75,15 @@ private:
   unsigned int sub_transaction_id_  = 1;
   bool sub_transaction_in_progress_ = false;
   bool sub_closing_                 = false;
-  void begin_sub_transaction();
+  virtual void begin_sub_transaction() = 0;
   void end_sub_transaction();
-  void sub_close();
+  virtual void sub_close() = 0;
   void export_metadata_to_file();
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   Stream* get_stream() const { return stream_; }
+  void close_stream();
 
   virtual void create_transport(const Transport::Method& transport_method) = 0;
 
@@ -94,13 +96,17 @@ protected:
   [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const { return publishers_; }
   [[nodiscard]] size_t get_num_publishers() const { return publishers_.size(); }
   [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const { return publishers_.find(actor) != publishers_.end(); }
+  // Synchronize publishers on engine closing
+  [[nodiscard]] int is_last_publisher() { return (pub_barrier_ && pub_barrier_->wait()); }
 
   void add_subscriber(sg4::ActorPtr actor);
   void add_subscribe_activity(sg4::ActivityPtr a) { sub_transaction_.push(a); }
   void rm_subscriber(sg4::ActorPtr actor) { subscribers_.erase(actor); }
   [[nodiscard]] size_t get_num_subscribers() const { return subscribers_.size(); }
   [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const { return subscribers_.find(actor) != subscribers_.end(); }
-  /// \endcond
+  // Synchronize subscribers on engine closing
+  [[nodiscard]] int is_last_subscriber() { return (sub_barrier_ && sub_barrier_->wait()); }
+/// \endcond
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION

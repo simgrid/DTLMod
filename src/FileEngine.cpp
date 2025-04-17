@@ -69,5 +69,100 @@ std::string FileEngine::get_path_to_dataset() const
 {
   return partition_->get_name() + working_directory_ + "/" + dataset_ + "/";
 }
+
+void FileEngine::begin_pub_transaction()
+{
+  // Only one publisher has to do this
+  std::unique_lock<sg4::Mutex> lock(*pub_mutex_);
+  if (not pub_transaction_in_progress_) {
+    pub_transaction_in_progress_ = true;
+    if (pub_barrier_) { // This is not the first transaction.
+      // Wait for the completion of the Publish activities from the previous transaction
+      XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
+                pub_transaction_.size());
+      pub_transaction_.wait_all();
+      XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
+      pub_transaction_id_++;
+      XBT_DEBUG("%u sub activities pending", sub_transaction_.size());
+      if (pub_transaction_id_ >= sub_transaction_id_) {
+        pub_transaction_.clear();
+        // We may have subscribers waiting for a transaction to be over. Notify them
+        pub_transaction_completed_->notify_all();
+      }
+    }
+    XBT_DEBUG("Publish Transaction %u started by %s", pub_transaction_id_, sg4::Actor::self()->get_cname());
+  }
+}
+
+void FileEngine::pub_close()
+{
+  auto self = sg4::Actor::self();
+  XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());
+  if (not pub_closing_) {
+    // I'm the first to close
+    pub_closing_ = true;
+    XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
+              pub_transaction_.size());
+    pub_transaction_.wait_all();
+    pub_transaction_.clear();
+    XBT_DEBUG("[%s] last publish transaction is over", get_cname());
+    pub_transaction_id_++;
+    if (get_num_subscribers() > 0 && pub_transaction_id_ >= sub_transaction_id_) {
+        // We may have subscribers waiting for a transaction to be over. Notify them
+        pub_transaction_completed_->notify_all();
+      }
+  }
+  rm_publisher(self);
+
+  if (is_last_publisher()) {
+    XBT_DEBUG("All publishers have called the Engine::close() function");
+    close_stream();
+    XBT_DEBUG("Closing opened files");
+    std::static_pointer_cast<FileTransport>(transport_)->close_files();
+    XBT_DEBUG("Engine '%s' is now closed for all publishers ", get_cname());
+  }
+}
+
+void FileEngine::begin_sub_transaction()
+{
+  // Only one subscriber has to do this
+  std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
+
+  // We have publishers on that stream, wait for them to complete a transaction first
+  if (get_num_publishers() > 0) {
+    while (pub_transaction_id_ < sub_transaction_id_)
+      pub_transaction_completed_->wait(lock);
+  }
+  if (not sub_transaction_in_progress_) {
+    XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
+    sub_transaction_in_progress_ = true;
+  }
+}
+
+void FileEngine::sub_close()
+{
+  auto self = sg4::Actor::self();
+  XBT_DEBUG("Subscriber '%s' is closing the engine", self->get_cname());
+  if (not sub_closing_) {
+    // I'm the first to close
+    sub_closing_ = true;
+    XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
+    for (unsigned int i = 0; i < sub_transaction_.size(); i++)
+      sub_transaction_.at(i)->resume()->wait();
+    XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
+    sub_transaction_.clear();
+  }
+  rm_subscriber(self);
+
+  // Synchronize subscribers on engine closing
+  if (is_last_subscriber()) {
+    XBT_DEBUG("All subscribers have called the Engine::close() function");
+    close_stream();
+    XBT_DEBUG("Closing opened files");
+    std::static_pointer_cast<FileTransport>(transport_)->close_files();
+    XBT_DEBUG("Engine '%s' is now closed for all subscribers ", get_cname());
+  }
+}
+
 /// \endcond
 } // namespace dtlmod
