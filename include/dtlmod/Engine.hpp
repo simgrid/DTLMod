@@ -54,16 +54,18 @@ public:
   Stream* stream_;
 
 public:
-  std::set<sg4::ActorPtr> publishers_;
-  sg4::BarrierPtr pub_barrier_ = nullptr;
-  sg4::ActivitySet pub_transaction_;
   sg4::MutexPtr pub_mutex_;
-  unsigned int pub_transaction_id_  = 0;
-  bool pub_transaction_in_progress_ = false;
-  bool pub_closing_                 = false;
-  virtual void begin_pub_transaction() = 0;
-  void end_pub_transaction();
-  virtual void pub_close() = 0;
+  std::set<sg4::ActorPtr> publishers_;
+  sg4::ActivitySet pub_transaction_;
+  
+  sg4::BarrierPtr pub_barrier_ = nullptr;
+  unsigned int current_pub_transaction_id_    = 0;
+  unsigned int completed_pub_transaction_id_  = 0;
+  bool pub_transaction_in_progress_           = false;
+  bool pub_closing_                           = false;
+  virtual void begin_pub_transaction()        = 0;
+  virtual void end_pub_transaction()          ;
+  virtual void pub_close()                    = 0;
 
   std::set<sg4::ActorPtr> subscribers_;
   sg4::BarrierPtr sub_barrier_ = nullptr;
@@ -147,7 +149,7 @@ public:
 
   /// @brief Get the id of the current transaction (on the Publish side).
   /// @return The id of the ongoing transaction.
-  [[nodiscard]] unsigned int get_current_transaction() const { return pub_transaction_id_; }
+  [[nodiscard]] unsigned int get_current_transaction() const { return current_pub_transaction_id_; }
 
   /// @brief Close the Engine associated to a Stream.
   void close();

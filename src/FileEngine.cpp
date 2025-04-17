@@ -82,15 +82,15 @@ void FileEngine::begin_pub_transaction()
                 pub_transaction_.size());
       pub_transaction_.wait_all();
       XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
-      pub_transaction_id_++;
+      current_pub_transaction_id_++;
       XBT_DEBUG("%u sub activities pending", sub_transaction_.size());
-      if (pub_transaction_id_ >= sub_transaction_id_) {
+      if (current_pub_transaction_id_ >= sub_transaction_id_) {
         pub_transaction_.clear();
         // We may have subscribers waiting for a transaction to be over. Notify them
         pub_transaction_completed_->notify_all();
       }
     }
-    XBT_DEBUG("Publish Transaction %u started by %s", pub_transaction_id_, sg4::Actor::self()->get_cname());
+    XBT_DEBUG("Publish Transaction %u started by %s", current_pub_transaction_id_, sg4::Actor::self()->get_cname());
   }
 }
 
@@ -106,8 +106,8 @@ void FileEngine::pub_close()
     pub_transaction_.wait_all();
     pub_transaction_.clear();
     XBT_DEBUG("[%s] last publish transaction is over", get_cname());
-    pub_transaction_id_++;
-    if (get_num_subscribers() > 0 && pub_transaction_id_ >= sub_transaction_id_) {
+    current_pub_transaction_id_++;
+    if (get_num_subscribers() > 0 && current_pub_transaction_id_ >= sub_transaction_id_) {
         // We may have subscribers waiting for a transaction to be over. Notify them
         pub_transaction_completed_->notify_all();
       }
@@ -130,7 +130,7 @@ void FileEngine::begin_sub_transaction()
 
   // We have publishers on that stream, wait for them to complete a transaction first
   if (get_num_publishers() > 0) {
-    while (pub_transaction_id_ < sub_transaction_id_)
+    while (current_pub_transaction_id_ < sub_transaction_id_)
       pub_transaction_completed_->wait(lock);
   }
   if (not sub_transaction_in_progress_) {

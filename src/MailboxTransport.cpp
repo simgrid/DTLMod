@@ -21,10 +21,10 @@ void MailboxTransport::add_publisher(unsigned int /*publisher_id*/)
 void MailboxTransport::add_subscriber(unsigned int /*publisher_id*/)
 {
   auto* e   = get_engine();
-  auto self = sg4::Actor::self();
-  XBT_DEBUG("Actor '%s' is creating new mailboxes", self->get_cname());
+  auto subscriber_name = sg4::Actor::self()->get_cname();
+  XBT_DEBUG("Actor '%s' is creating new mailboxes", subscriber_name);
   for (const auto& pub : e->get_publishers()) {
-    std::string mbox_name = pub->get_name() + "_" + self->get_name() + "_mbox";
+    std::string mbox_name = pub->get_name() + "_" + subscriber_name + "_mbox";
     mboxes_[mbox_name]    = sg4::Mailbox::by_name(mbox_name);
   }
 }

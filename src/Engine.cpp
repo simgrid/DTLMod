@@ -96,6 +96,8 @@ void Engine::end_pub_transaction()
 
     // Mark this transaction as over
     pub_transaction_in_progress_ = false;
+    // A new pub transaction has been completed
+    completed_pub_transaction_id_++;
   }
 }
 

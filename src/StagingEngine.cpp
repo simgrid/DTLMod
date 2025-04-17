@@ -43,20 +43,20 @@ void StagingEngine::begin_pub_transaction()
                 pub_transaction_.size());
       pub_transaction_.wait_all();
       XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
-      pub_transaction_id_++;
+      current_pub_transaction_id_++;
       XBT_DEBUG("%u sub activities pending", sub_transaction_.size());
-      if (pub_transaction_id_ >= sub_transaction_id_) {
+      if (current_pub_transaction_id_ >= sub_transaction_id_) {
         pub_transaction_.clear();
         // We may have subscribers waiting for a transaction to be over. Notify them
         pub_transaction_completed_->notify_all();
       }
     }
-    XBT_DEBUG("Publish Transaction %u started by %s", pub_transaction_id_, sg4::Actor::self()->get_cname());
+    XBT_DEBUG("Publish Transaction %u started by %s", current_pub_transaction_id_, sg4::Actor::self()->get_cname());
   }
   
-  XBT_DEBUG("Maybe I should wait: %zu subscribers and %u <= %u", get_num_subscribers(), pub_transaction_id_,
+  XBT_DEBUG("Maybe I should wait: %zu subscribers and %u <= %u", get_num_subscribers(), current_pub_transaction_id_,
             sub_transaction_id_ - 1);
-  while (get_num_subscribers() == 0 || pub_transaction_id_ < sub_transaction_id_ - 1) {
+  while (get_num_subscribers() == 0 || current_pub_transaction_id_ < sub_transaction_id_ - 1) {
     XBT_DEBUG("Wait");
     sub_transaction_started_->wait(lock);
   }
@@ -74,7 +74,7 @@ void StagingEngine::pub_close()
     pub_transaction_.wait_all();
     pub_transaction_.clear();
     XBT_DEBUG("[%s] last publish transaction is over", get_cname());
-    pub_transaction_id_++;
+    current_pub_transaction_id_++;
   }
   rm_publisher(self);
   if (is_last_publisher()) {
@@ -90,7 +90,7 @@ void StagingEngine::begin_sub_transaction()
   std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
 
   if (not sub_transaction_in_progress_) {
-    if (pub_transaction_id_ == sub_transaction_id_ - 1)
+    if (current_pub_transaction_id_ == sub_transaction_id_ - 1)
       sub_transaction_started_->notify_all();
     XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
     sub_transaction_in_progress_ = true;
