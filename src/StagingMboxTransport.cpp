@@ -1,9 +1,9 @@
-/* Copyright (c) 2023-2024. The SWAT Team. All rights reserved.          */
+/* Copyright (c) 2022-2025. The SWAT Team. All rights reserved.          */
 
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
-#include "dtlmod/MessageQueueTransport.hpp"
+#include "dtlmod/StagingMboxTransport.hpp"
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/StagingEngine.hpp"
 #include "dtlmod/Stream.hpp"
@@ -13,29 +13,29 @@ XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 
-void MessageQueueTransport::add_publisher(unsigned int /*publisher_id*/)
+void StagingMboxTransport::add_publisher(unsigned int /*publisher_id*/)
 {
   set_publisher_put_requests_mq(sg4::Actor::self()->get_name());
 }
 
-void MessageQueueTransport::add_subscriber(unsigned int /*publisher_id*/)
+void StagingMboxTransport::create_rendez_vous_points()
 {
-  auto self = sg4::Actor::self();
-  // When a new subscriber joins the stream, create a message queue with each know publishers
-  for (const auto& pub : get_engine()->get_publishers()) {
-    std::string mq_name = pub->get_name() + "_" + self->get_name() + "_mq";
-    XBT_DEBUG("Actor '%s' is creating new message queue '%s'", self->get_cname(), mq_name.c_str());
-    mqueues_[mq_name] = sg4::MessageQueue::by_name(mq_name);
+  auto* e              = get_engine();
+  auto subscriber_name = sg4::Actor::self()->get_cname();
+  XBT_DEBUG("Actor '%s' is creating new mailboxes", subscriber_name);
+  for (const auto& pub : e->get_publishers()) {
+    std::string mbox_name = pub->get_name() + "_" + subscriber_name + "_mbox";
+    mboxes_[mbox_name]    = sg4::Mailbox::by_name(mbox_name);
   }
 }
 
-void MessageQueueTransport::put(std::shared_ptr<Variable> var, size_t /*simulated_size_in_bytes*/)
+void StagingMboxTransport::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes)
 {
   // Register who (this actor) writes in this transaction
   auto* e   = get_engine();
   auto tid  = e->get_current_transaction();
   auto self = sg4::Actor::self();
-  // Use actor's name as temporary location. It's only half of the MessageQueue Name
+  // Use actor's name as temporary location. It's only half of the Mailbox Name
   var->add_transaction_metadata(tid, self, self->get_name());
 
   // Each Subscriber will send a put request to each publisher in the Stream. They can request for a certain size if
@@ -45,25 +45,27 @@ void MessageQueueTransport::put(std::shared_ptr<Variable> var, size_t /*simulate
   for (unsigned int i = 0; i < e->get_num_subscribers(); i++)
     pending_put_requests.push(get_publisher_put_requests_mq(self->get_name())->get_async());
 
-  // Then wait for the reception of the messages. If something is requested, post a put in the message queue for the
+  // Then wait for the reception of the messages. If something is requested, post a put in the mailbox for the
   // corresponding publisher-subscriber couple
   while (not pending_put_requests.empty()) {
     auto request     = boost::static_pointer_cast<sg4::Mess>(pending_put_requests.wait_any());
     auto* subscriber = request->get_sender();
     auto* req_size   = static_cast<size_t*>(request->get_payload());
     if (*req_size > 0) {
-      std::string mq_name = self->get_name() + "_" + subscriber->get_name() + "_mq";
+      std::string mbox_name = self->get_name() + "_" + subscriber->get_name() + "_mbox";
       XBT_DEBUG("%s received a put request from %s. Put a Message in %s with %lu as payload", self->get_cname(),
-                subscriber->get_cname(), mq_name.c_str(), *req_size);
-      auto mess = mqueues_[mq_name]->put_init(req_size);
+                subscriber->get_cname(), mbox_name.c_str(), *req_size);
+
+      auto comm = mboxes_[mbox_name]->put_async(req_size, *req_size);
       // Add callback to release memory allocated for the payload on completion
-      mess->on_this_completion_cb([this, req_size](sg4::Mess const&) { delete req_size; });
-      e->pub_transaction_.push(mess->start()->suspend());
+      comm->on_this_completion_cb([this, req_size](sg4::Comm const&) { delete req_size; });
+      comm->suspend();
+      e->pub_transaction_.push(comm);
     }
   }
 }
 
-void MessageQueueTransport::get(std::shared_ptr<Variable> var)
+void StagingMboxTransport::get(std::shared_ptr<Variable> var)
 {
   auto* e     = get_engine();
   auto self   = sg4::Actor::self();
@@ -76,16 +78,19 @@ void MessageQueueTransport::get(std::shared_ptr<Variable> var)
     put_requests[pub->get_name()] = new size_t(0);
 
   for (auto [publisher_name, size] : blocks) {
-    std::string mq_name = publisher_name + "_" + self->get_name() + "_mq";
-    XBT_DEBUG("Have to exchange data of size %llu from '%s' to '%s' using the '%s' message queue", size,
-              publisher_name.c_str(), self->get_cname(), mq_name.c_str());
+    std::string mbox_name = publisher_name + "_" + self->get_name() + "_mbox";
+    XBT_DEBUG("Have to exchange data of size %llu from '%s' to '%s' using the '%s' mailbox", size,
+              publisher_name.c_str(), self->get_cname(), mbox_name.c_str());
 
-    // Update the payload of the put request to send to this publisher.
-    delete put_requests[publisher_name];
-    put_requests[publisher_name] = new size_t(size);
-
-    // Add an activity to the transaction.
-    e->sub_transaction_.push(mqueues_[mq_name]->get_async()->suspend());
+    // Update the payload of the put request to send to this publisher if necessary.
+    if (size > 0) {
+      delete put_requests[publisher_name];
+      put_requests[publisher_name] = new size_t(size);
+      // Add an activity to the transaction.
+      auto comm = mboxes_[mbox_name]->get_async();
+      comm->suspend();
+      e->sub_transaction_.push(comm);
+    }
   }
 
   // Send the put requests for that get to all publishers in the Stream in a detached mode.

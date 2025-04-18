@@ -1,4 +1,4 @@
-/* Copyright (c) 2022-2024. The SWAT Team. All rights reserved.          */
+/* Copyright (c) 2022-2025. The SWAT Team. All rights reserved.          */
 
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
@@ -20,8 +20,8 @@ class Variable {
   friend class Stream;
   friend class Transport;
   friend class FileTransport;
-  friend class MailboxTransport;
-  friend class MessageQueueTransport;
+  friend class StagingMboxTransport;
+  friend class StagingMqTransport;
 
   std::string name_;
   size_t element_size_;

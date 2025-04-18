@@ -43,8 +43,8 @@ set(SOURCE_FILES
   src/Variable.cpp
   src/Transport.cpp
   src/FileTransport.cpp
-  src/MailboxTransport.cpp
-  src/MessageQueueTransport.cpp
+  src/StagingMboxTransport.cpp
+  src/StagingMqTransport.cpp
 )
 
 set(HEADER_FILES
@@ -53,10 +53,11 @@ set(HEADER_FILES
   include/dtlmod/Engine.hpp
   include/dtlmod/FileTransport.hpp
   include/dtlmod/FileEngine.hpp
-  include/dtlmod/MailboxTransport.hpp
-  include/dtlmod/MessageQueueTransport.hpp
   include/dtlmod/Metadata.hpp
   include/dtlmod/StagingEngine.hpp
+  include/dtlmod/StagingMboxTransport.hpp
+  include/dtlmod/StagingMqTransport.hpp
+  include/dtlmod/StagingTransport.hpp
   include/dtlmod/Stream.hpp
   include/dtlmod/Transport.hpp
   include/dtlmod/Variable.hpp)

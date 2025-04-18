@@ -25,6 +25,8 @@ namespace dtlmod {
 class FileEngine : public Engine {
   friend class Stream;
   friend class FileTransport;
+  friend class StagingMboxTransport;
+  friend class StagingMqTransport;
 
   sg4::NetZone* netzone_ = nullptr;
   std::shared_ptr<sgfs::FileSystem> file_system_;

@@ -45,8 +45,8 @@ public:
 
   friend class Stream;
   friend class FileTransport;
-  friend class MailboxTransport;
-  friend class MessageQueueTransport;
+  friend class StagingMboxTransport;
+  friend class StagingMqTransport;
 
   std::string name_;
   Type type_                            = Type::Undefined;
