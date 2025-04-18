@@ -7,12 +7,14 @@
  #define __DTLMOD_STAGING_TRANSPORT_HPP__
  
  #include "dtlmod/Transport.hpp"
+ #include "dtlmod/StagingEngine.hpp"
 
  namespace dtlmod {
  
  /// \cond EXCLUDE_FROM_DOCUMENTATION
  class StagingTransport : public Transport {
- 
+    friend StagingEngine;
+
  protected:
    virtual void create_rendez_vous_points() = 0;
  

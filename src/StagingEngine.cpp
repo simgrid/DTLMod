@@ -35,16 +35,16 @@ void StagingEngine::create_transport(const Transport::Method& transport_method)
 
 void StagingEngine::begin_pub_transaction()
 {
-  // Start the first transaction by notifying subscribers that all publishers are here 
-  if (current_pub_transaction_id_ == 0) {
-    XBT_DEBUG("Notify subscribers that they can create their rendez-vous points");
-    first_pub_transaction_started_->notify_all();
-  }
-
   if (not pub_transaction_in_progress_) {
     pub_transaction_in_progress_ = true;
     current_pub_transaction_id_++;
     XBT_DEBUG("Publish Transaction %u started by %s", current_pub_transaction_id_, sg4::Actor::self()->get_cname());
+  }
+
+  // Start the first transaction by notifying subscribers that all publishers are here
+  if (current_pub_transaction_id_ == 1) {
+    XBT_DEBUG("Notify subscribers that they can create their rendez-vous points");
+    first_pub_transaction_started_->notify_all();
   }
     
   // FIXME revise what's come after
@@ -116,14 +116,16 @@ void StagingEngine::pub_close()
 
 void StagingEngine::begin_sub_transaction()
 {
+  auto transport = std::static_pointer_cast<StagingTransport>(transport_);
+
   if (sub_transaction_id_ == 0) {// This is the first transaction
     // Wait for at least one publisher to start a tran
     std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
     while (current_pub_transaction_id_ == 0) 
       first_pub_transaction_started_->wait(lock);
+    XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
     // We now know the number of publishers, subscriber can create mailboxes/mqs with publishers
-    // FIXME this is in transport, make it visible here 
-    // create_rendez_vous_points();
+    transport->create_rendez_vous_points();
   }
 
   // FIXME revise what's come after
