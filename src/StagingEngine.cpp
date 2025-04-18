@@ -80,15 +80,16 @@ void StagingEngine::end_pub_transaction()
   }
 
   if (is_last_publisher()) {
+    // A new pub transaction has been completed, notify subscribers
+    pub_transaction_completed_->notify_all();
+    
     XBT_DEBUG("Start the %d publish activities for the transaction", pub_transaction_.size());
     for (unsigned int i = 0; i < pub_transaction_.size(); i++)
       pub_transaction_.at(i)->resume();
 
     // Mark this transaction as over
     pub_transaction_in_progress_ = false;
-    // A new pub transaction has been completed
     completed_pub_transaction_id_++;
-    pub_transaction_completed_->notify_all();
   }
 }
 

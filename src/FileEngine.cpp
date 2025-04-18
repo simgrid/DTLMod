@@ -117,7 +117,7 @@ void FileEngine::end_pub_transaction()
   if (is_last_publisher()) {
     // Mark this transaction as over
     pub_transaction_in_progress_ = false;
-    // A new pub transaction has been completed
+    // A new pub transaction has been completed, notify subscribers
     completed_pub_transaction_id_++;
     pub_transaction_completed_->notify_all();
   }
