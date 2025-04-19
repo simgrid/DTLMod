@@ -20,10 +20,10 @@ void StagingMboxTransport::add_publisher(unsigned int /*publisher_id*/)
 
 void StagingMboxTransport::create_rendez_vous_points()
 {
-  auto* e              = get_engine();
+  auto publishers = get_engine()->get_publishers();
   auto subscriber_name = sg4::Actor::self()->get_cname();
   XBT_DEBUG("Actor '%s' is creating new mailboxes", subscriber_name);
-  for (const auto& pub : e->get_publishers()) {
+  for (const auto& pub : publishers) {
     std::string mbox_name = pub->get_name() + "_" + subscriber_name + "_mbox";
     mboxes_[mbox_name]    = sg4::Mailbox::by_name(mbox_name);
   }

@@ -45,8 +45,6 @@ void StagingEngine::begin_pub_transaction()
       first_pub_transaction_started_->notify_all();
     }
   }
-    
-  // FIXME revise what's come after
 
   // Only one publisher has to do this
   std::unique_lock<sg4::Mutex> lock(*pub_mutex_);
@@ -59,6 +57,7 @@ void StagingEngine::begin_pub_transaction()
     XBT_DEBUG("%u sub activities pending", sub_transaction_.size());
     pub_transaction_.clear();
   }
+
   // Then we wait for all subscribers to be at the same transaction
   while (get_num_subscribers() == 0 || current_pub_transaction_id_ > sub_transaction_id_ ) {
     XBT_DEBUG("Wait for subscribers");
@@ -76,10 +75,11 @@ void StagingEngine::end_pub_transaction()
   }
 
   // A new pub transaction has been completed, notify subscribers that they can starting getting variables
-  if (completed_pub_transaction_id_ < current_pub_transaction_id_) {
-    completed_pub_transaction_id_++;
-    pub_transaction_completed_->notify_all();
-  } 
+  if (is_last_publisher())
+    if (completed_pub_transaction_id_ < current_pub_transaction_id_) {
+      completed_pub_transaction_id_++;
+      pub_transaction_completed_->notify_all();
+    }
 
   // Wait for the put requests and actually put (asynchrously) comm/mess in Mbox/MQ
   std::static_pointer_cast<StagingTransport>(transport_)->get_requests_and_do_put(sg4::Actor::self());
@@ -114,8 +114,6 @@ void StagingEngine::pub_close()
 
 void StagingEngine::begin_sub_transaction()
 {
-  static int num_subscribers_starting = 0;
-  
   if (sub_transaction_id_ == 0) {// This is the first transaction
     // Wait for at least one publisher to start a tran
     std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
@@ -131,13 +129,14 @@ void StagingEngine::begin_sub_transaction()
     sub_transaction_in_progress_ = true;
     XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
   }
-  num_subscribers_starting++;
+
+  num_subscribers_starting_++;
   
   // The last subscriber to start a transaction notifies the publishers
-  if (num_subscribers_starting == get_num_subscribers() && current_pub_transaction_id_ == sub_transaction_id_ ) {
+  if (num_subscribers_starting_ == get_num_subscribers() && current_pub_transaction_id_ == sub_transaction_id_ ) {
     XBT_DEBUG("Notify Publishers that they can start their transaction");
     sub_transaction_started_->notify_all();
-    num_subscribers_starting = 0;
+    num_subscribers_starting_ = 0;
   }
 
   std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
@@ -162,7 +161,7 @@ void StagingEngine::end_sub_transaction()
     // Mark this transaction as over
     sub_transaction_in_progress_ = false;
   }
-  // FIXME: Should not be necessary
+
   // Prevent subscribers to start a new transaction before this one is really over
   if (sub_barrier_)
     sub_barrier_->wait();

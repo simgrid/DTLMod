@@ -17,6 +17,7 @@ namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class StagingEngine : public Engine {
   sg4::ConditionVariablePtr first_pub_transaction_started_;
+  int num_subscribers_starting_ = 0;
 
 protected:
   void begin_pub_transaction() override;

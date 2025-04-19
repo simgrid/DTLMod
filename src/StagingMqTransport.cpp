@@ -20,14 +20,16 @@ void StagingMqTransport::add_publisher(unsigned int /*publisher_id*/)
 
 void StagingMqTransport::create_rendez_vous_points()
 {
-  auto self = sg4::Actor::self();
+  auto publishers = get_engine()->get_publishers();
+  auto subscriber_name = sg4::Actor::self()->get_cname();
   // When a new subscriber joins the stream, create a message queue with each know publishers
-  for (const auto& pub : get_engine()->get_publishers()) {
-    std::string mq_name = pub->get_name() + "_" + self->get_name() + "_mq";
-    XBT_DEBUG("Actor '%s' is creating new message queue '%s'", self->get_cname(), mq_name.c_str());
-    mqueues_[mq_name] = sg4::MessageQueue::by_name(mq_name);
+  XBT_DEBUG("Actor '%s' is creating new message queues", subscriber_name);
+  for (const auto& pub : publishers) {
+    std::string mq_name = pub->get_name() + "_" + subscriber_name + "_mq";
+    mqueues_[mq_name]   = sg4::MessageQueue::by_name(mq_name);
   }
 }
+
 void StagingMqTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
 {
   auto pub_name = publisher->get_name();
