@@ -14,17 +14,6 @@ XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 
-// Create a message queue to receive request for variable pieces from subscribers
-void Transport::set_publisher_put_requests_mq(const std::string& publisher_name)
-{
-  publisher_put_requests_mq_[publisher_name] = sg4::MessageQueue::by_name(publisher_name);
-}
-
-sg4::MessageQueue* Transport::get_publisher_put_requests_mq(const std::string& publisher_name) const
-{
-  return publisher_put_requests_mq_.at(publisher_name);
-}
-
 std::vector<std::pair<std::string, sg_size_t>>
 Transport::check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var)
 {

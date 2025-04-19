@@ -29,40 +29,44 @@ void StagingMboxTransport::create_rendez_vous_points()
   }
 }
 
+void StagingMboxTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
+{
+  auto pub_name = publisher->get_name();
+  // Wait for the reception of the messages. If something is requested, post a put in the mailbox for the
+  // corresponding publisher-subscriber couple
+  while (not pending_put_requests[pub_name].empty()) {
+    auto request     = boost::static_pointer_cast<sg4::Mess>(pending_put_requests[pub_name].wait_any());
+    auto* subscriber = request->get_sender();
+    auto* req_size   = static_cast<size_t*>(request->get_payload());
+    if (*req_size > 0) {
+      std::string mbox_name = pub_name + "_" + subscriber->get_name() + "_mbox";
+      XBT_DEBUG("%s received a put request from %s. Put a Message in %s with %lu as payload", pub_name.c_str(),
+                subscriber->get_cname(), mbox_name.c_str(), *req_size);
+
+      auto comm = mboxes_[mbox_name]->put_init(req_size, *req_size);
+      // Add callback to release memory allocated for the payload on completion
+      comm->on_this_completion_cb([this, req_size](sg4::Comm const&) { delete req_size; });
+      get_engine()->pub_transaction_.push(comm->start());
+    }
+  }
+}
+
 void StagingMboxTransport::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes)
 {
   // Register who (this actor) writes in this transaction
   auto* e   = get_engine();
   auto tid  = e->get_current_transaction();
   auto self = sg4::Actor::self();
+  auto pub_name = self->get_name();
+  
   // Use actor's name as temporary location. It's only half of the Mailbox Name
-  var->add_transaction_metadata(tid, self, self->get_name());
+  var->add_transaction_metadata(tid, self, pub_name);
 
   // Each Subscriber will send a put request to each publisher in the Stream. They can request for a certain size if
   // they need something from this publisher or 0 otherwise.
   // Start with posting all asynchronous gets and creating an ActivitySet.
-  sg4::ActivitySet pending_put_requests;
   for (unsigned int i = 0; i < e->get_num_subscribers(); i++)
-    pending_put_requests.push(get_publisher_put_requests_mq(self->get_name())->get_async());
-
-  // Then wait for the reception of the messages. If something is requested, post a put in the mailbox for the
-  // corresponding publisher-subscriber couple
-  while (not pending_put_requests.empty()) {
-    auto request     = boost::static_pointer_cast<sg4::Mess>(pending_put_requests.wait_any());
-    auto* subscriber = request->get_sender();
-    auto* req_size   = static_cast<size_t*>(request->get_payload());
-    if (*req_size > 0) {
-      std::string mbox_name = self->get_name() + "_" + subscriber->get_name() + "_mbox";
-      XBT_DEBUG("%s received a put request from %s. Put a Message in %s with %lu as payload", self->get_cname(),
-                subscriber->get_cname(), mbox_name.c_str(), *req_size);
-
-      auto comm = mboxes_[mbox_name]->put_async(req_size, *req_size);
-      // Add callback to release memory allocated for the payload on completion
-      comm->on_this_completion_cb([this, req_size](sg4::Comm const&) { delete req_size; });
-      comm->suspend();
-      e->pub_transaction_.push(comm);
-    }
-  }
+    pending_put_requests[pub_name].push(get_publisher_put_requests_mq(pub_name)->get_async());
 }
 
 void StagingMboxTransport::get(std::shared_ptr<Variable> var)
@@ -87,9 +91,7 @@ void StagingMboxTransport::get(std::shared_ptr<Variable> var)
       delete put_requests[publisher_name];
       put_requests[publisher_name] = new size_t(size);
       // Add an activity to the transaction.
-      auto comm = mboxes_[mbox_name]->get_async();
-      comm->suspend();
-      e->sub_transaction_.push(comm);
+      e->sub_transaction_.push(mboxes_[mbox_name]->get_async());
     }
   }
 

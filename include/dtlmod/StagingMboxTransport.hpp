@@ -21,7 +21,7 @@ class StagingMboxTransport : public StagingTransport {
 protected:
   void add_publisher(unsigned int publisher_id) override;
   void create_rendez_vous_points() override;
-
+  void get_requests_and_do_put(sg4::ActorPtr publisher) override;
 public:
   StagingMboxTransport(const std::string& name, Engine* engine) : StagingTransport(engine) {}
   void put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) override;

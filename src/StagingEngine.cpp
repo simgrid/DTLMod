@@ -39,36 +39,32 @@ void StagingEngine::begin_pub_transaction()
     pub_transaction_in_progress_ = true;
     current_pub_transaction_id_++;
     XBT_DEBUG("Publish Transaction %u started by %s", current_pub_transaction_id_, sg4::Actor::self()->get_cname());
-  }
-
-  // Start the first transaction by notifying subscribers that all publishers are here
-  if (current_pub_transaction_id_ == 1) {
-    XBT_DEBUG("Notify subscribers that they can create their rendez-vous points");
-    first_pub_transaction_started_->notify_all();
+    // Start the first transaction by notifying subscribers that all publishers are here
+    if (current_pub_transaction_id_ == 1) {
+      XBT_DEBUG("Notify subscribers that they can create their rendez-vous points");
+      first_pub_transaction_started_->notify_all();
+    }
   }
     
   // FIXME revise what's come after
 
+  // Only one publisher has to do this
+  std::unique_lock<sg4::Mutex> lock(*pub_mutex_);
   if (current_pub_transaction_id_ > 1) { // This is not the first transaction.
-    // Only one publisher has to do this
-    std::unique_lock<sg4::Mutex> lock(*pub_mutex_);
     // Wait for the completion of the Publish activities from the previous transaction
-    XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
-              pub_transaction_.size());
+    XBT_DEBUG("[T %d] (%d) Wait for the completion of %u publish activities from the previous transaction",
+              current_pub_transaction_id_, sub_transaction_id_, pub_transaction_.size());
     pub_transaction_.wait_all();
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     XBT_DEBUG("%u sub activities pending", sub_transaction_.size());
     pub_transaction_.clear();
-    // We may have subscribers waiting for a transaction to be over. Notify them
-    pub_transaction_completed_->notify_all();
   }
-  
-  // XBT_DEBUG("Maybe I should wait: %zu subscribers and %u <= %u", get_num_subscribers(), current_pub_transaction_id_,
-  //           sub_transaction_id_ - 1);
-  // while (get_num_subscribers() == 0 || current_pub_transaction_id_ < sub_transaction_id_ - 1) {
-  //   XBT_DEBUG("Wait");
-  //   sub_transaction_started_->wait(lock);
-  // }
+  // Then we wait for all subscribers to be at the same transaction
+  while (get_num_subscribers() == 0 || current_pub_transaction_id_ > sub_transaction_id_ ) {
+    XBT_DEBUG("Wait for subscribers");
+    sub_transaction_started_->wait(lock);
+  }
+  // Publisher has been notified by subscribers, it can proceed with the transaction");
 }
 
 void StagingEngine::end_pub_transaction()
@@ -79,18 +75,18 @@ void StagingEngine::end_pub_transaction()
     pub_barrier_ = sg4::Barrier::create(publishers_.size());
   }
 
-  if (is_last_publisher()) {
-    // A new pub transaction has been completed, notify subscribers
-    pub_transaction_completed_->notify_all();
-    
-    XBT_DEBUG("Start the %d publish activities for the transaction", pub_transaction_.size());
-    for (unsigned int i = 0; i < pub_transaction_.size(); i++)
-      pub_transaction_.at(i)->resume();
-
-    // Mark this transaction as over
-    pub_transaction_in_progress_ = false;
+  // A new pub transaction has been completed, notify subscribers that they can starting getting variables
+  if (completed_pub_transaction_id_ < current_pub_transaction_id_) {
     completed_pub_transaction_id_++;
-  }
+    pub_transaction_completed_->notify_all();
+  } 
+
+  // Wait for the put requests and actually put (asynchrously) comm/mess in Mbox/MQ
+  std::static_pointer_cast<StagingTransport>(transport_)->get_requests_and_do_put(sg4::Actor::self());
+  XBT_DEBUG("Start publish activities for the transaction");
+  
+  if (is_last_publisher()) // Mark this transaction as over
+    pub_transaction_in_progress_ = false;
 }
 
 void StagingEngine::pub_close()
@@ -108,6 +104,7 @@ void StagingEngine::pub_close()
     current_pub_transaction_id_++;
   }
   rm_publisher(self);
+ 
   if (is_last_publisher()) {
     XBT_DEBUG("All publishers have called the Engine::close() function");
     close_stream();
@@ -117,8 +114,8 @@ void StagingEngine::pub_close()
 
 void StagingEngine::begin_sub_transaction()
 {
-  auto transport = std::static_pointer_cast<StagingTransport>(transport_);
-
+  static int num_subscribers_starting = 0;
+  
   if (sub_transaction_id_ == 0) {// This is the first transaction
     // Wait for at least one publisher to start a tran
     std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
@@ -126,17 +123,26 @@ void StagingEngine::begin_sub_transaction()
       first_pub_transaction_started_->wait(lock);
     XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
     // We now know the number of publishers, subscriber can create mailboxes/mqs with publishers
-    transport->create_rendez_vous_points();
+    std::static_pointer_cast<StagingTransport>(transport_)->create_rendez_vous_points();
   }
-
-  // FIXME revise what's come after
-
+  
   if (not sub_transaction_in_progress_) {
-    if (current_pub_transaction_id_ == sub_transaction_id_ )
-      sub_transaction_started_->notify_all();
-    XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
+    sub_transaction_id_++;
     sub_transaction_in_progress_ = true;
+    XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
   }
+  num_subscribers_starting++;
+  
+  // The last subscriber to start a transaction notifies the publishers
+  if (num_subscribers_starting == get_num_subscribers() && current_pub_transaction_id_ == sub_transaction_id_ ) {
+    XBT_DEBUG("Notify Publishers that they can start their transaction");
+    sub_transaction_started_->notify_all();
+    num_subscribers_starting = 0;
+  }
+
+  std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
+  while (completed_pub_transaction_id_ < sub_transaction_id_)
+     pub_transaction_completed_->wait(lock);
 }
 
 void StagingEngine::end_sub_transaction()
@@ -147,15 +153,14 @@ void StagingEngine::end_sub_transaction()
     sub_barrier_ = sg4::Barrier::create(subscribers_.size());
   }
 
-  if (is_last_subscriber()) {
+  if (sub_barrier_->wait()) {
     XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
-    for (unsigned int i = 0; i < sub_transaction_.size(); i++)
-      sub_transaction_.at(i)->resume()->wait();
+   // for (unsigned int i = 0; i < sub_transaction_.size(); i++)
+      sub_transaction_.wait_all();
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     sub_transaction_.clear();
     // Mark this transaction as over
     sub_transaction_in_progress_ = false;
-    sub_transaction_id_++;
   }
   // FIXME: Should not be necessary
   // Prevent subscribers to start a new transaction before this one is really over

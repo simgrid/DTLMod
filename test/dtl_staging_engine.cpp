@@ -59,8 +59,6 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
     auto* engine   = sg4::Engine::get_instance();
     auto* pub_host = sg4::Host::by_name("host-0.prod");
     auto* sub_host = sg4::Host::by_name("host-0.cons");
-    xbt_log_control_set("root.thresh:info");
-    xbt_log_control_set("dtlmod.thresh:debug");
   
     engine->add_actor("PubTestActor", pub_host, [this]() {
       auto dtl    = dtlmod::DTL::connect();
