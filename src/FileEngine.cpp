@@ -158,14 +158,14 @@ void FileEngine::begin_sub_transaction()
   // Only one subscriber has to do this
   if (not sub_transaction_in_progress_) {
     sub_transaction_in_progress_ = true;
-    sub_transaction_id_++;
-    XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
+    current_sub_transaction_id_++;
+    XBT_DEBUG("Subscribe Transaction %u started by %s", current_sub_transaction_id_, sg4::Actor::self()->get_cname());
   }
 
   // We have publishers on that stream, wait for them to complete a transaction first
   if (get_num_publishers() > 0) {
     std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
-    while (completed_pub_transaction_id_ < sub_transaction_id_) {
+    while (completed_pub_transaction_id_ < current_sub_transaction_id_) {
       XBT_DEBUG("Wait for publishers to end the transaction I need");
       pub_transaction_completed_->wait(lock);
     }
@@ -180,7 +180,7 @@ void FileEngine::end_sub_transaction()
 
   // The files subscribers need to read may not have been fully written. Wait to be notified completion of the publish
   // activities
-  if (sub_transaction_id_ == current_pub_transaction_id_ && get_num_publishers() > 0) {
+  if (current_sub_transaction_id_ == current_pub_transaction_id_ && get_num_publishers() > 0) {
     std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
     XBT_DEBUG("Wait for the completion of publish activities from the current transaction");
     pub_activities_completed_->wait(lock);

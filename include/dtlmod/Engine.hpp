@@ -58,29 +58,26 @@ public:
   sg4::MutexPtr pub_mutex_;
   std::set<sg4::ActorPtr> publishers_;
   sg4::ActivitySet pub_transaction_;
-
+  sg4::ConditionVariablePtr pub_transaction_completed_;
   sg4::BarrierPtr pub_barrier_               = nullptr;
   unsigned int current_pub_transaction_id_   = 0;
   unsigned int completed_pub_transaction_id_ = 0;
   bool pub_transaction_in_progress_          = false;
-  bool pub_closing_                          = false;
   virtual void begin_pub_transaction()       = 0;
   virtual void end_pub_transaction()         = 0;
-  virtual void pub_close() = 0;
-
-  std::set<sg4::ActorPtr> subscribers_;
-  sg4::BarrierPtr sub_barrier_ = nullptr;
-  sg4::ActivitySet sub_transaction_;
+  virtual void pub_close()                   = 0;
+  
   sg4::MutexPtr sub_mutex_;
-  sg4::ConditionVariablePtr sub_transaction_started_;
-  sg4::ConditionVariablePtr pub_transaction_completed_;
-
-  unsigned int sub_transaction_id_     = 0;
+  std::set<sg4::ActorPtr> subscribers_;
+  sg4::ActivitySet sub_transaction_;
+  
+  sg4::BarrierPtr sub_barrier_         = nullptr;
+  unsigned int current_sub_transaction_id_     = 0;
   bool sub_transaction_in_progress_    = false;
-  bool sub_closing_                    = false;
   virtual void begin_sub_transaction() = 0;
   virtual void end_sub_transaction()   = 0;
   virtual void sub_close()             = 0;
+  
   void export_metadata_to_file();
 
 protected:
@@ -119,7 +116,6 @@ public:
       , stream_(stream)
       , pub_mutex_(sg4::Mutex::create())
       , sub_mutex_(sg4::Mutex::create())
-      , sub_transaction_started_(sg4::ConditionVariable::create())
       , pub_transaction_completed_(sg4::ConditionVariable::create())
   {
   }

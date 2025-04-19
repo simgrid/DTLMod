@@ -51,7 +51,7 @@ void StagingEngine::begin_pub_transaction()
   if (current_pub_transaction_id_ > 1) { // This is not the first transaction.
     // Wait for the completion of the Publish activities from the previous transaction
     XBT_DEBUG("[T %d] (%d) Wait for the completion of %u publish activities from the previous transaction",
-              current_pub_transaction_id_, sub_transaction_id_, pub_transaction_.size());
+              current_pub_transaction_id_, current_sub_transaction_id_, pub_transaction_.size());
     pub_transaction_.wait_all();
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     XBT_DEBUG("%u sub activities pending", sub_transaction_.size());
@@ -59,7 +59,7 @@ void StagingEngine::begin_pub_transaction()
   }
 
   // Then we wait for all subscribers to be at the same transaction
-  while (get_num_subscribers() == 0 || current_pub_transaction_id_ > sub_transaction_id_ ) {
+  while (get_num_subscribers() == 0 || current_pub_transaction_id_ > current_sub_transaction_id_ ) {
     XBT_DEBUG("Wait for subscribers");
     sub_transaction_started_->wait(lock);
   }
@@ -114,7 +114,7 @@ void StagingEngine::pub_close()
 
 void StagingEngine::begin_sub_transaction()
 {
-  if (sub_transaction_id_ == 0) {// This is the first transaction
+  if (current_sub_transaction_id_ == 0) {// This is the first transaction
     // Wait for at least one publisher to start a tran
     std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
     while (current_pub_transaction_id_ == 0) 
@@ -125,22 +125,22 @@ void StagingEngine::begin_sub_transaction()
   }
   
   if (not sub_transaction_in_progress_) {
-    sub_transaction_id_++;
+    current_sub_transaction_id_++;
     sub_transaction_in_progress_ = true;
-    XBT_DEBUG("Subscribe Transaction %u started by %s", sub_transaction_id_, sg4::Actor::self()->get_cname());
+    XBT_DEBUG("Subscribe Transaction %u started by %s", current_sub_transaction_id_, sg4::Actor::self()->get_cname());
   }
 
   num_subscribers_starting_++;
   
   // The last subscriber to start a transaction notifies the publishers
-  if (num_subscribers_starting_ == get_num_subscribers() && current_pub_transaction_id_ == sub_transaction_id_ ) {
+  if (num_subscribers_starting_ == get_num_subscribers() && current_pub_transaction_id_ == current_sub_transaction_id_ ) {
     XBT_DEBUG("Notify Publishers that they can start their transaction");
     sub_transaction_started_->notify_all();
     num_subscribers_starting_ = 0;
   }
 
   std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
-  while (completed_pub_transaction_id_ < sub_transaction_id_)
+  while (completed_pub_transaction_id_ < current_sub_transaction_id_)
      pub_transaction_completed_->wait(lock);
 }
 
