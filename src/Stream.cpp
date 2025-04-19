@@ -218,8 +218,8 @@ std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) cons
     return var->second;
   else {
     auto new_var = std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape());
-    new_var->set_local_start(actor, std::vector<size_t>(0, var->second->get_shape().size()));
-    new_var->set_local_count(actor, std::vector<size_t>(0, var->second->get_shape().size()));
+    new_var->set_local_start(actor, std::vector<size_t>(var->second->get_shape().size(), 0));
+    new_var->set_local_count(actor, std::vector<size_t>(var->second->get_shape().size(), 0));
     new_var->set_metadata(var->second->get_metadata());
 
     return new_var;
