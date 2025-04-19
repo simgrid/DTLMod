@@ -14,7 +14,7 @@
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/FileEngine.hpp"
 
-//XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
+// XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
 XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtl_file_engine, dtlmod, "DTL logging about file-based Engines");
 
 namespace dtlmod {
@@ -125,7 +125,7 @@ void FileEngine::end_pub_transaction()
 
 void FileEngine::pub_close()
 {
-  auto self = sg4::Actor::self();
+  auto self      = sg4::Actor::self();
   auto transport = std::static_pointer_cast<FileTransport>(transport_);
 
   XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());

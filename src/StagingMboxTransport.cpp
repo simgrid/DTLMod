@@ -15,7 +15,7 @@ namespace dtlmod {
 
 void StagingMboxTransport::create_rendez_vous_points()
 {
-  auto publishers = get_engine()->get_publishers();
+  auto publishers      = get_engine()->get_publishers();
   auto subscriber_name = sg4::Actor::self()->get_cname();
   XBT_DEBUG("Actor '%s' is creating new mailboxes", subscriber_name);
   for (const auto& pub : publishers) {

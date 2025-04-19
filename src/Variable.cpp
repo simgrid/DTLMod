@@ -90,7 +90,7 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
     size_t size_to_get              = element_size_;
     auto [block_start, block_count] = block_info;
     auto [where, actor]             = location;
-    auto something_to_get           = std::vector<bool>(start.size(),false);
+    auto something_to_get           = std::vector<bool>(start.size(), false);
     // Determine whether some elements have to be retrieved from this particular block
     for (unsigned i = 0; i < start.size(); i++) {
       XBT_DEBUG("Subscriber %s checks Publisher %s", sg4::Actor::self()->get_cname(), actor->get_cname());

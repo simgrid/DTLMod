@@ -15,7 +15,7 @@ namespace dtlmod {
 
 void StagingMqTransport::create_rendez_vous_points()
 {
-  auto publishers = get_engine()->get_publishers();
+  auto publishers      = get_engine()->get_publishers();
   auto subscriber_name = sg4::Actor::self()->get_cname();
   // When a new subscriber joins the stream, create a message queue with each know publishers
   XBT_DEBUG("Actor '%s' is creating new message queues", subscriber_name);

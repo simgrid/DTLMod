@@ -20,7 +20,7 @@ void StagingTransport::add_publisher(unsigned int /*publisher_id*/)
 // Create a message queue to receive request for variable pieces from subscribers
 void StagingTransport::set_publisher_put_requests_mq(const std::string& publisher_name)
 {
-    publisher_put_requests_mq_[publisher_name] = sg4::MessageQueue::by_name(publisher_name);
+  publisher_put_requests_mq_[publisher_name] = sg4::MessageQueue::by_name(publisher_name);
 }
 
 sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(const std::string& publisher_name) const
@@ -31,11 +31,11 @@ sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(const std::st
 void StagingTransport::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes)
 {
   // Register who (this actor) writes in this transaction
-  auto* e   = get_engine();
-  auto tid  = e->get_current_transaction();
-  auto self = sg4::Actor::self();
+  auto* e       = get_engine();
+  auto tid      = e->get_current_transaction();
+  auto self     = sg4::Actor::self();
   auto pub_name = self->get_name();
-  
+
   // Use actor's name as temporary location. It's only half of the Mailbox Name
   var->add_transaction_metadata(tid, self, pub_name);
 

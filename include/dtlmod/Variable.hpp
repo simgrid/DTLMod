@@ -21,7 +21,7 @@ class Variable {
   friend class Transport;
   friend class FileTransport;
   friend class StagingTransport;
-  
+
   std::string name_;
   size_t element_size_;
   std::vector<size_t> shape_;

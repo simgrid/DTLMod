@@ -23,7 +23,6 @@ class Transport {
   std::unordered_map<std::string, sg4::MessageQueue*> publisher_put_requests_mq_;
 
 protected:
-  
   virtual void add_publisher(unsigned int /* publisher_id */) { /* No-op (for now)*/ }
 
   virtual void add_subscriber(unsigned int /* subscriber_id */) { /* No-op (for now)*/ }

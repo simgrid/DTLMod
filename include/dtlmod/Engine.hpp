@@ -66,18 +66,18 @@ public:
   virtual void begin_pub_transaction()       = 0;
   virtual void end_pub_transaction()         = 0;
   virtual void pub_close()                   = 0;
-  
+
   sg4::MutexPtr sub_mutex_;
   std::set<sg4::ActorPtr> subscribers_;
   sg4::ActivitySet sub_transaction_;
-  
-  sg4::BarrierPtr sub_barrier_         = nullptr;
-  unsigned int current_sub_transaction_id_     = 0;
-  bool sub_transaction_in_progress_    = false;
-  virtual void begin_sub_transaction() = 0;
-  virtual void end_sub_transaction()   = 0;
-  virtual void sub_close()             = 0;
-  
+
+  sg4::BarrierPtr sub_barrier_             = nullptr;
+  unsigned int current_sub_transaction_id_ = 0;
+  bool sub_transaction_in_progress_        = false;
+  virtual void begin_sub_transaction()     = 0;
+  virtual void end_sub_transaction()       = 0;
+  virtual void sub_close()                 = 0;
+
   void export_metadata_to_file();
 
 protected:
