@@ -17,24 +17,21 @@
     std::unordered_map<std::string, sg4::MessageQueue*> publisher_put_requests_mq_;
 
  protected:
+   void add_publisher(unsigned int publisher_id) override;
    virtual void create_rendez_vous_points() = 0;
    virtual void get_requests_and_do_put(sg4::ActorPtr publisher) = 0;
+   virtual void get_rendez_vous_point_and_do_get(const std::string& name) = 0;
 
    // Create a message queue to receive request for variable pieces from subscribers
-   void set_publisher_put_requests_mq(const std::string& publisher_name)
-   {
-       publisher_put_requests_mq_[publisher_name] = sg4::MessageQueue::by_name(publisher_name);
-   }
-   [[nodiscard]] sg4::MessageQueue* get_publisher_put_requests_mq(const std::string& publisher_name) const
-   {
-     return publisher_put_requests_mq_.at(publisher_name);
-   }
+   void set_publisher_put_requests_mq(const std::string& publisher_name);
+   [[nodiscard]] sg4::MessageQueue* get_publisher_put_requests_mq(const std::string& publisher_name) const;
 
  public:
   std::unordered_map<std::string, sg4::ActivitySet> pending_put_requests;
   explicit StagingTransport(Engine* engine) : Transport(engine) {}
   virtual ~StagingTransport() = default;
-
+  void put(std::shared_ptr<Variable> var, size_t /*simulated_size_in_bytes*/) override;
+  void get(std::shared_ptr<Variable> var) override;
 };
  /// \endcond
  

@@ -21,13 +21,12 @@ class StagingMqTransport : public StagingTransport {
   std::unordered_map<std::string, sg4::MessageQueue*> mqueues_;
 
 protected:
-  void add_publisher(unsigned int publisher_id) override;
   void create_rendez_vous_points() override;
   void get_requests_and_do_put(sg4::ActorPtr publisher) override;
+  void get_rendez_vous_point_and_do_get(const std::string& name) override;
+
 public:
   explicit StagingMqTransport(const std::string& name, Engine* engine) : StagingTransport(engine) {}
-  void put(std::shared_ptr<Variable> var, size_t /*simulated_size_in_bytes*/) override;
-  void get(std::shared_ptr<Variable> var) override;
 };
 /// \endcond
 

@@ -45,6 +45,7 @@ set(SOURCE_FILES
   src/FileTransport.cpp
   src/StagingMboxTransport.cpp
   src/StagingMqTransport.cpp
+  src/StagingTransport.cpp
 )
 
 set(HEADER_FILES
