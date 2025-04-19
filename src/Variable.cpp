@@ -90,9 +90,10 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
     size_t size_to_get              = element_size_;
     auto [block_start, block_count] = block_info;
     auto [where, actor]             = location;
-    bool something_to_get           = false;
+    auto something_to_get           = std::vector<bool>(start.size(),false);
     // Determine whether some elements have to be retrieved from this particular block
     for (unsigned i = 0; i < start.size(); i++) {
+      XBT_DEBUG("Subscriber %s checks Publisher %s", sg4::Actor::self()->get_cname(), actor->get_cname());
       XBT_DEBUG("Dimension %u: wanted [%zu, %zu] vs. in block [%zu, %zu]", i, start[i], count[i], block_start[i],
                 block_count[i]);
       size_t size_in_dim = 0;
@@ -110,15 +111,16 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
       }
 
       if (element_found && size_in_dim > 0) {
-        something_to_get = true;
+        something_to_get[i] = true;
         XBT_DEBUG("Mutiply size to read by %zu elements", size_in_dim);
         size_to_get *= size_in_dim;
       }
     }
 
-    XBT_DEBUG("Total size to read from %s: %zu)", where.c_str(), size_to_get);
-    if (something_to_get)
+    if (std::all_of(something_to_get.begin(), something_to_get.end(), [](bool v) { return v; })) {
+      XBT_DEBUG("Total size to read from %s: %zu)", where.c_str(), size_to_get);
       get_sizes_per_block.push_back({where, size_to_get});
+    }
   }
   return get_sizes_per_block;
 }
