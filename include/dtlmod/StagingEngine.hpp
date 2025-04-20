@@ -7,8 +7,6 @@
 #define __DTLMOD_ENGINE_STAGING_HPP__
 
 #include "dtlmod/Engine.hpp"
-#include "dtlmod/MailboxTransport.hpp"
-#include "dtlmod/MessageQueueTransport.hpp"
 
 XBT_LOG_EXTERNAL_CATEGORY(dtlmod);
 
