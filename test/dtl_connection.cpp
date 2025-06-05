@@ -50,9 +50,8 @@ TEST_F(DTLConnectionTest, SyncConSyncDecon)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
     for (int i = 0; i < 4; i++) {
-      engine->add_actor(std::string("client-") + std::to_string(i), hosts_[i], [this]() {
+      hosts_[i]->add_actor(std::string("client-") + std::to_string(i), [this]() {
         std::shared_ptr<dtlmod::DTL> dtl;
         XBT_INFO("Connect to the DTL");
         ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
@@ -63,7 +62,7 @@ TEST_F(DTLConnectionTest, SyncConSyncDecon)
       });
     }
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -71,9 +70,8 @@ TEST_F(DTLConnectionTest, AsyncConSyncDecon)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
     for (int i = 0; i < 4; i++) {
-      engine->add_actor(std::string("client-") + std::to_string(i), hosts_[i], [this, i]() {
+      hosts_[i]->add_actor(std::string("client-") + std::to_string(i), [this, i]() {
         std::shared_ptr<dtlmod::DTL> dtl;
         XBT_INFO("Let actor %s sleep for %.1f second", sg4::this_actor::get_cname(), 0.1 * i);
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(0.1 * i));
@@ -86,7 +84,7 @@ TEST_F(DTLConnectionTest, AsyncConSyncDecon)
       });
     }
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -94,9 +92,8 @@ TEST_F(DTLConnectionTest, SyncConAsyncDecon)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
     for (int i = 0; i < 4; i++) {
-      engine->add_actor(std::string("client-") + std::to_string(i), hosts_[i], [this, i]() {
+      hosts_[i]->add_actor(std::string("client-") + std::to_string(i), [this, i]() {
         std::shared_ptr<dtlmod::DTL> dtl;
         XBT_INFO("Connect to the DTL");
         ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
@@ -108,7 +105,7 @@ TEST_F(DTLConnectionTest, SyncConAsyncDecon)
     }
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -116,9 +113,8 @@ TEST_F(DTLConnectionTest, AsyncConAsyncDecon)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
     for (int i = 0; i < 4; i++) {
-      engine->add_actor(std::string("client-") + std::to_string(i), hosts_[i], [this, i]() {
+      hosts_[i]->add_actor(std::string("client-") + std::to_string(i), [this, i]() {
         std::shared_ptr<dtlmod::DTL> dtl;
         XBT_INFO("Connect to the DTL");
         XBT_INFO("Let actor %s sleep for %.1f second", sg4::this_actor::get_cname(), 0.1 * i);
@@ -132,6 +128,6 @@ TEST_F(DTLConnectionTest, AsyncConAsyncDecon)
     }
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }

@@ -61,8 +61,7 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestProducerActor", prod_host_, [this]() {
+    prod_host_->add_actor("TestProducerActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> no_engine_type_stream;
       std::shared_ptr<dtlmod::Stream> no_transport_method_stream;
@@ -84,7 +83,7 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -92,8 +91,7 @@ TEST_F(DTLStreamTest, PublishFileStreamOpenClose)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestProducerActor", prod_host_, [this]() {
+    prod_host_->add_actor("TestProducerActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -119,7 +117,7 @@ TEST_F(DTLStreamTest, PublishFileStreamOpenClose)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -127,8 +125,7 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestProducerActor", prod_host_, [this]() {
+    prod_host_->add_actor("TestProducerActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -150,7 +147,7 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
 
-    engine->add_actor("TestConsumerActor", cons_host_, [this]() {
+    cons_host_->add_actor("TestConsumerActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -174,7 +171,7 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 

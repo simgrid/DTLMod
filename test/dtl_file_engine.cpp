@@ -76,10 +76,7 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    auto* host   = sg4::Host::by_name("node-0");
-
-    engine->add_actor("TestActor", host, [this]() {
+    sg4::Host::by_name("node-0")->add_actor("TestActor", [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_transport_method(dtlmod::Transport::Method::File)
@@ -118,7 +115,7 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -126,9 +123,7 @@ TEST_F(DTLFileEngineTest, SinglePubSingleSubLocalStorage)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    auto* host   = sg4::Host::by_name("node-0");
-    engine->add_actor("TestActor", host, [this]() {
+    sg4::Host::by_name("node-0")->add_actor("TestActor", [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_transport_method(dtlmod::Transport::Method::File)
@@ -192,7 +187,7 @@ TEST_F(DTLFileEngineTest, SinglePubSingleSubLocalStorage)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -200,12 +195,11 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine                      = sg4::Engine::get_instance();
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("node-0"), sg4::Host::by_name("node-1")};
     auto* sub_host                    = sg4::Host::by_name("node-2");
 
     for (long unsigned int i = 0; i < 2; i++) {
-      engine->add_actor(pub_hosts[i]->get_name() + "_pub", pub_hosts[i], [this, i]() {
+      pub_hosts[i]->add_actor(pub_hosts[i]->get_name() + "_pub", [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
         auto stream = dtl->add_stream("my-output")
                           ->set_transport_method(dtlmod::Transport::Method::File)
@@ -230,7 +224,7 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
       });
     }
 
-    engine->add_actor("node-2_sub", sub_host, [this]() {
+    sub_host->add_actor("node-2_sub", [this]() {
       auto dtl = dtlmod::DTL::connect();
       XBT_INFO("Wait for 10s before becoming a Subscriber. It's not enough for the publishers to finish writing");
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(10));
@@ -256,7 +250,7 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -264,11 +258,10 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine                      = sg4::Engine::get_instance();
     auto* pub_host                    = sg4::Host::by_name("node-0");
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("node-1"), sg4::Host::by_name("node-2")};
 
-    engine->add_actor("node-0_pub", pub_host, [this]() {
+    pub_host->add_actor("node-0_pub",  [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_transport_method(dtlmod::Transport::Method::File)
@@ -293,7 +286,7 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
     });
 
     for (long unsigned int i = 0; i < 2; i++) {
-      engine->add_actor(sub_hosts[i]->get_name() + "_sub", sub_hosts[i], [this, i]() {
+      sub_hosts[i]->add_actor(sub_hosts[i]->get_name() + "_sub", [this, i]() {
         auto dtl = dtlmod::DTL::connect();
         XBT_INFO("Wait for 10s before becoming a Subscriber");
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(10));
@@ -319,7 +312,7 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
     }
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -327,13 +320,11 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    auto* host   = sg4::Host::by_name("node-0");
-    engine->add_actor("TestActor", host, [this]() {
+    sg4::Host::by_name("node-0")->add_actor("TestActor", [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
-                        ->set_transport_method(dtlmod::Transport::Method::File)
-                        ->set_engine_type(dtlmod::Engine::Type::File);
+                       ->set_transport_method(dtlmod::Transport::Method::File)
+                       ->set_engine_type(dtlmod::Engine::Type::File);
       XBT_INFO("Create a 2D-array variable with 20kx20k double  and publish it in 5 transactions");
       auto var = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
       auto engine =
@@ -383,6 +374,6 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }

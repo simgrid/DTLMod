@@ -46,8 +46,7 @@ TEST_F(DTLConfigTest, ConfigFile)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestActor", host_, [this]() {
+    host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Engine> engine;
@@ -81,6 +80,6 @@ TEST_F(DTLConfigTest, ConfigFile)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }

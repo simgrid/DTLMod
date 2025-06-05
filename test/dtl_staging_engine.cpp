@@ -56,11 +56,10 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine   = sg4::Engine::get_instance();
     auto* pub_host = sg4::Host::by_name("host-0.prod");
     auto* sub_host = sg4::Host::by_name("host-0.cons");
   
-    engine->add_actor("PubTestActor", pub_host, [this]() {
+    pub_host->add_actor("PubTestActor", [this]() {
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output")
                         ->set_engine_type(dtlmod::Engine::Type::Staging)
@@ -85,7 +84,7 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
       dtlmod::DTL::disconnect();
     });
 
-    engine->add_actor("SubTestActor", sub_host, [this]() {
+    sub_host->add_actor("SubTestActor", [this]() {
       auto dtl     = dtlmod::DTL::connect();
       auto stream  = dtl->add_stream("my-output");
       auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
@@ -114,7 +113,7 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -122,13 +121,12 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-
+    
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("host-0.prod"), sg4::Host::by_name("host-1.prod")};
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("host-0.cons"), sg4::Host::by_name("host-0.cons")};
 
     for (long unsigned int i = 0; i < 2; i++) {
-      engine->add_actor("Pub" + std::to_string(i), pub_hosts[i], [this, i]() {
+      pub_hosts[i]->add_actor("Pub" + std::to_string(i), [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
         auto stream = dtl->add_stream("my-output")
                           ->set_engine_type(dtlmod::Engine::Type::Staging)
@@ -155,7 +153,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
     }
 
     for (long unsigned int i = 0; i < 2; i++) {
-      engine->add_actor("Sub" + std::to_string(i), sub_hosts[i], [this, i]() {
+      sub_hosts[i]->add_actor("Sub" + std::to_string(i), [this, i]() {
         auto dtl     = dtlmod::DTL::connect();
         auto stream  = dtl->add_stream("my-output");
         auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
@@ -180,7 +178,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
     }
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -188,12 +186,11 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine                      = sg4::Engine::get_instance();
     std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("host-0.prod"), sg4::Host::by_name("host-1.prod")};
     std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("host-0.cons"), sg4::Host::by_name("host-0.cons")};
 
     for (long unsigned int i = 0; i < 2; i++) {
-      engine->add_actor("Pub" + std::to_string(i), pub_hosts[i], [this, i]() {
+      pub_hosts[i]->add_actor("Pub" + std::to_string(i), [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
         auto stream = dtl->add_stream("my-output")
                           ->set_engine_type(dtlmod::Engine::Type::Staging)
@@ -220,7 +217,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
     }
 
     for (long unsigned int i = 0; i < 2; i++) {
-      engine->add_actor("Sub" + std::to_string(i), sub_hosts[i], [this, i]() {
+      sub_hosts[i]->add_actor("Sub" + std::to_string(i), [this, i]() {
         auto dtl     = dtlmod::DTL::connect();
         auto stream  = dtl->add_stream("my-output");
         auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
@@ -245,6 +242,6 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
     }
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }

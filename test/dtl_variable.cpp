@@ -40,8 +40,7 @@ TEST_F(DTLVariableTest, DefineVariable)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestActor", host_, [this]() {
+    host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Variable> scalar;
@@ -67,7 +66,7 @@ TEST_F(DTLVariableTest, DefineVariable)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -75,8 +74,7 @@ TEST_F(DTLVariableTest, InconsistentVariableDefinition)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestActor", host_, [this]() {
+    host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       XBT_INFO("Connect to the DTL");
@@ -94,7 +92,7 @@ TEST_F(DTLVariableTest, InconsistentVariableDefinition)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -102,8 +100,7 @@ TEST_F(DTLVariableTest, MultiDefineVariable)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestActor", host_, [this]() {
+    host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Variable> var;
@@ -136,7 +133,7 @@ TEST_F(DTLVariableTest, MultiDefineVariable)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -144,8 +141,7 @@ TEST_F(DTLVariableTest, DistributedVariable)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestActor1", host_, [this]() {
+    host_->add_actor("TestActor1", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Variable> var;
@@ -162,7 +158,7 @@ TEST_F(DTLVariableTest, DistributedVariable)
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
 
-    engine->add_actor("TestActor2", host_, [this]() {
+    host_->add_actor("TestActor2", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Variable> var;
@@ -183,7 +179,7 @@ TEST_F(DTLVariableTest, DistributedVariable)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -191,8 +187,7 @@ TEST_F(DTLVariableTest, RemoveVariable)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestActor", host_, [this]() {
+    host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Variable> var;
@@ -211,7 +206,7 @@ TEST_F(DTLVariableTest, RemoveVariable)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -219,8 +214,7 @@ TEST_F(DTLVariableTest, InquireVariableLocal)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestActor", host_, [this]() {
+    host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Variable> var;
@@ -241,7 +235,7 @@ TEST_F(DTLVariableTest, InquireVariableLocal)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
 
@@ -249,8 +243,7 @@ TEST_F(DTLVariableTest, InquireVariableRemote)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    auto* engine = sg4::Engine::get_instance();
-    engine->add_actor("TestProducerActor", host_, [this]() {
+    host_->add_actor("TestProducerActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Variable> var;
@@ -264,7 +257,7 @@ TEST_F(DTLVariableTest, InquireVariableRemote)
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
 
-    engine->add_actor("TestConsumerActor", host_, [this]() {
+    host_->add_actor("TestConsumerActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
       std::shared_ptr<dtlmod::Variable> var;
@@ -282,6 +275,6 @@ TEST_F(DTLVariableTest, InquireVariableRemote)
     });
 
     // Run the simulation
-    ASSERT_NO_THROW(engine->run());
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
