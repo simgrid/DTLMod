@@ -44,7 +44,7 @@ public:
   /// @brief Connect an Actor to the Data Transport Layer.
   /// @return A handler on the DTL object.
   static std::shared_ptr<DTL> connect();
-  /// @brief Disconnect an Actor to the Data Transport Layer.
+  /// @brief Disconnect an Actor from the Data Transport Layer.
   static void disconnect();
 
   /// @brief Helper function to check whether some simulated actors are currently connected to the DTL.
@@ -56,7 +56,7 @@ public:
   /// @return A handler on the newly created Stream object.
   std::shared_ptr<Stream> add_stream(const std::string& name);
 
-  /// @brief Retrieve  all streams declared in the Data Transport by its name.
+  /// @brief Retrieve all streams declared in the Data Transport Layer.
   /// @return a map of handlers on Stream objects with their names as keys.
   const std::unordered_map<std::string, std::shared_ptr<Stream>>& get_all_streams() const { return streams_; }
 
