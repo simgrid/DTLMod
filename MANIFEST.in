@@ -3,6 +3,7 @@ include LICENSE
 include README.md
 include FindDTLMod.cmake
 
+include conf/doxygen/Doxyfile.in
 include doc/scripts/generate_rst.py
 include doc/source/conf.py
 include doc/source/favicon.png
