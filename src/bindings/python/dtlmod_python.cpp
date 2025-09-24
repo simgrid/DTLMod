@@ -3,7 +3,7 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
- #include <pybind11/pybind11.h> // Must come before our own stuff
+#include <pybind11/pybind11.h> // Must come before our own stuff
 
 #include <pybind11/functional.h>
 #include <pybind11/stl.h>
@@ -33,15 +33,14 @@ using dtlmod::Variable;
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(python, "python");
 
-
 namespace {
 
 std::string get_dtlmod_version()
 {
-  int major;
-  int minor;
-  //sg_version_get(&major, &minor, &patch);
-  return simgrid::xbt::string_printf("%i.%i", 0, 1);//major, minor, patch);
+  int major = 0;
+  int minor = 1;
+  // TODO dtlmod_version_get(&major, &minor);
+  return simgrid::xbt::string_printf("%i.%i", major, minor);
 }
 } // namespace
 
@@ -52,22 +51,110 @@ PYBIND11_MODULE(dtlmod, m)
   m.attr("dtlmod_version") = get_dtlmod_version();
 
   py::register_exception<dtlmod::DTLInitBadSenderException>(m, "DTLInitBadSenderException");
-  //TODO add other exceptions (when needed)
+
+  py::register_exception<dtlmod::UnkownEngineTypeException>(m, "UnkownEngineTypeException");
+  py::register_exception<dtlmod::UndefinedEngineTypeException>(m, "UndefinedEngineTypeException");
+  py::register_exception<dtlmod::MultipleEngineTypeException>(m, "MultipleEngineTypeException");
+
+  py::register_exception<dtlmod::UnknownTransportMethodException>(m, "UnknownTransportMethodException");
+  py::register_exception<dtlmod::UndefinedTransportMethodException>(m, "UndefinedTransportMethodException");
+  py::register_exception<dtlmod::MultipleTransportMethodException>(m, "MultipleTransportMethodException");
+
+  py::register_exception<dtlmod::InvalidEngineAndTransportCombinationException>(
+      m, "InvalidEngineAndTransportCombinationException");
+  py::register_exception<dtlmod::OpenStreamFailureException>(m, "OpenStreamFailureException");
+
+  py::register_exception<dtlmod::UnknownOpenModeException>(m, "UnknownOpenModeException");
+
+  py::register_exception<dtlmod::UnknownVariableException>(m, "UnknownVariableException");
+  py::register_exception<dtlmod::MultipleVariableDefinitionException>(m, "MultipleVariableDefinitionException");
+  py::register_exception<dtlmod::InconsistentVariableDefinitionException>(m, "InconsistentVariableDefinitionException");
+
+  py::register_exception<dtlmod::IncorrectPathDefinitionException>(m, "IncorrectPathDefinitionException");
+
+  py::register_exception<dtlmod::GetWhenNoTransactionException>(m, "GetWhenNoTransactionException");
 
   /* Class DTL */
   py::class_<DTL>(m, "DTL", "Data Transport Layer")
-    .def_static("create", static_cast<void(*)()>(&DTL::create), "Create the DTL")
-    .def_static("create", static_cast<void(*)(const std::string&)>(&DTL::create), py::arg("filename"), 
-        "Create the DTL")
-    .def_static("connect", static_cast<std::shared_ptr<DTL>(*)()>(&DTL::connect), 
-        "Connect an Actor to the DTL")
-    .def_static("disconnect", static_cast<void(*)()>(&DTL::disconnect),
-        "Disconnect an Actor from the DTL")
-    .def_property_readonly("has_active_connections", &DTL::has_active_connections, 
-        "Check whether some simulated actors are currently connected to the DTL")
-    .def("add_stream", &DTL::add_stream, py::arg("name"), "Add a data stream to the DTL")
-    .def_property_readonly("get_all_streams", &DTL::get_all_streams, 
-        "Retrieve all streams declared in the DTL")
-    .def_property_readonly("get_stream_by_name_or_null", &DTL::get_stream_by_name_or_null, 
-        "Retrieve a data stream from the DTL by its name");
+      .def_static("create", static_cast<void (*)()>(&DTL::create), "Create the DTL")
+      .def_static("create", static_cast<void (*)(const std::string&)>(&DTL::create), py::arg("filename"),
+                  "Create the DTL")
+      .def_static("connect", static_cast<std::shared_ptr<DTL> (*)()>(&DTL::connect), "Connect an Actor to the DTL")
+      .def_static("disconnect", static_cast<void (*)()>(&DTL::disconnect), "Disconnect an Actor from the DTL")
+      .def_property_readonly("has_active_connections", &DTL::has_active_connections,
+                             "Check whether some simulated actors are currently connected to the DTL (read-only)")
+      .def("add_stream", &DTL::add_stream, py::arg("name"), "Add a data stream to the DTL")
+      .def_property_readonly("get_all_streams", &DTL::get_all_streams,
+                             "Retrieve all streams declared in the DTL (read-only)")
+      .def_property_readonly("get_stream_by_name_or_null", &DTL::get_stream_by_name_or_null,
+                             "Retrieve a data stream from the DTL by its name  (read-only)");
+
+  /* Class Stream */
+  py::class_<Stream, std::shared_ptr<Stream>>(
+      m, "Stream", "A Stream defines the connection between the applications that produce or consume data and the DTL")
+      .def_property_readonly("name", &Stream::get_name, "The name of the Stream (read-only)")
+      .def_property_readonly("get_engine_type", &Stream::get_engine_type_str,
+                             "Print out the engine type of this Stream (read-only)")
+      .def_property_readonly("get_transport_method", &Stream::get_transport_method_str,
+                             "Print out the transport method of this Stream (read-only)")
+      .def("set_engine_type", &Stream::set_engine_type, py::arg("type"),
+           "Set the engine type associated to this Stream")
+      .def("set_transport_method", &Stream::set_transport_method, py::arg("method"),
+           "Set the transport method associated to this Stream")
+      // Engine factory
+      .def("open", &Stream::open, py::arg("name"), py::arg("mode"), "Open a Stream and create an Engine")
+      .def_property_readonly("num_publishers", &Stream::get_num_publishers,
+                             "The number of actors connected to this Stream in Mode::Publish (read-only)")
+      .def_property_readonly("num_subscribers", &Stream::get_num_subscribers,
+                             "The number of actors connected to this Stream in Mode::Subscribe (read-only)")
+      // Variable factory
+      .def(
+          "define_variable",
+          [](Stream& self, const std::string& name, size_t element_size) {
+            return self.define_variable(name, element_size);
+          },
+          py::arg("name"), py::arg("element_size"), "Define a scalar variable for this Stream")
+      .def(
+          "define_variable",
+          [](Stream& self, const std::string& name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
+             const std::vector<size_t>& count,
+             size_t element_size) { return self.define_variable(name, shape, start, count, element_size); },
+          py::arg("name"), py::arg("shape"), py::arg("start"), py::arg("count"), py::arg("element_size"),
+          "Define a variable for this Stream")
+      .def("inquire_variable", &Stream::inquire_variable, py::arg("name"), "Retrieve a Variable information by name")
+      .def("remove_variable", &Stream::remove_variable, py::arg("name"), "Remove a Variable from this Stream");
+
+  /* Class Variable */
+  py::class_<Variable, std::shared_ptr<Variable>>(
+      m, "Variable", "A Variable defines a data object that can be injected into or retrieved from a Stream")
+      .def_property_readonly("name", &Variable::get_name, "The name of the Variable (read-only)")
+      .def_property_readonly("shape", &Variable::get_shape, "The shape of the Variable (read-only)")
+      .def_property_readonly("element_size", &Variable::get_element_size,
+                             "The element size of the Variable (read-only)")
+      .def_property_readonly("local_size", &Variable::get_local_size,
+                             "The local size of the Variable for the current actor (read-only)")
+      .def_property_readonly("global_size", &Variable::get_global_size, "The global size of the Variable (read-only)")
+      .def(
+          "set_transaction_selection",
+          [](Variable& self, unsigned int transaction_id) { self.set_transaction_selection(transaction_id); },
+          py::arg("transaction_id"), "Set the selection of transactions to consider for this Variable")
+      .def(
+          "set_transaction_selection",
+          [](Variable& self, unsigned int begin, unsigned int count) { self.set_transaction_selection(begin, count); },
+          py::arg("begin"), py::arg("count"), "Set the selection of transactions to consider for this Variable")
+      .def("set_selection", &Variable::set_selection, py::arg("start"), py::arg("count"),
+           "Set the selection of elements to consider for this Variable");
+
+  /* Class Engine */
+  py::class_<Engine, std::shared_ptr<Engine>>(
+      m, "Engine", "An Engine defines how data is transferred between the applications and the DTL")
+      .def_property_readonly("name", &Engine::get_name, "The name of the Engine (read-only)")
+      .def("begin_transaction", &Engine::begin_transaction, "Begin a transaction on this Engine")
+      .def("put", &Engine::put, py::arg("var"), py::arg("simulated_size_in_bytes"),
+           "Put a Variable in the DTL using this Engine")
+      .def("get", &Engine::get, py::arg("var"), "Get a Variable from the DTL using this Engine")
+      .def("end_transaction", &Engine::end_transaction, "End a transaction on this Engine")
+      .def_property_readonly("current_transaction", &Engine::get_current_transaction,
+                             "The id of the current transaction on this Engine (read-only)")
+      .def("close", &Engine::close, "Close this Engine");
 }
