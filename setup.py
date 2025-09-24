@@ -72,7 +72,7 @@ class CMakeBuild(build_ext):
 
 setup(
     name='dtlmod',
-    version='0.1', 
+    version='0.1.0',
     author='The SWAT Team',
     author_email='simgrid-community@inria.fr',
     description='A versatile simulated data transport layer SimGrid module',

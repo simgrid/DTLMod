@@ -27,11 +27,42 @@ set(DTLMOD_VERSION_MINOR "1")
 set(DTLMOD_VERSION_PATCH "0")
 set(DTLMOD_VERSION_EXTRA "dev")
 
+## GIT version check
+####################
+
+if(EXISTS ${CMAKE_HOME_DIRECTORY}/.git/)
+  execute_process(COMMAND git rev-parse --verify --short HEAD
+     WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}
+     OUTPUT_VARIABLE GIT_VERSION
+     OUTPUT_STRIP_TRAILING_WHITESPACE)
+  # Check for uncommitted changes
+  execute_process(COMMAND git diff --name-only HEAD
+    WORKING_DIRECTORY ${CMAKE_HOME_DIRECTORY}
+    OUTPUT_VARIABLE files_changed)
+  if(files_changed)
+    set(GIT_VERSION "${GIT_VERSION}-dirty")
+  endif()
+elseif(EXISTS ${CMAKE_HOME_DIRECTORY}/.gitversion)
+  FILE(STRINGS ${CMAKE_HOME_DIRECTORY}/.gitversion GIT_VERSION)
+else()
+  set(GIT_VERSION "none, release version")
+endif()
+message(STATUS "Git version: ${GIT_VERSION}")
+
 if (${DTLMOD_VERSION_PATCH} EQUAL "0")
     set(DTLMOD_RELEASE_VERSION "${DTLMOD_VERSION_MAJOR}.${DTLMOD_VERSION_MINOR}")
 else ()
     set(DTLMOD_RELEASE_VERSION "${DTLMOD_VERSION_MAJOR}.${DTLMOD_VERSION_MINOR}.${DTLMOD_VERSION_PATCH}")
 endif ()
+
+### Generate the required headers
+#################################
+
+# Avoid triggering a (full) rebuild by touching the files if they did not really change
+configure_file("${CMAKE_HOME_DIRECTORY}/include/dtlmod/version.hpp.in" "${CMAKE_BINARY_DIR}/include/dtlmod/version.hpp.generated" @ONLY IMMEDIATE)
+execute_process(COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_BINARY_DIR}/include/dtlmod/version.hpp.generated ${CMAKE_BINARY_DIR}/include/dtlmod/version.hpp)
+file(REMOVE ${CMAKE_BINARY_DIR}/include/dtlmod/version.hpp.generated)
+
 
 # Python binding (with pybind11)
 ################
@@ -112,14 +143,15 @@ set(SOURCE_FILES
   src/StagingMboxTransport.cpp
   src/StagingMqTransport.cpp
   src/StagingTransport.cpp
+  src/dtlmod_version.cpp
 )
 
 set(HEADER_FILES
   include/dtlmod/DTL.hpp
   include/dtlmod/DTLException.hpp
   include/dtlmod/Engine.hpp
-  include/dtlmod/FileTransport.hpp
   include/dtlmod/FileEngine.hpp
+  include/dtlmod/FileTransport.hpp
   include/dtlmod/Metadata.hpp
   include/dtlmod/StagingEngine.hpp
   include/dtlmod/StagingMboxTransport.hpp
@@ -127,7 +159,8 @@ set(HEADER_FILES
   include/dtlmod/StagingTransport.hpp
   include/dtlmod/Stream.hpp
   include/dtlmod/Transport.hpp
-  include/dtlmod/Variable.hpp)
+  include/dtlmod/Variable.hpp
+)
 
 set (CONFIG_FILES
   test/DTL-config.json)
@@ -181,7 +214,6 @@ endif()
 
 # Documentation
 include(${CMAKE_HOME_DIRECTORY}/conf/cmake/Documentation.cmake)
-
 
 if(pybind11_FOUND)
   message("        Compile Python bindings .....: ${enable_python}")

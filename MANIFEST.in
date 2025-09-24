@@ -19,6 +19,7 @@ recursive-include conf *.cmake
 # Include source and header files
 recursive-include include *.hpp
 recursive-include src *.cpp
+include include/dtlmod/version.hpp.in
 
 # Include Python bindings
 recursive-include bindings *.cpp

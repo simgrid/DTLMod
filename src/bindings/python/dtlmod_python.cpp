@@ -22,6 +22,7 @@
 #include <dtlmod/Stream.hpp>
 #include <dtlmod/Transport.hpp>
 #include <dtlmod/Variable.hpp>
+#include <dtlmod/version.hpp>
 
 #include <xbt/log.h>
 
@@ -37,10 +38,11 @@ namespace {
 
 std::string get_dtlmod_version()
 {
-  int major = 0;
-  int minor = 1;
-  // TODO dtlmod_version_get(&major, &minor);
-  return simgrid::xbt::string_printf("%i.%i", major, minor);
+  int major;
+  int minor;
+  int patch;
+  dtlmod_version_get(&major, &minor, &patch);
+  return simgrid::xbt::string_printf("%i.%i.%i", major, minor, patch);
 }
 } // namespace
 
