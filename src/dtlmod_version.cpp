@@ -5,7 +5,7 @@
 
 #include "dtlmod/version.hpp"
 
-void dtl_version_get(int* ver_major, int* ver_minor, int* ver_patch)
+void dtlmod_version_get(int* ver_major, int* ver_minor, int* ver_patch)
 {
   *ver_major = DTLMOD_VERSION_MAJOR;
   *ver_minor = DTLMOD_VERSION_MINOR;
