@@ -85,7 +85,7 @@ PYBIND11_MODULE(dtlmod, m)
       .def_static("disconnect", py::overload_cast<>(&DTL::disconnect), py::call_guard<py::gil_scoped_release>(), "Disconnect an Actor from the DTL")
       .def_property_readonly("has_active_connections", &DTL::has_active_connections,
                              "Check whether some simulated actors are currently connected to the DTL (read-only)")
-      .def("add_stream", &DTL::add_stream, py::arg("name"), "Add a data stream to the DTL")
+      .def("add_stream", &DTL::add_stream, py::call_guard<py::gil_scoped_release>(), py::arg("name"), "Add a data stream to the DTL")
       .def_property_readonly("get_all_streams", &DTL::get_all_streams,
                              "Retrieve all streams declared in the DTL (read-only)")
       .def_property_readonly("get_stream_by_name_or_null", &DTL::get_stream_by_name_or_null,
