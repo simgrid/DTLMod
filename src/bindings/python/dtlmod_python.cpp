@@ -78,11 +78,11 @@ PYBIND11_MODULE(dtlmod, m)
 
   /* Class DTL */
   py::class_<DTL>(m, "DTL", "Data Transport Layer")
-      .def_static("create", static_cast<void (*)()>(&DTL::create), "Create the DTL")
-      .def_static("create", static_cast<void (*)(const std::string&)>(&DTL::create), py::arg("filename"),
-                  "Create the DTL")
-      .def_static("connect", static_cast<std::shared_ptr<DTL> (*)()>(&DTL::connect), "Connect an Actor to the DTL")
-      .def_static("disconnect", static_cast<void (*)()>(&DTL::disconnect), "Disconnect an Actor from the DTL")
+      .def_static("create", py::overload_cast<>(&DTL::create), py::call_guard<py::gil_scoped_release>(), "Create the DTL")
+      .def_static("create", py::overload_cast<const std::string&>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
+                   py::arg("filename"), "Create the DTL")
+      .def_static("connect", py::overload_cast<>(&DTL::connect), py::call_guard<py::gil_scoped_release>(), "Connect an Actor to the DTL")
+      .def_static("disconnect", py::overload_cast<>(&DTL::disconnect), py::call_guard<py::gil_scoped_release>(), "Disconnect an Actor from the DTL")
       .def_property_readonly("has_active_connections", &DTL::has_active_connections,
                              "Check whether some simulated actors are currently connected to the DTL (read-only)")
       .def("add_stream", &DTL::add_stream, py::arg("name"), "Add a data stream to the DTL")
