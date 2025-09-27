@@ -1,3 +1,8 @@
+# Copyright (c) 2025. The SWAT Team. All rights reserved.
+#
+# This program is free software you can redistribute it and/or modify it
+# under the terms of the license (GNU LGPL) which comes with this package.
+
 import sys
 import multiprocessing
 from simgrid import Actor, Engine, Host, Link, LinkInRoute, NetZone, this_actor
