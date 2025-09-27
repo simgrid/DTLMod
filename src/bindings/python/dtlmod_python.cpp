@@ -77,10 +77,10 @@ PYBIND11_MODULE(dtlmod, m)
   py::register_exception<dtlmod::GetWhenNoTransactionException>(m, "GetWhenNoTransactionException");
 
   /* Class DTL */
-  py::class_<DTL>(m, "DTL", "Data Transport Layer")
-      .def_static("create", py::overload_cast<>(&DTL::create), py::call_guard<py::gil_scoped_release>(), "Create the DTL")
+  py::class_<DTL, std::shared_ptr<DTL>>(m, "DTL", "Data Transport Layer")
+      .def_static("create", py::overload_cast<>(&DTL::create), py::call_guard<py::gil_scoped_release>(), "Create the DTL (no return)")
       .def_static("create", py::overload_cast<const std::string&>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
-                   py::arg("filename"), "Create the DTL")
+                   py::arg("filename"), "Create the DTL (no return)")
       .def_static("connect", py::overload_cast<>(&DTL::connect), py::call_guard<py::gil_scoped_release>(), "Connect an Actor to the DTL")
       .def_static("disconnect", py::overload_cast<>(&DTL::disconnect), py::call_guard<py::gil_scoped_release>(), "Disconnect an Actor from the DTL")
       .def_property_readonly("has_active_connections", &DTL::has_active_connections,
