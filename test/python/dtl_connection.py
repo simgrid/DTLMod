@@ -53,7 +53,7 @@ class DTLConnectionTest(unittest.TestCase):
             self.hosts_[i].add_actor(f"client-{i}", sync_con_sync_decon)
 
         self.e.run()
-        print(f"[      OK ] DTLConnectionTest.SyncConSyncDecon")
+        print(f"[       OK ] DTLConnectionTest.SyncConSyncDecon")
 
     def test_async_con_sync_decon(self):
         print(f"[ RUN      ] DTLConnectionTest.AsyncConSyncDecon")
@@ -73,7 +73,7 @@ class DTLConnectionTest(unittest.TestCase):
             self.hosts_[i].add_actor(f"client-{i}", async_con_sync_decon, i)
 
         self.e.run()
-        print(f"[      OK ] DTLConnectionTest.AsyncConSyncDecon")
+        print(f"[       OK ] DTLConnectionTest.AsyncConSyncDecon")
 
     def test_sync_con_async_decon(self):
         print(f"[ RUN      ] DTLConnectionTest.SyncConAsyncDecon")
@@ -92,7 +92,7 @@ class DTLConnectionTest(unittest.TestCase):
             self.hosts_[i].add_actor(f"client-{i}", sync_con_async_decon, i)
 
         self.e.run()
-        print(f"[      OK ] DTLConnectionTest.SyncConAsyncDecon")
+        print(f"[       OK ] DTLConnectionTest.SyncConAsyncDecon")
 
     def test_async_con_async_decon(self):
         print(f"[ RUN      ] DTLConnectionTest.AsyncConAsyncDecon")
@@ -112,7 +112,7 @@ class DTLConnectionTest(unittest.TestCase):
             self.hosts_[i].add_actor(f"client-{i}", async_con_async_decon, i)
 
         self.e.run()
-        print(f"[      OK ] DTLConnectionTest.AsyncConAsyncDecon")
+        print(f"[       OK ] DTLConnectionTest.AsyncConAsyncDecon")
 
 ###################################################################################################
 
