@@ -78,33 +78,38 @@ PYBIND11_MODULE(dtlmod, m)
 
   /* Class DTL */
   py::class_<DTL, std::shared_ptr<DTL>>(m, "DTL", "Data Transport Layer")
-      .def_static("create", py::overload_cast<>(&DTL::create), py::call_guard<py::gil_scoped_release>(), "Create the DTL (no return)")
-      .def_static("create", py::overload_cast<const std::string&>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
-                   py::arg("filename"), "Create the DTL (no return)")
-      .def_static("connect", py::overload_cast<>(&DTL::connect), py::call_guard<py::gil_scoped_release>(), "Connect an Actor to the DTL")
-      .def_static("disconnect", py::overload_cast<>(&DTL::disconnect), py::call_guard<py::gil_scoped_release>(), "Disconnect an Actor from the DTL")
+      .def_static("create", py::overload_cast<>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
+                  "Create the DTL (no return)")
+      .def_static("create", py::overload_cast<const std::string&>(&DTL::create),
+                  py::call_guard<py::gil_scoped_release>(), py::arg("filename"), "Create the DTL (no return)")
+      .def_static("connect", py::overload_cast<>(&DTL::connect), py::call_guard<py::gil_scoped_release>(),
+                  "Connect an Actor to the DTL")
+      .def_static("disconnect", py::overload_cast<>(&DTL::disconnect), py::call_guard<py::gil_scoped_release>(),
+                  "Disconnect an Actor from the DTL")
       .def_property_readonly("has_active_connections", &DTL::has_active_connections,
                              "Check whether some simulated actors are currently connected to the DTL (read-only)")
-      .def("add_stream", &DTL::add_stream, py::call_guard<py::gil_scoped_release>(), py::arg("name"), "Add a data stream to the DTL")
+      .def("add_stream", &DTL::add_stream, py::call_guard<py::gil_scoped_release>(), py::arg("name"),
+           "Add a data stream to the DTL")
       .def_property_readonly("get_all_streams", &DTL::get_all_streams,
                              "Retrieve all streams declared in the DTL (read-only)")
       .def_property_readonly("get_stream_by_name_or_null", &DTL::get_stream_by_name_or_null,
                              "Retrieve a data stream from the DTL by its name  (read-only)");
 
   /* Class Stream */
-  py::class_<Stream, std::shared_ptr<Stream>>(
-      m, "Stream", "A Stream defines the connection between the applications that produce or consume data and the DTL")
-      .def_property_readonly("name", &Stream::get_name, "The name of the Stream (read-only)")
-      .def_property_readonly("get_engine_type", &Stream::get_engine_type_str,
+  py::class_<Stream, std::shared_ptr<Stream>> stream(
+      m, "Stream", "A Stream defines the connection between the applications that produce or consume data and the DTL");
+  stream.def_property_readonly("name", &Stream::get_name, "The name of the Stream (read-only)")
+      .def_property_readonly("engine_type", &Stream::get_engine_type_str,
                              "Print out the engine type of this Stream (read-only)")
-      .def_property_readonly("get_transport_method", &Stream::get_transport_method_str,
+      .def_property_readonly("transport_method", &Stream::get_transport_method_str,
                              "Print out the transport method of this Stream (read-only)")
       .def("set_engine_type", &Stream::set_engine_type, py::arg("type"),
            "Set the engine type associated to this Stream")
       .def("set_transport_method", &Stream::set_transport_method, py::arg("method"),
            "Set the transport method associated to this Stream")
       // Engine factory
-      .def("open", &Stream::open, py::arg("name"), py::arg("mode"), "Open a Stream and create an Engine")
+      .def("open", &Stream::open, py::arg("name"), py::call_guard<py::gil_scoped_release>(), py::arg("mode"),
+           "Open a Stream and create an Engine")
       .def_property_readonly("num_publishers", &Stream::get_num_publishers,
                              "The number of actors connected to this Stream in Mode::Publish (read-only)")
       .def_property_readonly("num_subscribers", &Stream::get_num_subscribers,
@@ -115,18 +120,21 @@ PYBIND11_MODULE(dtlmod, m)
           [](Stream& self, const std::string& name, size_t element_size) {
             return self.define_variable(name, element_size);
           },
-          py::call_guard<py::gil_scoped_release>(),
-          py::arg("name"), py::arg("element_size"), "Define a scalar variable for this Stream")
+          py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("element_size"),
+          "Define a scalar variable for this Stream")
       .def(
           "define_variable",
           [](Stream& self, const std::string& name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
              const std::vector<size_t>& count,
              size_t element_size) { return self.define_variable(name, shape, start, count, element_size); },
-          py::call_guard<py::gil_scoped_release>(),
-          py::arg("name"), py::arg("shape"), py::arg("start"), py::arg("count"), py::arg("element_size"),
-          "Define a variable for this Stream")
+          py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("shape"), py::arg("start"),
+          py::arg("count"), py::arg("element_size"), "Define a variable for this Stream")
       .def("inquire_variable", &Stream::inquire_variable, py::arg("name"), "Retrieve a Variable information by name")
       .def("remove_variable", &Stream::remove_variable, py::arg("name"), "Remove a Variable from this Stream");
+
+  py::enum_<Stream::Mode>(stream, "Mode", "The access mode for a Stream")
+      .value("Publish", Stream::Mode::Publish)
+      .value("LINEAR", Stream::Mode::Subscribe);
 
   /* Class Variable */
   py::class_<Variable, std::shared_ptr<Variable>>(
