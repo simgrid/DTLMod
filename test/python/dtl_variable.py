@@ -7,8 +7,8 @@ import ctypes
 import sys
 import multiprocessing
 
-from simgrid import Actor, Engine, Host, Link, LinkInRoute, NetZone, this_actor
-from dtlmod import DTL, Variable
+from simgrid import Actor, Engine, Host, this_actor
+from dtlmod import DTL, Variable, InconsistentVariableDefinitionException, MultipleVariableDefinitionException
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -39,7 +39,7 @@ def run_test_define_variable():
         this_actor.info("Check name")
         assert var3D.name == "var3D"
         this_actor.info("Check size: should be 64^3 times 8 as elements are double")
-        assert var3D.get_global_size() == 64 * 64 * 64 * 8
+        assert var3D.global_size == (64 * 64 * 64 * 8)
         this_actor.info("Remove variable named 'var3D'. It is known, should be true")
         assert stream.remove_variable("var3D") == True
         this_actor.info("Remove variable named 'var2D'. It is unknown, should be false");
@@ -48,12 +48,86 @@ def run_test_define_variable():
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()
 
-        host.add_actor("client", define_variable)
-        e.run()
+    host.add_actor("client", define_variable)
+    e.run()
+
+def run_test_inconsistent_variable_definition():
+    e, host = setup_platform()
+
+    def inconsistent_variable_definition():
+        this_actor.info("Connect to the DTL");
+        dtl = DTL.connect()
+        this_actor.info("Create a stream");
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Create a 3D variable with only two offsets, should fail.");
+        try:
+            stream.define_variable("var3D", (64, 64, 64), (0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))                   
+            assert False, "Expected InconsistentVariableDefinitionException was not raised"
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Create a 3D variable with only two element counts, should fail.");
+        try:
+            stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
+            assert False, "Expected InconsistentVariableDefinitionException was not raised"
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Disconnect the actor from the DTL");
+        DTL.disconnect()
+
+    host.add_actor("client", inconsistent_variable_definition)
+    e.run()
+
+def run_test_multi_define_variable():
+    e, host = setup_platform()
+
+    def multi_define_variable():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Create a scalar int variable");
+        stream.define_variable("var", ctypes.sizeof(ctypes.c_int))
+        this_actor.info("Try to redefine var as a scalar double variable, which should fail")
+        try:
+            stream.define_variable("var", ctypes.sizeof(ctypes.c_double))
+            assert False, "Expected MultipleVariableDefinitionException was not raised"
+        except MultipleVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Try to redefine var as a 3D variable, which should fail")
+        try:
+            stream.define_variable("var", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double)),
+            assert False, "Expected MultipleVariableDefinitionException was not raised"
+        except MultipleVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Define a new 3D variable")
+        stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Try to redefine var2 as a 2D variable, which should fail")
+        try:
+            stream.define_variable("var3D", (64, 64), (0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
+            assert False, "Expected MultipleVariableDefinitionException was not raised"
+        except MultipleVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Try to redefine var as a 3D int variable, which should fail")
+        try:
+            stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_int)),
+            assert False, "Expected MultipleVariableDefinitionException was not raised"
+        except MultipleVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Try to redefine starts and counts which should work")
+        var = stream.define_variable("var3D", (64, 64, 64), (16, 16, 16), (32, 32, 32), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Check local and global sizes")
+        assert var.local_size == 32 * 32 * 32 * 8
+        assert var.global_size == 64 * 64 * 64 * 8
+
+        this_actor.info("Disconnect the actor from the DTL");
+        DTL.disconnect()
+
+    host.add_actor("client", multi_define_variable)
+    e.run()
 
 if __name__ == '__main__':
     tests = [
-        run_test_define_variable
+        run_test_define_variable,
+        run_test_inconsistent_variable_definition,
+        run_test_multi_define_variable
     ]
 
     for test in tests:
