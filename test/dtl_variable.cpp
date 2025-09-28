@@ -225,11 +225,13 @@ TEST_F(DTLVariableTest, InquireVariableLocal)
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
       XBT_INFO("Create a 3D variable");
       ASSERT_NO_THROW(var = stream->define_variable("var", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
-      XBT_INFO("Inquire this variable and store it var2");
+      XBT_INFO("Inquire this variable and store it in var2");
       ASSERT_NO_THROW(var2 = stream->inquire_variable("var"));
       XBT_INFO("Check name and size of the inquired variable");
       ASSERT_TRUE(var2->get_name() == "var");
       ASSERT_DOUBLE_EQ(var2->get_global_size(), 64 * 64 * 64 * 8);
+      XBT_INFO("Inquire an unknown variable, which should raise an exception");
+      ASSERT_THROW(stream->inquire_variable("unknow_var"), dtlmod::UnknownVariableException);
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
@@ -265,7 +267,7 @@ TEST_F(DTLVariableTest, InquireVariableRemote)
       ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
-      XBT_INFO("Inquire the variable named 'var'");
+      XBT_INFO("Inquire the variable named 'var' created by the producer");
       ASSERT_NO_THROW(var = stream->inquire_variable("var"));
       XBT_INFO("Check name and size of the inquired variable");
       ASSERT_TRUE(var->get_name() == "var");

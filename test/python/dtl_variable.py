@@ -8,7 +8,7 @@ import sys
 import multiprocessing
 
 from simgrid import Engine, this_actor
-from dtlmod import DTL, InconsistentVariableDefinitionException, MultipleVariableDefinitionException
+from dtlmod import DTL, InconsistentVariableDefinitionException, MultipleVariableDefinitionException, UnknownVariableException
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -182,13 +182,72 @@ def run_test_remove_variable():
     host.add_actor("TestActor", remove_variable)
     e.run()
 
+def run_test_inquire_variable_local():
+    e, host = setup_platform()
+
+    def inquire_variable_local():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Create a 3D variable")
+        var = stream.define_variable("var", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Inquire this variable and store it in var2")
+        var2 = stream.inquire_variable("var")
+        this_actor.info("Check name and size of the inquired variable")
+        assert var2.name == "var"
+        assert var2.global_size == (64 * 64 * 64 * 8)
+        this_actor.info("Inquire an unknown variable, which should raise an exception")
+        try:
+            stream.inquire_variable("unknow_var")
+            assert False, "Expected UnknownVariableException was not raised"
+        except UnknownVariableException:
+            pass  # Test passes
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    host.add_actor("TestActor", inquire_variable_local)
+    e.run()
+
+def run_test_inquire_variable_remote():
+    e, host = setup_platform()
+
+    def inquire_variable_remote_producer():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Create a 3D variable")
+        var = stream.define_variable("var", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    def inquire_variable_remote_consumer():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Inquire the variable named 'var' created by the producer")
+        var = stream.inquire_variable("var")
+        this_actor.info("Check name and size of the inquired variable")
+        assert var.name == "var"
+        assert var.global_size == (64 * 64 * 64 * 8)
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    host.add_actor("TestActorProducer", inquire_variable_remote_producer)
+    host.add_actor("TestActorConsumer", inquire_variable_remote_consumer)
+    e.run()
+
 if __name__ == '__main__':
     tests = [
         run_test_define_variable,
         run_test_inconsistent_variable_definition,
         run_test_multi_define_variable,
         run_test_distributed_variable,
-        run_test_remove_variable
+        run_test_remove_variable,
+        run_test_inquire_variable_local,
+        run_test_inquire_variable_remote
     ]
 
     for test in tests:
