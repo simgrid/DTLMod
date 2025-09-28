@@ -197,7 +197,7 @@ TEST_F(DTLVariableTest, RemoveVariable)
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
       XBT_INFO("Create a scalar int variable");
       ASSERT_NO_THROW(var = stream->define_variable("var", sizeof(int)));
-      XBT_INFO("Remove an existing variable, which should return true");
+      XBT_INFO("Remove variable named 'var'. It is known, should be true");
       ASSERT_TRUE(stream->remove_variable("var"));
       XBT_INFO("Remove an unknown variable, which should return false");
       ASSERT_FALSE(stream->remove_variable("unknow_var"));

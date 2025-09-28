@@ -115,12 +115,14 @@ PYBIND11_MODULE(dtlmod, m)
           [](Stream& self, const std::string& name, size_t element_size) {
             return self.define_variable(name, element_size);
           },
+          py::call_guard<py::gil_scoped_release>(),
           py::arg("name"), py::arg("element_size"), "Define a scalar variable for this Stream")
       .def(
           "define_variable",
           [](Stream& self, const std::string& name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
              const std::vector<size_t>& count,
              size_t element_size) { return self.define_variable(name, shape, start, count, element_size); },
+          py::call_guard<py::gil_scoped_release>(),
           py::arg("name"), py::arg("shape"), py::arg("start"), py::arg("count"), py::arg("element_size"),
           "Define a variable for this Stream")
       .def("inquire_variable", &Stream::inquire_variable, py::arg("name"), "Retrieve a Variable information by name")

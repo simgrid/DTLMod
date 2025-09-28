@@ -7,8 +7,8 @@ import ctypes
 import sys
 import multiprocessing
 
-from simgrid import Actor, Engine, Host, this_actor
-from dtlmod import DTL, Variable, InconsistentVariableDefinitionException, MultipleVariableDefinitionException
+from simgrid import Engine, this_actor
+from dtlmod import DTL, InconsistentVariableDefinitionException, MultipleVariableDefinitionException
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -31,7 +31,7 @@ def run_test_define_variable():
         dtl = DTL.connect()
         this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream")
-        this_actor.info("Create a scalar int variable");
+        this_actor.info("Create a scalar int variable")
         var = stream.define_variable("scalar", ctypes.sizeof(ctypes.c_int))
         this_actor.info("Create a 3D variable")
         var3D = stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64, 64), 
@@ -42,39 +42,39 @@ def run_test_define_variable():
         assert var3D.global_size == (64 * 64 * 64 * 8)
         this_actor.info("Remove variable named 'var3D'. It is known, should be true")
         assert stream.remove_variable("var3D") == True
-        this_actor.info("Remove variable named 'var2D'. It is unknown, should be false");
+        this_actor.info("Remove variable named 'var2D'. It is unknown, should be false")
         assert stream.remove_variable("var2D") == False
 
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()
 
-    host.add_actor("client", define_variable)
+    host.add_actor("TestActor", define_variable)
     e.run()
 
 def run_test_inconsistent_variable_definition():
     e, host = setup_platform()
 
     def inconsistent_variable_definition():
-        this_actor.info("Connect to the DTL");
+        this_actor.info("Connect to the DTL")
         dtl = DTL.connect()
-        this_actor.info("Create a stream");
+        this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream")
-        this_actor.info("Create a 3D variable with only two offsets, should fail.");
+        this_actor.info("Create a 3D variable with only two offsets, should fail.")
         try:
             stream.define_variable("var3D", (64, 64, 64), (0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))                   
             assert False, "Expected InconsistentVariableDefinitionException was not raised"
         except InconsistentVariableDefinitionException:
             pass  # Test passes
-        this_actor.info("Create a 3D variable with only two element counts, should fail.");
+        this_actor.info("Create a 3D variable with only two element counts, should fail.")
         try:
             stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
             assert False, "Expected InconsistentVariableDefinitionException was not raised"
         except InconsistentVariableDefinitionException:
             pass  # Test passes
-        this_actor.info("Disconnect the actor from the DTL");
+        this_actor.info("Disconnect the actor from the DTL")
         DTL.disconnect()
 
-    host.add_actor("client", inconsistent_variable_definition)
+    host.add_actor("TestActor", inconsistent_variable_definition)
     e.run()
 
 def run_test_multi_define_variable():
@@ -83,7 +83,7 @@ def run_test_multi_define_variable():
     def multi_define_variable():
         dtl = DTL.connect()
         stream = dtl.add_stream("Stream")
-        this_actor.info("Create a scalar int variable");
+        this_actor.info("Create a scalar int variable")
         stream.define_variable("var", ctypes.sizeof(ctypes.c_int))
         this_actor.info("Try to redefine var as a scalar double variable, which should fail")
         try:
@@ -117,17 +117,78 @@ def run_test_multi_define_variable():
         assert var.local_size == 32 * 32 * 32 * 8
         assert var.global_size == 64 * 64 * 64 * 8
 
-        this_actor.info("Disconnect the actor from the DTL");
+        this_actor.info("Disconnect the actor from the DTL")
         DTL.disconnect()
 
-    host.add_actor("client", multi_define_variable)
+    host.add_actor("TestActor", multi_define_variable)
+    e.run()
+
+def run_test_distributed_variable():
+    e, host = setup_platform()
+
+    def distributed_variable_actor1():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Create a 3D variable")
+        var = stream.define_variable("var", (64, 64, 64), (0, 0, 0), (48, 48, 48), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Check local and global sizes")
+        assert var.local_size == 48 * 48 * 48 * 8
+        assert var.global_size == 64 * 64 * 64 * 8
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    def distributed_variable_actor2():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Create a 3D variable with a different shape which should fail")
+        try:
+            stream.define_variable("var", (64, 64), (0, 0), (64, 64), ctypes.sizeof(ctypes.c_double)),
+            assert False, "Expected MultipleVariableDefinitionException was not raised"
+        except MultipleVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Create a 3D variable with the same shape which should work")
+        var = stream.define_variable("var", (64, 64, 64), (48, 48, 48), (16, 16, 16), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Check local and global sizes")
+        assert var.local_size == 16 * 16 * 16 * 8
+        assert var.global_size == 64 * 64 * 64 * 8
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    host.add_actor("TestActor1", distributed_variable_actor1)
+    host.add_actor("TestActor2", distributed_variable_actor2)
+    e.run()
+
+def run_test_remove_variable():
+    e, host = setup_platform()
+
+    def remove_variable():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Create a scalar int variable")
+        stream.define_variable("var", ctypes.sizeof(ctypes.c_int))
+        this_actor.info("Remove variable named 'var'. It is known, should be true")
+        assert stream.remove_variable("var") == True
+        this_actor.info("Remove an unknown variable, which should return false")
+        assert stream.remove_variable("unknow_var") == False
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    host.add_actor("TestActor", remove_variable)
     e.run()
 
 if __name__ == '__main__':
     tests = [
         run_test_define_variable,
         run_test_inconsistent_variable_definition,
-        run_test_multi_define_variable
+        run_test_multi_define_variable,
+        run_test_distributed_variable,
+        run_test_remove_variable
     ]
 
     for test in tests:

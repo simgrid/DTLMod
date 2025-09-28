@@ -5,7 +5,7 @@
 
 import sys
 import multiprocessing
-from simgrid import Actor, Engine, Host, Link, LinkInRoute, NetZone, this_actor
+from simgrid import Engine, Link, LinkInRoute, this_actor
 from dtlmod import DTL
 
 def setup_platform():
