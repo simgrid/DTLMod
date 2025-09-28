@@ -17,7 +17,6 @@ def setup_platform():
 
     root = e.netzone_root
     host = root.add_host("host", "1Gf")
-    disk = host.add_disk("disk", "1kBps", "2kBps")
     root.seal()
 
     DTL.create()
