@@ -30,8 +30,8 @@ namespace py = pybind11;
 using dtlmod::DTL;
 using dtlmod::Engine;
 using dtlmod::Stream;
-using dtlmod::Variable;
 using dtlmod::Transport;
+using dtlmod::Variable;
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(python, "python");
 
@@ -162,26 +162,28 @@ PYBIND11_MODULE(dtlmod, m)
   py::class_<Engine, std::shared_ptr<Engine>> engine(
       m, "Engine", "An Engine defines how data is transferred between the applications and the DTL");
   engine.def_property_readonly("name", &Engine::get_name, "The name of the Engine (read-only)")
-      .def("begin_transaction", &Engine::begin_transaction, py::call_guard<py::gil_scoped_release>(), "Begin a transaction on this Engine")
-      .def("put", &Engine::put, py::arg("var"), py::call_guard<py::gil_scoped_release>(), py::arg("simulated_size_in_bytes"),
-           "Put a Variable in the DTL using this Engine")
-      .def("get", &Engine::get, py::arg("var"), py::call_guard<py::gil_scoped_release>(), "Get a Variable from the DTL using this Engine")
-      .def("end_transaction", &Engine::end_transaction, py::call_guard<py::gil_scoped_release>(), "End a transaction on this Engine")
+      .def("begin_transaction", &Engine::begin_transaction, py::call_guard<py::gil_scoped_release>(),
+           "Begin a transaction on this Engine")
+      .def("put", &Engine::put, py::arg("var"), py::call_guard<py::gil_scoped_release>(),
+           py::arg("simulated_size_in_bytes"), "Put a Variable in the DTL using this Engine")
+      .def("get", &Engine::get, py::arg("var"), py::call_guard<py::gil_scoped_release>(),
+           "Get a Variable from the DTL using this Engine")
+      .def("end_transaction", &Engine::end_transaction, py::call_guard<py::gil_scoped_release>(),
+           "End a transaction on this Engine")
       .def_property_readonly("current_transaction", &Engine::get_current_transaction,
                              "The id of the current transaction on this Engine (read-only)")
       .def("close", &Engine::close, py::call_guard<py::gil_scoped_release>(), "Close this Engine");
 
-    py::enum_<Engine::Type>(engine, "Type", "The type of Engine")
+  py::enum_<Engine::Type>(engine, "Type", "The type of Engine")
       .value("Undefined", Engine::Type::Undefined)
       .value("Staging", Engine::Type::Staging)
       .value("File", Engine::Type::File);
 
-    /* Class Transport */
-    py::class_<Transport> transport(
-      m, "Transport", "The transport method used by an Engine to transfer data");
-    py::enum_<Transport::Method>(transport, "Method", "The transport method used by the Engine")
-        .value("Undefined", Transport::Method::Undefined)
-        .value("MQ", Transport::Method::MQ)
-        .value("Mailbox", Transport::Method::Mailbox)
-        .value("File", Transport::Method::File);
+  /* Class Transport */
+  py::class_<Transport> transport(m, "Transport", "The transport method used by an Engine to transfer data");
+  py::enum_<Transport::Method>(transport, "Method", "The transport method used by the Engine")
+      .value("Undefined", Transport::Method::Undefined)
+      .value("MQ", Transport::Method::MQ)
+      .value("Mailbox", Transport::Method::Mailbox)
+      .value("File", Transport::Method::File);
 }
