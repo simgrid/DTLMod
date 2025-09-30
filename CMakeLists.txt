@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.12)
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/conf/cmake/")
 set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 
-project(dtlmod VERSION 0.1 DESCRIPTION "Data Transport Layer Module")
+project(dtlmod VERSION 0.2 DESCRIPTION "Data Transport Layer Module")
 
 include(GNUInstallDirs)
 find_package(SimGrid 4.0 REQUIRED)
-find_package(FSMod 0.3 REQUIRED)
+find_package(FSMod 0.4 REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 include_directories(
@@ -23,7 +23,7 @@ set(CMAKE_CXX_FLAGS "-O3 -funroll-loops -fno-strict-aliasing -flto=auto")
 
 # build the version number
 set(DTLMOD_VERSION_MAJOR "0")
-set(DTLMOD_VERSION_MINOR "1")
+set(DTLMOD_VERSION_MINOR "2")
 set(DTLMOD_VERSION_PATCH "0")
 set(DTLMOD_VERSION_EXTRA "dev")
 
@@ -160,6 +160,7 @@ set(HEADER_FILES
   include/dtlmod/Stream.hpp
   include/dtlmod/Transport.hpp
   include/dtlmod/Variable.hpp
+  include/dtlmod/version.hpp.in
 )
 
 set (CONFIG_FILES
