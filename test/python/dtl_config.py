@@ -6,6 +6,7 @@
 import sys
 import multiprocessing
 from simgrid import Engine, this_actor
+from fsmod import FileSystem, OneDiskStorage
 from dtlmod import DTL, Stream
 
 def setup_platform():
@@ -18,7 +19,10 @@ def setup_platform():
     disk = host.add_disk("disk", "1kBps", "2kBps")
     root.seal()
 
-    # TODO add file system once bindings of FSMod are available
+    local_storage = OneDiskStorage.create("local_storage", disk)
+    fs = FileSystem.create("fs")
+    FileSystem.register_file_system(root, fs)
+    fs.mount_partition("/scratch/", local_storage, "100MB")
 
     DTL.create("../DTL-config.json")
     return e, host
@@ -31,15 +35,14 @@ def run_test_config_file():
         this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream1")
         this_actor.info("Open the stream")
-        # TODO re-enable file engine test once FSMod bindings are available
-        #engine = stream.open("root:fs:/scratch/file", Stream.Mode.Publish)
-        #this_actor.info(f"Stream 1 is opened ({stream.engine_type},{stream.transport_method})")
-        #assert stream.engine_type == "Engine::Type::File"
-        #assert stream.transport_method == "Transport::Method::File"
+        engine = stream.open("root:fs:/scratch/file", Stream.Mode.Publish)
+        this_actor.info(f"Stream 1 is opened ({stream.engine_type},{stream.transport_method})")
+        assert stream.engine_type == "Engine::Type::File"
+        assert stream.transport_method == "Transport::Method::File"
         this_actor.info("Let the actor sleep for 1 second")
         this_actor.sleep_for(1)
         this_actor.info("Close the engine")
-        #engine.close()
+        engine.close()
 
         this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream2")

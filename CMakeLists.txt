@@ -6,7 +6,7 @@ set(LIBRARY_OUTPUT_PATH ${CMAKE_BINARY_DIR}/lib)
 project(dtlmod VERSION 0.1 DESCRIPTION "Data Transport Layer Module")
 
 include(GNUInstallDirs)
-find_package(SimGrid 4.0.1 REQUIRED)
+find_package(SimGrid 4.0 REQUIRED)
 find_package(FSMod 0.3 REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
