@@ -23,7 +23,7 @@ jobs:
       - name: Install prereqs
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgraphviz-dev libboost-all-dev nlohmann-json3-dev
+          sudo apt-get install -y libgraphviz-dev libboost-all-dev nlohmann-json3-dev pybind11-dev
 
       - name: Install SimGrid
         run: |
@@ -71,6 +71,7 @@ jobs:
           sudo make install
           make -j4 unit_tests
           ./unit_tests
+          export PYTHONPATH="/usr/local/lib/python3.13/dist-packages/"
           cd test/python
           python ./unit_tests_python.py
           cd ../..
