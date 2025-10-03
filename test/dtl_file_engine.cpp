@@ -360,7 +360,7 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
       XBT_INFO("Check local size of var_sub. Should be 3,200,000,000 bytes");
       ASSERT_DOUBLE_EQ(var_sub->get_local_size(), 8. * 20000 * 20000);
 
-      XBT_INFO("Select transaction #2 and #3 (2 transactions from #2)");
+      XBT_INFO("Select transactions #2 and #3 (2 transactions from #2)");
       ASSERT_NO_THROW(var_sub->set_transaction_selection(2, 2));
       engine->begin_transaction();
       engine->get(var_sub);

@@ -67,10 +67,10 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
       std::shared_ptr<dtlmod::Stream> no_transport_method_stream;
       XBT_INFO("Connect to the DTL");
       ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
-      XBT_INFO("Create the streams");
+      XBT_INFO("Create the streams with missing or incorrect settings");
       ASSERT_NO_THROW(no_engine_type_stream = dtl->add_stream("no_engine_type_stream"));
       ASSERT_NO_THROW(no_engine_type_stream->set_transport_method(dtlmod::Transport::Method::File));
-      ASSERT_NO_THROW(no_transport_method_stream = dtl->add_stream("nno_transport_method_stream"));
+      ASSERT_NO_THROW(no_transport_method_stream = dtl->add_stream("no_transport_method_stream"));
       ASSERT_NO_THROW(no_transport_method_stream->set_engine_type(dtlmod::Engine::Type::File));
       XBT_INFO("Try to open the stream with no engine type set, which should fail");
       ASSERT_THROW(no_engine_type_stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish),
@@ -105,7 +105,7 @@ TEST_F(DTLStreamTest, PublishFileStreamOpenClose)
       ASSERT_NO_THROW(stream->set_engine_type(dtlmod::Engine::Type::File));
       XBT_INFO("Open the Stream in Stream::Mode::Publish mode");
       ASSERT_NO_THROW(engine = stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish));
-      XBT_INFO("Stream 1 is opened (%s, %s)", stream->get_engine_type_str(), stream->get_transport_method_str());
+      XBT_INFO("Stream is opened (%s, %s)", stream->get_engine_type_str(), stream->get_transport_method_str());
       ASSERT_TRUE(strcmp(stream->get_engine_type_str(), "Engine::Type::File") == 0);
       ASSERT_TRUE(strcmp(stream->get_transport_method_str(), "Transport::Method::File") == 0);
       XBT_INFO("Let actor %s sleep for 1 second", sg4::this_actor::get_cname());

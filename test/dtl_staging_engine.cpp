@@ -74,7 +74,7 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
       ASSERT_NO_THROW(engine->begin_transaction());
       XBT_INFO("Put Variable 'var' into the DTL");
       ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
-      XBT_INFO("End a Transaction");
+      XBT_INFO("End the Transaction");
       ASSERT_NO_THROW(engine->end_transaction());
 
       XBT_INFO("Close the engine");
@@ -89,8 +89,9 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
       auto stream  = dtl->add_stream("my-output");
       auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
       auto var_sub = stream->inquire_variable("var");
-      auto shape   = var_sub->get_shape();
       ASSERT_TRUE(var_sub->get_name() == "var");
+      auto shape   = var_sub->get_shape();
+      ASSERT_TRUE(shape[0] == 20000 && shape[1] == 20000);
       ASSERT_DOUBLE_EQ(var_sub->get_global_size(), 8. * 20000 * 20000);
 
       XBT_INFO("Set a selection for 'var_sub': Just get the second half of the first dimension");
@@ -100,7 +101,7 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
       ASSERT_NO_THROW(engine->begin_transaction());
       XBT_INFO("Get a subset of the Variable 'var' from the DTL");
       ASSERT_NO_THROW(engine->get(var_sub));
-      XBT_INFO("End a Transaction");
+      XBT_INFO("End the Transaction");
       ASSERT_NO_THROW(engine->end_transaction());
       XBT_INFO("Check local size of var_sub. Should be 1,600,000,000 bytes");
       ASSERT_DOUBLE_EQ(var_sub->get_local_size(), 8. * 10000 * 20000);
