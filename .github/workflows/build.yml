@@ -71,6 +71,7 @@ jobs:
           sudo make install
           make -j4 unit_tests
           ./unit_tests
+          export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
           export PYTHONPATH="/usr/local/lib/python3.12/dist-packages/"
           cd test/python
           python ./unit_tests_python.py
