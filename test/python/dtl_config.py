@@ -24,7 +24,7 @@ def setup_platform():
     FileSystem.register_file_system(root, fs)
     fs.mount_partition("/scratch/", local_storage, "100MB")
 
-    DTL.create("../DTL-config.json")
+    DTL.create("../../config_files/test/DTL-config.json")
     return e, host
 
 def run_test_config_file():
