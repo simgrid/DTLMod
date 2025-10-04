@@ -80,6 +80,34 @@ jobs:
           lcov --remove coverage.info '*/test/*' '*/include/*'
           bash <(curl -s https://codecov.io/bash) -f coverage.info -t ${CODECOV_TOKEN}
 
+      - name: Install sonar-scanner and build-wrapper
+        uses: SonarSource/sonarcloud-github-c-cpp@v2
+      - name: Run build-wrapper
+        run: |
+          mkdir build
+          cmake -S . -B build
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --config Release
+      - name: Run tests to generate coverage statistics
+        run: |
+          cd build
+          make -j4 unit_tests 
+          ./unit_tests
+          export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
+          export PYTHONPATH="/usr/local/lib/python3.12/dist-packages/"
+          cd test/python
+          python ./unit_tests_python.py
+          cd ../..
+      - name: Collect coverage into one XML report
+        run: |
+          gcovr -e test -e examples --sonarqube -u -o coverage.xml --exclude-throw-branches \
+                --gcov-ignore-parse-errors --exclude-unreachable-branches
+      - name: Run sonar-scanner
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json" \
+                        --define sonar.coverageReportPaths=coverage.xml
 
       - name: Install Doxygen and Sphinx
         run: |
