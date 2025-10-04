@@ -18,8 +18,8 @@ def setup_platform():
     prod_host = zone.add_host("prod_host", "1Gf")
     prod_host.core_count = 2
     cons_host = zone.add_host("cons_host", "1Gf")
-    prod_disk = prod_host.add_disk("prod_disk", "1kBps", "2kBps")
-    cons_disk = cons_host.add_disk("cons_disk", "1kBps", "2kBps")
+    prod_host.add_disk("prod_disk", "1kBps", "2kBps")
+    cons_host.add_disk("cons_disk", "1kBps", "2kBps")
     
     pfs_server = zone.add_host("pfs_server", "1Gf")
     pfs_disks = []
@@ -43,7 +43,7 @@ def setup_platform():
     return e, prod_host, cons_host
 
 def run_test_incorrect_stream_settings():
-    e, prod_host, cons_host = setup_platform()
+    e, prod_host, _ = setup_platform()
     def test_producer_actor():
         this_actor.info("Connect to the DTL")
         dtl = DTL.connect()
@@ -77,7 +77,7 @@ def run_test_incorrect_stream_settings():
     e.run()
 
 def run_test_publish_file_stream_open_close():
-    e, prod_host, cons_host = setup_platform()
+    e, prod_host, _ = setup_platform()
     def test_producer_actor():
         this_actor.info("Connect to the DTL")
         dtl = DTL.connect()

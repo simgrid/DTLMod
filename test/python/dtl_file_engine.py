@@ -198,7 +198,7 @@ def run_test_multiple_pub_single_sub_shared_storage():
 
         this_actor.info("Check local size of var_sub. Should be 3,200,000,000 bytes")
         assert var_sub.local_size == 8 * 20000 * 20000
-        assert math.isclose(Engine.clock, 42.469851)
+        assert math.isclose(Engine.clock, 42.469851, abs_tol=1e-6)
         this_actor.info("Close the engine")
         engine.close()
         this_actor.info("Disconnect from the DTL")

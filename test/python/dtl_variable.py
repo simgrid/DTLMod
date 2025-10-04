@@ -31,16 +31,16 @@ def run_test_define_variable():
         this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream")
         this_actor.info("Create a scalar int variable")
-        var = stream.define_variable("scalar", ctypes.sizeof(ctypes.c_int))
+        stream.define_variable("scalar", ctypes.sizeof(ctypes.c_int))
         this_actor.info("Create a 3D variable")
-        var3D = stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64, 64), 
+        var3d = stream.define_variable("var3d", (64, 64, 64), (0, 0, 0), (64, 64, 64), 
                                        ctypes.sizeof(ctypes.c_double))
         this_actor.info("Check name")
-        assert var3D.name == "var3D"
+        assert var3d.name == "var3d"
         this_actor.info("Check size: should be 64^3 times 8 as elements are double")
-        assert var3D.global_size == (64 * 64 * 64 * 8)
-        this_actor.info("Remove variable named 'var3D'. It is known, should be true")
-        assert stream.remove_variable("var3D") == True
+        assert var3d.global_size == (64 * 64 * 64 * 8)
+        this_actor.info("Remove variable named 'var3d'. It is known, should be true")
+        assert stream.remove_variable("var3d") == True
         this_actor.info("Remove variable named 'var2D'. It is unknown, should be false")
         assert stream.remove_variable("var2D") == False
 
@@ -60,13 +60,13 @@ def run_test_inconsistent_variable_definition():
         stream = dtl.add_stream("Stream")
         this_actor.info("Create a 3D variable with only two offsets, should fail.")
         try:
-            stream.define_variable("var3D", (64, 64, 64), (0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))                   
+            stream.define_variable("var3d", (64, 64, 64), (0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))                   
             assert False, "Expected InconsistentVariableDefinitionException was not raised"
         except InconsistentVariableDefinitionException:
             pass  # Test passes
         this_actor.info("Create a 3D variable with only two element counts, should fail.")
         try:
-            stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
+            stream.define_variable("var3d", (64, 64, 64), (0, 0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
             assert False, "Expected InconsistentVariableDefinitionException was not raised"
         except InconsistentVariableDefinitionException:
             pass  # Test passes
@@ -97,21 +97,21 @@ def run_test_multi_define_variable():
         except MultipleVariableDefinitionException:
             pass  # Test passes
         this_actor.info("Define a new 3D variable")
-        stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+        stream.define_variable("var3d", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
         this_actor.info("Try to redefine var2 as a 2D variable, which should fail")
         try:
-            stream.define_variable("var3D", (64, 64), (0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
+            stream.define_variable("var3d", (64, 64), (0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
             assert False, "Expected MultipleVariableDefinitionException was not raised"
         except MultipleVariableDefinitionException:
             pass  # Test passes
         this_actor.info("Try to redefine var as a 3D int variable, which should fail")
         try:
-            stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_int)),
+            stream.define_variable("var3d", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_int)),
             assert False, "Expected MultipleVariableDefinitionException was not raised"
         except MultipleVariableDefinitionException:
             pass  # Test passes
         this_actor.info("Try to redefine starts and counts which should work")
-        var = stream.define_variable("var3D", (64, 64, 64), (16, 16, 16), (32, 32, 32), ctypes.sizeof(ctypes.c_double))
+        var = stream.define_variable("var3d", (64, 64, 64), (16, 16, 16), (32, 32, 32), ctypes.sizeof(ctypes.c_double))
         this_actor.info("Check local and global sizes")
         assert var.local_size == 32 * 32 * 32 * 8
         assert var.global_size == 64 * 64 * 64 * 8
@@ -190,7 +190,7 @@ def run_test_inquire_variable_local():
         this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream")
         this_actor.info("Create a 3D variable")
-        var = stream.define_variable("var", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+        stream.define_variable("var", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
         this_actor.info("Inquire this variable and store it in var2")
         var2 = stream.inquire_variable("var")
         this_actor.info("Check name and size of the inquired variable")
@@ -217,7 +217,7 @@ def run_test_inquire_variable_remote():
         this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream")
         this_actor.info("Create a 3D variable")
-        var = stream.define_variable("var", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+        stream.define_variable("var", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
         this_actor.info("Disconnect the actor from the DTL")
         DTL.disconnect()
 

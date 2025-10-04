@@ -83,9 +83,9 @@ PYBIND11_MODULE(dtlmod, m)
                   "Create the DTL (no return)")
       .def_static("create", py::overload_cast<const std::string&>(&DTL::create),
                   py::call_guard<py::gil_scoped_release>(), py::arg("filename"), "Create the DTL (no return)")
-      .def_static("connect", py::overload_cast<>(&DTL::connect), py::call_guard<py::gil_scoped_release>(),
+      .def_static("connect", &DTL::connect, py::call_guard<py::gil_scoped_release>(),
                   "Connect an Actor to the DTL")
-      .def_static("disconnect", py::overload_cast<>(&DTL::disconnect), py::call_guard<py::gil_scoped_release>(),
+      .def_static("disconnect", &DTL::disconnect, py::call_guard<py::gil_scoped_release>(),
                   "Disconnect an Actor from the DTL")
       .def_property_readonly("has_active_connections", &DTL::has_active_connections,
                              "Check whether some simulated actors are currently connected to the DTL (read-only)")
