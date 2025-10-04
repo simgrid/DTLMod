@@ -13,11 +13,12 @@ namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class StagingTransport : public Transport {
+  using Transport::Transport;
   friend StagingEngine;
   std::unordered_map<std::string, sg4::MessageQueue*> publisher_put_requests_mq_;
 
 protected:
-  void add_publisher(unsigned int publisher_id) override;
+  void add_publisher(unsigned long publisher_id) override;
   virtual void create_rendez_vous_points()                               = 0;
   virtual void get_requests_and_do_put(sg4::ActorPtr publisher)          = 0;
   virtual void get_rendez_vous_point_and_do_get(const std::string& name) = 0;
@@ -28,7 +29,6 @@ protected:
 
 public:
   std::unordered_map<std::string, sg4::ActivitySet> pending_put_requests;
-  explicit StagingTransport(Engine* engine) : Transport(engine) {}
   ~StagingTransport() override = default;
   void put(std::shared_ptr<Variable> var, size_t /*simulated_size_in_bytes*/) override;
   void get(std::shared_ptr<Variable> var) override;

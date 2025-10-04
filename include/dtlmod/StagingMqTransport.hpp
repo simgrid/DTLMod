@@ -18,15 +18,13 @@ namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class StagingMqTransport : public StagingTransport {
+  using StagingTransport::StagingTransport;
   std::unordered_map<std::string, sg4::MessageQueue*> mqueues_;
 
 protected:
   void create_rendez_vous_points() override;
   void get_requests_and_do_put(sg4::ActorPtr publisher) override;
   void get_rendez_vous_point_and_do_get(const std::string& name) override;
-
-public:
-  explicit StagingMqTransport(Engine* engine) : StagingTransport(engine) {}
 };
 /// \endcond
 

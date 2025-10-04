@@ -23,10 +23,10 @@ class Transport {
   std::unordered_map<std::string, sg4::MessageQueue*> publisher_put_requests_mq_;
 
 protected:
-  virtual void add_publisher(unsigned int /* publisher_id */) { /* No-op (for now)*/ }
+  virtual void add_publisher(unsigned long /* publisher_id */) { /* No-op (for now)*/ }
 
-  virtual void add_subscriber(unsigned int /* subscriber_id */) { /* No-op (for now)*/ }
-  std::vector<std::pair<std::string, sg_size_t>> check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var);
+  virtual void add_subscriber(unsigned long /* subscriber_id */) { /* No-op (for now)*/ }
+  std::vector<std::pair<std::string, sg_size_t>> check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var) const;
 
 public:
   enum class Method { Undefined, File, Mailbox, MQ };

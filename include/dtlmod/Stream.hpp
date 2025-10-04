@@ -34,7 +34,7 @@ class Stream {
   std::shared_ptr<Engine> engine_     = nullptr;
   Engine::Type engine_type_           = Engine::Type::Undefined;
   Transport::Method transport_method_ = Transport::Method::Undefined;
-  sg4::MutexPtr mutex_;
+  sg4::MutexPtr mutex_                = sg4::Mutex::create();
 
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
 
@@ -63,7 +63,10 @@ protected:
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  Stream(const std::string& name, DTL* dtl) : name_(name), dtl_(dtl), mutex_(sg4::Mutex::create()) {}
+  Stream(const std::string& name, DTL* dtl) : name_(name), dtl_(dtl) {}
+  ~Stream() noexcept = default;
+  Stream(const Stream& other) noexcept = default;
+  Stream& operator=(const Stream& other) noexcept = default;
   /// \endcond
 
   /// @brief Helper function to print out the name of the Stream.
@@ -100,10 +103,10 @@ public:
 
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Publish.
   /// @return The number of publishers for that Stream.
-  [[nodiscard]] unsigned int get_num_publishers() const { return engine_->get_num_publishers(); }
+  [[nodiscard]] size_t get_num_publishers() const { return engine_->get_num_publishers(); }
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Subscribe.
   /// @return The number of subscribers for that Stream.
-  [[nodiscard]] unsigned int get_num_subscribers() const { return engine_->get_num_subscribers(); }
+  [[nodiscard]] size_t get_num_subscribers() const { return engine_->get_num_subscribers(); }
 
   /******* Variable Factory *******/
 

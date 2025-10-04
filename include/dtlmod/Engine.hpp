@@ -54,10 +54,10 @@ public:
   std::shared_ptr<Transport> transport_ = nullptr;
   Stream* stream_;
 
-  sg4::MutexPtr pub_mutex_;
+  sg4::MutexPtr pub_mutex_ = sg4::Mutex::create();
   std::set<sg4::ActorPtr> publishers_;
   sg4::ActivitySet pub_transaction_;
-  sg4::ConditionVariablePtr pub_transaction_completed_;
+  sg4::ConditionVariablePtr pub_transaction_completed_ = sg4::ConditionVariable::create();
   sg4::BarrierPtr pub_barrier_               = nullptr;
   unsigned int current_pub_transaction_id_   = 0;
   unsigned int completed_pub_transaction_id_ = 0;
@@ -66,7 +66,7 @@ public:
   virtual void end_pub_transaction()         = 0;
   virtual void pub_close()                   = 0;
 
-  sg4::MutexPtr sub_mutex_;
+  sg4::MutexPtr sub_mutex_ = sg4::Mutex::create();
   std::set<sg4::ActorPtr> subscribers_;
   sg4::ActivitySet sub_transaction_;
 
@@ -77,7 +77,7 @@ public:
   virtual void end_sub_transaction()       = 0;
   virtual void sub_close()                 = 0;
 
-  void export_metadata_to_file();
+  void export_metadata_to_file() const;
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -113,9 +113,6 @@ public:
       : name_(name)
       , type_(type)
       , stream_(stream)
-      , pub_mutex_(sg4::Mutex::create())
-      , sub_mutex_(sg4::Mutex::create())
-      , pub_transaction_completed_(sg4::ConditionVariable::create())
   {
   }
   virtual ~Engine() = default;
@@ -134,11 +131,11 @@ public:
   /// @brief Put a Variable in the DTL using a specific Engine.
   /// @param var The variable to put in the DTL
   /// @param simulated_size_in_bytes The size of the (subset of) the Variable
-  void put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes);
+  void put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) const;
 
   /// @brief Get a Variable from the DTL
   /// @param var The Variable to get in the DTL (Have to do an Inquire first).
-  void get(std::shared_ptr<Variable> var);
+  void get(std::shared_ptr<Variable> var) const;
 
   /// @brief End a transaction on an Engine.
   void end_transaction();

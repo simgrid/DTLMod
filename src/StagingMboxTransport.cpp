@@ -33,7 +33,7 @@ void StagingMboxTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
   // corresponding publisher-subscriber couple
   while (not pending_put_requests[pub_name].empty()) {
     auto request     = boost::static_pointer_cast<sg4::Mess>(pending_put_requests[pub_name].wait_any());
-    auto* subscriber = request->get_sender();
+    const auto* subscriber = request->get_sender();
     auto* req_size   = static_cast<size_t*>(request->get_payload());
     if (*req_size > 0) {
       std::string mbox_name = pub_name + "_" + subscriber->get_name() + "_mbox";

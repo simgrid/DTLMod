@@ -21,8 +21,7 @@ namespace dtlmod {
 
 // FileEngines require to know where to (virtually) write file. This information is given by fullpath which has the
 // following format: NetZone:FileSystem:PathToDirectory
-FileEngine::FileEngine(const std::string& fullpath, Stream* stream)
-    : Engine(fullpath, stream, Engine::Type::File), pub_activities_completed_(sg4::ConditionVariable::create())
+FileEngine::FileEngine(const std::string& fullpath, Stream* stream) : Engine(fullpath, stream, Engine::Type::File)
 {
   XBT_DEBUG("Create a new FileEngine writing in %s", fullpath.c_str());
 

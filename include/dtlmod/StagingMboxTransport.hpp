@@ -16,6 +16,7 @@ namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class StagingMboxTransport : public StagingTransport {
+  using StagingTransport::StagingTransport;
   std::unordered_map<std::string, sg4::Mailbox*> mboxes_;
 
 protected:
@@ -23,8 +24,6 @@ protected:
   void get_requests_and_do_put(sg4::ActorPtr publisher) override;
   void get_rendez_vous_point_and_do_get(const std::string& name) override;
 
-public:
-  StagingMboxTransport(Engine* engine) : StagingTransport(engine) {}
 };
 /// \endcond
 

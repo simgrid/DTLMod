@@ -15,7 +15,7 @@ namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 
 std::vector<std::pair<std::string, sg_size_t>>
-Transport::check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var)
+Transport::check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var) const
 {
   auto self = sg4::Actor::self();
   // If the actor made no selection, get the full variable, ie. use a vector full of zeros as start and the global

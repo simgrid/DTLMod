@@ -119,7 +119,7 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
 
     if (std::all_of(something_to_get.begin(), something_to_get.end(), [](bool v) { return v; })) {
       XBT_DEBUG("Total size to read from %s: %zu)", where.c_str(), size_to_get);
-      get_sizes_per_block.push_back({where, size_to_get});
+      get_sizes_per_block.emplace_back(std::make_pair(where, size_to_get));
     }
   }
   return get_sizes_per_block;

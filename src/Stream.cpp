@@ -187,7 +187,7 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
                                std::to_string(i));
   }
 
-  std::unique_lock<sg4::Mutex> lock(*mutex_);
+  std::unique_lock lock(*mutex_);
   auto publisher = sg4::Actor::self();
   auto var       = variables_.find(name);
   if (var != variables_.end()) {
@@ -202,7 +202,7 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
     auto new_var = std::make_shared<Variable>(name, element_size, shape);
     new_var->set_local_start(publisher, start);
     new_var->set_local_count(publisher, count);
-    variables_.insert({name, new_var});
+    variables_.try_emplace(name, new_var);
     return new_var;
   }
 }

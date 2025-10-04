@@ -31,13 +31,13 @@ void Metadata::export_to_file(std::ofstream& ostream) const
 
       ostream << "    " << where.c_str() << ": [";
       XBT_DEBUG("    Actor %s wrote:", actor->get_cname());
-      unsigned int last = block_start.size() - 1;
-      for (unsigned int i = 0; i < last; i++) {
+      unsigned long last = block_start.size() - 1;
+      for (unsigned long i = 0; i < last; i++) {
         ostream << block_start[i] << ":" << block_start[i] + block_count[i] << ", ";
-        XBT_DEBUG("      Dimension %u : [%zu..%zu]", i + 1, block_start[i], block_start[i] + block_count[i]);
+        XBT_DEBUG("      Dimension %lu : [%zu..%zu]", i + 1, block_start[i], block_start[i] + block_count[i]);
       }
       ostream << block_start[last] << ":" << block_start[last] + block_count[last] << "]" << std::endl;
-      XBT_DEBUG("      Dimension %u : [%zu..%zu]", last + 1, block_start[last], block_start[last] + block_count[last]);
+      XBT_DEBUG("      Dimension %lu : [%zu..%zu]", last + 1, block_start[last], block_start[last] + block_count[last]);
 
       XBT_DEBUG("    in: %s", where.c_str());
     }

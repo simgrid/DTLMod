@@ -33,7 +33,7 @@ class FileEngine : public Engine {
   std::shared_ptr<sgfs::Partition> partition_;
   std::string working_directory_;
   std::string dataset_;
-  sg4::ConditionVariablePtr pub_activities_completed_;
+  sg4::ConditionVariablePtr pub_activities_completed_ = sg4::ConditionVariable::create();
   std::unordered_map<sg4::ActorPtr, sg4::ActivitySet> file_sub_transaction_;
   std::unordered_map<sg4::ActorPtr, sg4::ActivitySet> file_pub_transaction_;
 

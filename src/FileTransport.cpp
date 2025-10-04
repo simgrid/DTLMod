@@ -19,9 +19,9 @@ namespace dtlmod {
 ////////////// PUBLISHER SIDE //////////////
 ////////////////////////////////////////////
 
-void FileTransport::add_publisher(unsigned int publisher_id)
+void FileTransport::add_publisher(unsigned long publisher_id)
 {
-  auto* e       = static_cast<FileEngine*>(get_engine());
+  const auto* e = static_cast<FileEngine*>(get_engine());
   auto self     = sg4::Actor::self();
   auto filename = e->get_path_to_dataset() + "data." + std::to_string(publisher_id);
   // Publishers write everything in a single file.
@@ -41,12 +41,12 @@ void FileTransport::put(std::shared_ptr<Variable> var, size_t size)
   var->add_transaction_metadata(tid, self, file->get_path());
 
   XBT_DEBUG("Actor '%s' is writing %lu bytes into file '%s'", self->get_cname(), size, file->get_path().c_str());
-  to_write_in_transaction_[self].push_back(std::make_pair(file, size));
+  to_write_in_transaction_[self].emplace_back(std::make_pair(file, size));
 }
 
-void FileTransport::close_pub_files()
+void FileTransport::close_pub_files() const
 {
-  for (auto [actor, file] : publishers_to_files_) {
+  for (const auto& [actor, file] : publishers_to_files_) {
     XBT_DEBUG("Closing %s", file->get_path().c_str());
     file->close();
   }
@@ -71,7 +71,7 @@ void FileTransport::get(std::shared_ptr<Variable> var)
       XBT_DEBUG("Actor '%s' is opening file '%s'", self->get_cname(), filename.c_str());
       auto file = fs->open(filename, "r");
       // Keep track of what to read from this file for this get
-      to_read_in_transaction_[self].push_back(std::make_pair(file, size));
+      to_read_in_transaction_[self].emplace_back(std::make_pair(file, size));
     }
   }
 }

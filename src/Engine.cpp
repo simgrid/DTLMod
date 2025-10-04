@@ -36,13 +36,13 @@ void Engine::begin_transaction()
 }
 
 /// The actual data transport is delegated to the Transport method associated to the Engine.
-void Engine::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes)
+void Engine::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) const
 {
   transport_->put(var, simulated_size_in_bytes);
 }
 
 /// The actual data transport is delegated to the Transport method associated to the Engine.
-void Engine::get(std::shared_ptr<Variable> var)
+void Engine::get(std::shared_ptr<Variable> var) const
 {
   transport_->get(var);
 }
@@ -81,7 +81,7 @@ void Engine::add_subscriber(sg4::ActorPtr actor)
   subscribers_.insert(actor);
 }
 
-void Engine::export_metadata_to_file()
+void Engine::export_metadata_to_file() const
 {
   std::string filename = boost::replace_all_copy(name_, "/", "#");
   std::ofstream metadata_export(filename + "#md." +

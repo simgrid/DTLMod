@@ -17,6 +17,7 @@ namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class FileTransport : public Transport {
+  using Transport::Transport;
   friend class Engine;
   friend class FileEngine;
   std::unordered_map<sg4::ActorPtr, std::shared_ptr<sgfs::File>> publishers_to_files_;
@@ -26,8 +27,8 @@ class FileTransport : public Transport {
       to_read_in_transaction_;
 
 protected:
-  void add_publisher(unsigned int publisher_id) override;
-  void close_pub_files();
+  void add_publisher(unsigned long publisher_id) override;
+  void close_pub_files() const;
   void close_sub_files(sg4::ActorPtr self);
   const std::vector<std::pair<std::shared_ptr<sgfs::File>, sg_size_t>>&
   get_to_write_in_transaction_by_actor(sg4::ActorPtr actor)
@@ -44,8 +45,6 @@ protected:
   void clear_to_read_in_transaction(sg4::ActorPtr actor) { to_read_in_transaction_[actor].clear(); }
 
 public:
-  explicit FileTransport(Engine* engine) : Transport(engine) {}
-
   void put(std::shared_ptr<Variable> var, size_t size) override;
   void get(std::shared_ptr<Variable> var) override;
 };
