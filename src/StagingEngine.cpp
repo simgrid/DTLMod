@@ -35,7 +35,7 @@ void StagingEngine::create_transport(const Transport::Method& transport_method)
 
 void StagingEngine::begin_pub_transaction()
 {
-  if (not pub_transaction_in_progress_) {
+  if (!pub_transaction_in_progress_) {
     pub_transaction_in_progress_ = true;
     current_pub_transaction_id_++;
     XBT_DEBUG("Publish Transaction %u started by %s", current_pub_transaction_id_, sg4::Actor::self()->get_cname());
@@ -69,7 +69,7 @@ void StagingEngine::begin_pub_transaction()
 void StagingEngine::end_pub_transaction()
 {
   // This is the end of the first transaction, create a barrier
-  if (not pub_barrier_) {
+  if (!pub_barrier_) {
     XBT_DEBUG("Create a barrier for %zu publishers", publishers_.size());
     pub_barrier_ = sg4::Barrier::create(publishers_.size());
   }
@@ -93,7 +93,7 @@ void StagingEngine::pub_close()
 {
   auto self = sg4::Actor::self();
   XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());
-  if (not pub_closing_) {
+  if (!pub_closing_) {
     // I'm the first to close
     pub_closing_ = true;
     XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
@@ -124,7 +124,7 @@ void StagingEngine::begin_sub_transaction()
     std::static_pointer_cast<StagingTransport>(transport_)->create_rendez_vous_points();
   }
 
-  if (not sub_transaction_in_progress_) {
+  if (!sub_transaction_in_progress_) {
     current_sub_transaction_id_++;
     sub_transaction_in_progress_ = true;
   }
@@ -149,14 +149,13 @@ void StagingEngine::begin_sub_transaction()
 void StagingEngine::end_sub_transaction()
 {
   // This is the end of the first transaction, create a barrier
-  if (not sub_barrier_) {
+  if (!sub_barrier_) {
     XBT_DEBUG("Create a barrier for %zu subscribers", subscribers_.size());
     sub_barrier_ = sg4::Barrier::create(subscribers_.size());
   }
 
   if (sub_barrier_->wait()) {
     XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
-    // for (unsigned int i = 0; i < sub_transaction_.size(); i++)
     sub_transaction_.wait_all();
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     sub_transaction_.clear();
@@ -177,7 +176,7 @@ void StagingEngine::sub_close()
 {
   auto self = sg4::Actor::self();
   XBT_DEBUG("Subscriber '%s' is closing the engine", self->get_cname());
-  if (not sub_closing_) {
+  if (!sub_closing_) {
     // I'm the first to close
     sub_closing_ = true;
     XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());

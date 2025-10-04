@@ -14,7 +14,6 @@
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/FileEngine.hpp"
 
-// XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
 XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtl_file_engine, dtlmod, "DTL logging about file-based Engines");
 
 namespace dtlmod {
@@ -35,7 +34,7 @@ FileEngine::FileEngine(const std::string& fullpath, Stream* stream)
 
   // Get the NetZone first
   netzone_ = sg4::Engine::get_instance()->netzone_by_name_or_null(tokens[0]);
-  if (not netzone_)
+  if (!netzone_)
     throw std::invalid_argument("Unknown NetZone named: " + tokens[0]);
 
   // Get the file system in this NetZone. If no file system with the given name exists, the .at() raises an exception
@@ -43,7 +42,7 @@ FileEngine::FileEngine(const std::string& fullpath, Stream* stream)
 
   // Extract the partition from the PathToDirectory
   partition_ = file_system_->get_partition_for_path_or_null(tokens[2]);
-  if (not partition_)
+  if (!partition_)
     throw std::invalid_argument("Cannot find a partition for that name: " + tokens[2]);
 
   // Parse the path within the partition for debug purposes
@@ -54,7 +53,7 @@ FileEngine::FileEngine(const std::string& fullpath, Stream* stream)
             dataset_.c_str());
 
   // If this directory doesn't exist yet, create it
-  if (not file_system_->directory_exists(tokens[2])) {
+  if (!file_system_->directory_exists(tokens[2])) {
     XBT_DEBUG("Creating Directory '%s' on '%s' partition", path_at_mp.c_str(), partition_->get_cname());
     file_system_->create_directory(tokens[2]);
   }
@@ -76,7 +75,7 @@ void FileEngine::begin_pub_transaction()
   auto self      = sg4::Actor::self();
   auto transport = std::static_pointer_cast<FileTransport>(transport_);
 
-  if (not pub_transaction_in_progress_) {
+  if (!pub_transaction_in_progress_) {
     pub_transaction_in_progress_ = true;
     current_pub_transaction_id_++;
     XBT_DEBUG("Publish Transaction %u started by %s", current_pub_transaction_id_, sg4::Actor::self()->get_cname());
@@ -101,7 +100,7 @@ void FileEngine::end_pub_transaction()
   auto transport = std::static_pointer_cast<FileTransport>(transport_);
 
   // This is the end of the first transaction, create a barrier
-  if (not pub_barrier_) {
+  if (!pub_barrier_) {
     XBT_DEBUG("Create a barrier for %zu publishers", publishers_.size());
     pub_barrier_ = sg4::Barrier::create(publishers_.size());
   }
@@ -156,7 +155,7 @@ void FileEngine::pub_close()
 void FileEngine::begin_sub_transaction()
 {
   // Only one subscriber has to do this
-  if (not sub_transaction_in_progress_) {
+  if (!sub_transaction_in_progress_) {
     sub_transaction_in_progress_ = true;
     current_sub_transaction_id_++;
     XBT_DEBUG("Subscribe Transaction %u started by %s", current_sub_transaction_id_, sg4::Actor::self()->get_cname());

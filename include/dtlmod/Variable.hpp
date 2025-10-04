@@ -87,7 +87,7 @@ public:
   [[nodiscard]] const std::vector<size_t>& get_shape() const { return shape_; }
   /// @brief Get the size of the elements stored in the Variable.
   /// @return The elements' size.
-  [[nodiscard]] const size_t get_element_size() const { return element_size_; }
+  [[nodiscard]] size_t get_element_size() const { return element_size_; }
 
   /// @brief Get the global size of the Variable.
   /// @return The computed size.

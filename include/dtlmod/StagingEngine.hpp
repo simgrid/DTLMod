@@ -36,7 +36,7 @@ public:
   {
   }
 
-  void create_transport(const Transport::Method& transport_method);
+  void create_transport(const Transport::Method& transport_method) override;
 };
 /// \endcond
 

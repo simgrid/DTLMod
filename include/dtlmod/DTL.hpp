@@ -49,7 +49,7 @@ public:
 
   /// @brief Helper function to check whether some simulated actors are currently connected to the DTL.
   /// @return A boolean value.
-  bool has_active_connections() const { return not active_connections_.empty(); }
+  bool has_active_connections() const { return !active_connections_.empty(); }
 
   /// @brief Add a data stream to the Data Transport Layer.
   /// @param name The name of the Stream to add to the DTL.

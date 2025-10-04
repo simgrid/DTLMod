@@ -36,7 +36,7 @@ def run_test_sync_con_sync_decon():
 
     def sync_con_sync_decon():
         this_actor.info("Connect to the DTL")
-        dtl = DTL.connect()
+        DTL.connect()
         this_actor.sleep_for(1)
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()
@@ -52,7 +52,7 @@ def run_test_async_con_sync_decon():
     def async_con_sync_decon(idx):
         this_actor.sleep_for(0.1 * idx)
         this_actor.info("Connect to the DTL")
-        dtl = DTL.connect()
+        DTL.connect()
         this_actor.sleep_for(1 - (0.1 * idx))
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()
@@ -66,7 +66,7 @@ def run_test_sync_con_async_decon():
     e, hosts = setup_platform()
 
     def sync_con_async_decon(idx):
-        dtl = DTL.connect()
+        DTL.connect()
         this_actor.sleep_for(1 - (0.1 * idx))
         this_actor.sleep_for(1)
         DTL.disconnect()
@@ -81,7 +81,7 @@ def run_test_async_con_async_decon():
 
     def async_con_async_decon(idx):
         this_actor.sleep_for(0.1 * idx)
-        dtl = DTL.connect()
+        DTL.connect()
         this_actor.sleep_for(1)
         DTL.disconnect()
 

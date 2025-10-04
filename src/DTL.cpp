@@ -8,9 +8,6 @@
 
 #include "dtlmod/DTL.hpp"
 #include "dtlmod/DTLException.hpp"
-#ifdef JSON_USE_IMPLICIT_CONVERSIONS
-#undef JSON_USE_IMPLICIT_CONVERSIONS
-#endif
 #define JSON_USE_IMPLICIT_CONVERSIONS 0
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -96,7 +93,7 @@ void DTL::internal_server_init(std::shared_ptr<DTL> dtl)
     auto mess     = connect_mq->get_async(&connect);
     mess->wait();
     auto* sender = mess->get_sender();
-    if (not sender)
+    if (!sender)
       throw DTLInitBadSenderException(XBT_THROW_POINT, "");
     if (*connect) { // Connection
       dtl->connect(sender);
@@ -105,7 +102,7 @@ void DTL::internal_server_init(std::shared_ptr<DTL> dtl)
     } else { // Disconnection
       dtl->disconnect(sender);
       handler_mq->put_init(new bool(true))->detach();
-      if (not dtl->has_active_connections())
+      if (!dtl->has_active_connections())
         XBT_WARN("The DTL has no active connection");
     }
     delete connect;

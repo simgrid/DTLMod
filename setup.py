@@ -26,12 +26,10 @@ class CMakeExtension(Extension):
         Extension.__init__(self, name, sources=[])
         self.sourcedir = os.path.abspath(sourcedir)
 
-# TODO update what's below
-
 class CMakeBuild(build_ext):
     def run(self):
         try:
-            out = subprocess.check_output(['cmake', '--version'])
+            subprocess.check_output(['cmake', '--version'])
         except OSError:
             raise RuntimeError(
                 "CMake must be installed to build python bindings of DTLMod")
@@ -60,8 +58,7 @@ class CMakeBuild(build_ext):
                                                               self.distribution.get_version())
         env['LDFLAGS'] = '{} -L{}'.format(env.get('LDFLAGS', ''), extdir)
         env['MAKEFLAGS'] = '-j'+str(os.cpu_count())
-        # env['VERBOSE'] = "1" # Please, make, be verbose about the commands you run
-
+        
         if not os.path.exists(self.build_temp):
             os.makedirs(self.build_temp)
         subprocess.check_call(['cmake', ext.sourcedir] +

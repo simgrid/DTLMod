@@ -20,8 +20,8 @@ Transport::check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var)
   auto self = sg4::Actor::self();
   // If the actor made no selection, get the full variable, ie. use a vector full of zeros as start and the global
   // shape of the variable as count.
-  std::vector<size_t> start = std::vector<size_t>(var->get_shape().size(), 0);
-  std::vector<size_t> count = var->get_shape();
+  auto start = std::vector<size_t>(var->get_shape().size(), 0);
+  auto count = var->get_shape();
   // If the actor made no transaction selection, get the last one
   int transaction_start          = var->get_metadata()->get_current_transaction();
   unsigned int transaction_count = 1;

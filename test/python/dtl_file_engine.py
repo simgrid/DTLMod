@@ -4,15 +4,12 @@
 # under the terms of the license (GNU LGPL) which comes with this package.
 
 import ctypes
+import math
 import sys
 import multiprocessing
 from simgrid import Engine, Host, this_actor, Link, LinkInRoute
 from fsmod import FileSystem, OneDiskStorage, JBODStorage
 from dtlmod import DTL, Engine as DTLEngine, Stream, Transport
-
-def add_cluster(root, suffix, num_hosts):
-    
-    return cluster  
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -62,7 +59,7 @@ def run_test_single_pub_local_storage():
         this_actor.info("Open the stream")
         engine = stream.open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", Stream.Mode.Publish)
         this_actor.info(f"Stream {stream.name} is ready for Publish data into the DTL")
-        for i in range(5):
+        for _ in range(5):
             this_actor.sleep_for(1)
             this_actor.info("Start a transaction")
             engine.begin_transaction()
@@ -124,7 +121,7 @@ def run_test_single_pub_single_sub_local_storage():
         var_sub = stream.inquire_variable("var")
         shape = var_sub.shape
         assert var_sub.name == "var"
-        assert var_sub.global_size == 8. * 20000 * 20000
+        assert var_sub.global_size == 8 * 20000 * 20000
 
         this_actor.info("Start a transaction")
         engine.begin_transaction()
@@ -143,7 +140,7 @@ def run_test_single_pub_single_sub_local_storage():
         this_actor.info("End the transaction")
         engine.end_transaction()
         this_actor.info("Check local size of var_sub. Should be 1,600,000,000 bytes")
-        assert var_sub.local_size == 8. * 10000 * 20000
+        assert var_sub.local_size == 8 * 10000 * 20000
 
         this_actor.info("Close the engine")
         engine.close()
@@ -201,7 +198,7 @@ def run_test_multiple_pub_single_sub_shared_storage():
 
         this_actor.info("Check local size of var_sub. Should be 3,200,000,000 bytes")
         assert var_sub.local_size == 8 * 20000 * 20000
-        assert round(Engine.clock, 6) == 42.469851
+        assert math.isclose(Engine.clock, 42.469851)
         this_actor.info("Close the engine")
         engine.close()
         this_actor.info("Disconnect from the DTL")
@@ -298,7 +295,7 @@ def run_test_set_transation_selection():
         assert dtl.has_active_connections == False
         this_actor.info("Wait until 10s before becoming a Subscriber")
         this_actor.sleep_for(10)
-        dtl = DTL.connect()
+        DTL.connect()
         engine = stream.open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", Stream.Mode.Subscribe)
         var_sub = stream.inquire_variable("var")
         this_actor.info("Select transaction #1 (the second one, 0 is first)")
