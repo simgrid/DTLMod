@@ -101,13 +101,13 @@ jobs:
         run: |
           gcovr -e test -e examples --sonarqube -u -o coverage.xml --exclude-throw-branches \
                 --gcov-ignore-parse-errors --exclude-unreachable-branches
-      - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v6
+      - name: Run sonar-scanner
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        with:
-          args: >
-            --define "sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json --define sonar.coverageReportPaths=coverage.xml"
+        run: |
+          sonar-scanner --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json" \
+                        --define sonar.coverageReportPaths=coverage.xml
 
       - name: Install Doxygen and Sphinx
         run: |
