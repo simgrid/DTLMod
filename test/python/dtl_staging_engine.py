@@ -81,7 +81,7 @@ def run_test_single_pub_single_sub_same_cluster():
         engine.end_transaction()
 
         this_actor.info("Check local size of var_sub. Should be 1,600,000,000 bytes")
-        assert var_sub.local_size == 8. * 10000 * 20000
+        assert var_sub.local_size == 8 * 10000 * 20000
 
         this_actor.info("Close the engine")
         engine.close()
@@ -135,7 +135,7 @@ def run_test_multiple_pub_single_sub_message_queue():
         engine.end_transaction()
 
         this_actor.info("Check local size of var_sub")
-        assert var_sub.local_size == 8. * 10000 * 10000 * (3 - 2 * id) / 4
+        assert var_sub.local_size == 8 * 10000 * 10000 * (3 - 2 * id) / 4
         this_actor.info("Close the engine")
         engine.close()
         this_actor.info("Disconnect from the DTL")
@@ -189,7 +189,7 @@ def run_test_multiple_pub_single_sub_mailbox():
         engine.end_transaction()
 
         this_actor.info("Check local size of var_sub")
-        assert var_sub.local_size == 8. * 10000 * 10000 * (3 - 2 * id) / 4
+        assert var_sub.local_size == 8 * 10000 * 10000 * (3 - 2 * id) / 4
         this_actor.info("Close the engine")
         engine.close()
         this_actor.info("Disconnect from the DTL")

@@ -116,7 +116,7 @@ def run_test_single_pub_single_sub_local_storage():
         assert dtl.has_active_connections == False
         this_actor.info("Wait until 10s before becoming a Subscriber")
         this_actor.sleep_for(10)
-        dtl = DTL.connect()
+        DTL.connect()
         engine = stream.open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", Stream.Mode.Subscribe)
         var_sub = stream.inquire_variable("var")
         shape = var_sub.shape
@@ -264,7 +264,7 @@ def run_test_single_pub_multiple_sub_shared_storage():
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()
     
-    pub_host.add_actor(f"PubTestActor", pub_test_actor)
+    pub_host.add_actor("PubTestActor", pub_test_actor)
     
     for i in range(2):
        sub_hosts[i].add_actor("SubTestActor{i}", sub_test_actor, i)
