@@ -20,8 +20,8 @@ class DTL {
   std::set<simgrid::s4u::Actor*> active_connections_;
   std::unordered_map<std::string, std::shared_ptr<Stream>> streams_;
 
-  void connect(simgrid::s4u::Actor* actor);
-  void disconnect(simgrid::s4u::Actor* actor);
+  void internal_connect(simgrid::s4u::Actor* actor);
+  void internal_disconnect(simgrid::s4u::Actor* actor);
   static void internal_server_init(std::shared_ptr<DTL> dtl);
 
 protected:

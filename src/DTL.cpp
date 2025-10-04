@@ -56,13 +56,13 @@ DTL::DTL(const std::string& filename)
 
     // If the Stream doesn't exist yet, create it
     if (streams_.find(name) == streams_.end())
-      streams_.emplace(name, std::make_shared<Stream>(name, this));
+      streams_.try_emplace(name, std::make_shared<Stream>(name, this));
     // And set its engine type and transport method
     streams_[name]->set_engine_type(type)->set_transport_method(transport_method);
   }
 }
 
-void DTL::connect(sg4::Actor* actor)
+void DTL::internal_connect(sg4::Actor* actor)
 {
   if (active_connections_.find(actor) == active_connections_.end()) {
     active_connections_.insert(actor);
@@ -72,7 +72,7 @@ void DTL::connect(sg4::Actor* actor)
     XBT_WARN("%s is already connected to the DTL. Check your code", actor->get_cname());
 }
 
-void DTL::disconnect(sg4::Actor* actor)
+void DTL::internal_disconnect(sg4::Actor* actor)
 {
   if (active_connections_.find(actor) == active_connections_.end()) {
     XBT_WARN("%s is not connected to the DTL. Check your code", actor->get_cname());
@@ -96,11 +96,11 @@ void DTL::internal_server_init(std::shared_ptr<DTL> dtl)
     if (!sender)
       throw DTLInitBadSenderException(XBT_THROW_POINT, "");
     if (*connect) { // Connection
-      dtl->connect(sender);
+      dtl->internal_connect(sender);
       // Return a handler on the DTL to the newly connected actor
       handler_mq->put_init(&dtl)->detach();
     } else { // Disconnection
-      dtl->disconnect(sender);
+      dtl->internal_disconnect(sender);
       handler_mq->put_init(new bool(true))->detach();
       if (!dtl->has_active_connections())
         XBT_WARN("The DTL has no active connection");
@@ -145,7 +145,7 @@ std::shared_ptr<Stream> DTL::add_stream(const std::string& name)
   // Stream. Other actors will retrieve it from the map.
   std::unique_lock<sg4::Mutex> lock(*mutex_);
   if (streams_.find(name) == streams_.end())
-    streams_.emplace(name, std::make_shared<Stream>(name, this));
+    streams_.try_emplace(name, std::make_shared<Stream>(name, this));
   return streams_[name];
 }
 
