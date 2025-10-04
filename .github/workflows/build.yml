@@ -107,8 +107,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         with:
           args: >
-            --define "sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json" \
-            --define sonar.coverageReportPaths=coverage.xml"
+            --define "sonar.cfamily.compile-commands=${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json --define sonar.coverageReportPaths=coverage.xml"
 
       - name: Install Doxygen and Sphinx
         run: |
