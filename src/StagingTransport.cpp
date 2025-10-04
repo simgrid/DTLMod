@@ -36,7 +36,7 @@ void StagingTransport::put(std::shared_ptr<Variable> var, size_t simulated_size_
   auto* e       = get_engine();
   auto tid      = e->get_current_transaction();
   auto self     = sg4::Actor::self();
-  auto pub_name = self->get_name();
+  const auto pub_name = self->get_name();
 
   // Use actor's name as temporary location. It's only half of the Mailbox Name
   var->add_transaction_metadata(tid, self, pub_name);
@@ -60,7 +60,7 @@ void StagingTransport::get(std::shared_ptr<Variable> var)
   for (const auto& pub : publishers)
     put_requests[pub->get_name()] = new size_t(0);
 
-  for (auto [publisher_name, size] : blocks) {
+  for (const auto& [publisher_name, size] : blocks) {
     std::string rdv_name = publisher_name + "_" + self->get_name();
     XBT_DEBUG("Have to exchange data of size %llu from '%s' to '%s' using the '%s' rendez-vous point", size,
               publisher_name.c_str(), self->get_cname(), rdv_name.c_str());
@@ -75,7 +75,7 @@ void StagingTransport::get(std::shared_ptr<Variable> var)
   }
 
   // Send the put requests for that get to all publishers in the Stream in a detached mode.
-  for (auto [pub, size] : put_requests)
+  for (const auto& [pub, size] : put_requests)
     get_publisher_put_requests_mq(pub)->put_init(size)->detach();
 }
 /// \endcond

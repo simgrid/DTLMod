@@ -26,7 +26,7 @@ protected:
   void get_rendez_vous_point_and_do_get(const std::string& name) override;
 
 public:
-  explicit StagingMqTransport(const std::string& name, Engine* engine) : StagingTransport(engine) {}
+  explicit StagingMqTransport(Engine* engine) : StagingTransport(engine) {}
 };
 /// \endcond
 

@@ -54,7 +54,6 @@ public:
   std::shared_ptr<Transport> transport_ = nullptr;
   Stream* stream_;
 
-public:
   sg4::MutexPtr pub_mutex_;
   std::set<sg4::ActorPtr> publishers_;
   sg4::ActivitySet pub_transaction_;
@@ -97,7 +96,7 @@ protected:
   [[nodiscard]] size_t get_num_publishers() const { return publishers_.size(); }
   [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const { return publishers_.find(actor) != publishers_.end(); }
   // Synchronize publishers on engine closing
-  [[nodiscard]] int is_last_publisher() { return (pub_barrier_ && pub_barrier_->wait()); }
+  [[nodiscard]] int is_last_publisher() const { return (pub_barrier_ && pub_barrier_->wait()); }
 
   void add_subscriber(sg4::ActorPtr actor);
   void add_subscribe_activity(sg4::ActivityPtr a) { sub_transaction_.push(a); }
@@ -105,7 +104,7 @@ protected:
   [[nodiscard]] size_t get_num_subscribers() const { return subscribers_.size(); }
   [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const { return subscribers_.find(actor) != subscribers_.end(); }
   // Synchronize subscribers on engine closing
-  [[nodiscard]] int is_last_subscriber() { return subscribers_.empty(); }
+  [[nodiscard]] int is_last_subscriber() const { return subscribers_.empty(); }
   /// \endcond
 
 public:

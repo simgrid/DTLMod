@@ -44,7 +44,7 @@ protected:
   void clear_to_read_in_transaction(sg4::ActorPtr actor) { to_read_in_transaction_[actor].clear(); }
 
 public:
-  explicit FileTransport(const std::string& name, Engine* engine) : Transport(engine) {}
+  explicit FileTransport(Engine* engine) : Transport(engine) {}
 
   void put(std::shared_ptr<Variable> var, size_t size) override;
   void get(std::shared_ptr<Variable> var) override;

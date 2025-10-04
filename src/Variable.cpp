@@ -86,7 +86,7 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
   // TODO add sanity checks
   auto blocks = metadata_->transaction_infos_[transaction_id];
   XBT_DEBUG("%zu block(s) to check for transaction %u", blocks.size(), transaction_id);
-  for (auto [block_info, location] : blocks) {
+  for (const auto& [block_info, location] : blocks) {
     size_t size_to_get              = element_size_;
     auto [block_start, block_count] = block_info;
     auto [where, actor]             = location;

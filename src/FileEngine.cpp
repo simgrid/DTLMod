@@ -62,7 +62,7 @@ FileEngine::FileEngine(const std::string& fullpath, Stream* stream)
 void FileEngine::create_transport(const Transport::Method& transport_method)
 {
   // This function is called in a critical section. Transport can only be created once.
-  set_transport(std::make_shared<FileTransport>(get_name(), this));
+  set_transport(std::make_shared<FileTransport>(this));
 }
 
 std::string FileEngine::get_path_to_dataset() const
@@ -109,7 +109,7 @@ void FileEngine::end_pub_transaction()
   auto to_write = transport->get_to_write_in_transaction_by_actor(self);
 
   // Start the write activities for that transaction
-  for (auto [file, size] : to_write)
+  for (const auto& [file, size] : to_write)
     file_pub_transaction_[self].push(file->write_async(size));
   XBT_DEBUG("Start the %d publish activities for the transaction", file_pub_transaction_[self].size());
 
@@ -163,7 +163,7 @@ void FileEngine::begin_sub_transaction()
 
   // We have publishers on that stream, wait for them to complete a transaction first
   if (get_num_publishers() > 0) {
-    std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
+    std::unique_lock lock(*sub_mutex_);
     while (completed_pub_transaction_id_ < current_sub_transaction_id_) {
       XBT_DEBUG("Wait for publishers to end the transaction I need");
       pub_transaction_completed_->wait(lock);
@@ -180,7 +180,7 @@ void FileEngine::end_sub_transaction()
   // The files subscribers need to read may not have been fully written. Wait to be notified completion of the publish
   // activities
   if (current_sub_transaction_id_ == current_pub_transaction_id_ && get_num_publishers() > 0) {
-    std::unique_lock<sg4::Mutex> lock(*sub_mutex_);
+    std::unique_lock lock(*sub_mutex_);
     XBT_DEBUG("Wait for the completion of publish activities from the current transaction");
     pub_activities_completed_->wait(lock);
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the subscribe activities.");
@@ -190,7 +190,7 @@ void FileEngine::end_sub_transaction()
   auto to_read = transport->get_to_read_in_transaction_by_actor(self);
 
   // Start the read activities for that transaction
-  for (auto [file, size] : to_read)
+  for (const auto& [file, size] : to_read)
     file_sub_transaction_[self].push(file->read_async(size));
 
   XBT_DEBUG("Wait for the %d subscribe activities for the transaction", file_sub_transaction_[self].size());

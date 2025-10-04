@@ -82,7 +82,7 @@ void DTL::internal_disconnect(sg4::Actor* actor)
   }
 }
 
-void DTL::internal_server_init(std::shared_ptr<DTL> dtl)
+__attribute__((noreturn)) void DTL::internal_server_init(std::shared_ptr<DTL> dtl)
 {
   XBT_DEBUG("Server is running. waiting for connections");
   auto connect_mq = sg4::MessageQueue::by_name("dtlmod::internal_server_connect");
@@ -129,7 +129,7 @@ void DTL::create()
 std::shared_ptr<DTL> DTL::connect()
 {
   sg4::MessageQueue::by_name("dtlmod::internal_server_connect")->put(new bool(true));
-  auto* handle = sg4::MessageQueue::by_name("dtlmod::internal_server_handle")->get<std::shared_ptr<DTL>>();
+  const auto* handle = sg4::MessageQueue::by_name("dtlmod::internal_server_handle")->get<std::shared_ptr<DTL>>();
   return *handle;
 }
 
@@ -143,7 +143,7 @@ std::shared_ptr<Stream> DTL::add_stream(const std::string& name)
 {
   // This has to be done in critical section to avoid concurrent creation. First actor to get the lock creates the
   // Stream. Other actors will retrieve it from the map.
-  std::unique_lock<sg4::Mutex> lock(*mutex_);
+  std::unique_lock lock(*mutex_);
   if (streams_.find(name) == streams_.end())
     streams_.try_emplace(name, std::make_shared<Stream>(name, this));
   return streams_[name];

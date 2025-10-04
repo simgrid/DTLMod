@@ -25,9 +25,9 @@ void Metadata::export_to_file(std::ofstream& ostream) const
   for (const auto& [id, transaction] : transaction_infos_) {
     XBT_DEBUG("  Transaction %u:", id);
     ostream << "  Transaction " << id << ":" << std::endl;
-    for (auto [block_info, location] : transaction) {
-      auto [block_start, block_count] = block_info;
-      auto [where, actor]             = location;
+    for (const auto& [block_info, location] : transaction) {
+      const auto& [block_start, block_count] = block_info;
+      const auto& [where, actor]             = location;
 
       ostream << "    " << where.c_str() << ": [";
       XBT_DEBUG("    Actor %s wrote:", actor->get_cname());

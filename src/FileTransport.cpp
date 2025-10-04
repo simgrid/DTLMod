@@ -64,7 +64,7 @@ void FileTransport::get(std::shared_ptr<Variable> var)
   // Determine which files contain blocks of the requested (selection of) the variable
   auto blocks = check_selection_and_get_blocks_to_get(var);
 
-  for (auto [filename, size] : blocks) {
+  for (const auto& [filename, size] : blocks) {
     // if there is indeed something to read in this block
     if (size > 0) {
       // open the corresponding file in read mode.
@@ -79,7 +79,7 @@ void FileTransport::get(std::shared_ptr<Variable> var)
 // Called at the end of a transaction. Each actor closes the files it opened in calls to get()
 void FileTransport::close_sub_files(sg4::ActorPtr self)
 {
-  for (auto [file, size] : to_read_in_transaction_[self]) {
+  for (const auto& [file, size] : to_read_in_transaction_[self]) {
     XBT_DEBUG("Closing %s", file->get_path().c_str());
     file->close();
   }

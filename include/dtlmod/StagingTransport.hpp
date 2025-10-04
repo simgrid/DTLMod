@@ -29,7 +29,7 @@ protected:
 public:
   std::unordered_map<std::string, sg4::ActivitySet> pending_put_requests;
   explicit StagingTransport(Engine* engine) : Transport(engine) {}
-  virtual ~StagingTransport() = default;
+  ~StagingTransport() override = default;
   void put(std::shared_ptr<Variable> var, size_t /*simulated_size_in_bytes*/) override;
   void get(std::shared_ptr<Variable> var) override;
 };

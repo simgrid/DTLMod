@@ -42,7 +42,7 @@ void StagingMboxTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
 
       auto comm = mboxes_[mbox_name]->put_init(req_size, *req_size);
       // Add callback to release memory allocated for the payload on completion
-      comm->on_this_completion_cb([this, req_size](sg4::Comm const&) { delete req_size; });
+      comm->on_this_completion_cb([req_size](sg4::Comm const&) { delete req_size; });
       get_engine()->pub_transaction_.push(comm->start());
     }
   }

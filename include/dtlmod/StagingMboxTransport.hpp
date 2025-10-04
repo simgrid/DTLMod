@@ -24,7 +24,7 @@ protected:
   void get_rendez_vous_point_and_do_get(const std::string& name) override;
 
 public:
-  StagingMboxTransport(const std::string& name, Engine* engine) : StagingTransport(engine) {}
+  StagingMboxTransport(Engine* engine) : StagingTransport(engine) {}
 };
 /// \endcond
 

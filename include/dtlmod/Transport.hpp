@@ -29,7 +29,7 @@ protected:
   std::vector<std::pair<std::string, sg_size_t>> check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var);
 
 public:
-  enum class Method { Undefined, File, Mailbox, MQ }; // TODO: Could add MPI?
+  enum class Method { Undefined, File, Mailbox, MQ };
 
   explicit Transport(Engine* engine) : engine_(engine) {}
   virtual ~Transport() = default;

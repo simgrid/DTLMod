@@ -26,10 +26,10 @@ void StagingEngine::create_transport(const Transport::Method& transport_method)
   XBT_DEBUG("Create a new Staging Engine");
   if (transport_method == Transport::Method::Mailbox) {
     XBT_DEBUG("Creating mailbox '%s'", get_cname());
-    set_transport(std::make_shared<StagingMboxTransport>(get_name() + "-mbox", this));
+    set_transport(std::make_shared<StagingMboxTransport>(this));
   } else if (transport_method == Transport::Method::MQ) {
     XBT_DEBUG("Creating Message Queue '%s'", get_cname());
-    set_transport(std::make_shared<StagingMqTransport>(get_name() + "-mq", this));
+    set_transport(std::make_shared<StagingMqTransport>(this));
   }
 }
 
