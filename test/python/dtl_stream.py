@@ -7,7 +7,7 @@ import sys
 import multiprocessing
 from simgrid import Engine, this_actor
 from fsmod import FileSystem, JBODStorage
-from dtlmod import DTL, Stream, Transport, Engine as DTLEngine, UndefinedEngineTypeException, UndefinedTransportMethodException
+from dtlmod import DTL, Stream, Transport, Engine as DTLEngine, UndefinedEngineTypeException, UndefinedTransportMethodException, InvalidEngineAndTransportCombinationException
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -48,12 +48,8 @@ def run_test_incorrect_stream_settings():
         this_actor.info("Connect to the DTL")
         dtl = DTL.connect()
 
-        this_actor.info("Create the streams with missing or incorrect settings");
         no_engine_type_stream = dtl.add_stream("no_engine_type_stream")
         no_engine_type_stream.set_transport_method(Transport.Method.File)
-        no_transport_method_stream = dtl.add_stream("no_transport_method_stream")
-        no_transport_method_stream.set_engine_type(DTLEngine.Type.File)
-      
         this_actor.info("Try to open the stream with no engine type set, which should fail")
         try:
             no_engine_type_stream.open("zone:fs:/pfs/file", Stream.Mode.Publish)
@@ -62,6 +58,8 @@ def run_test_incorrect_stream_settings():
         else:
             pass # Test passes
         
+        no_transport_method_stream = dtl.add_stream("no_transport_method_stream")
+        no_transport_method_stream.set_engine_type(DTLEngine.Type.File)
         this_actor.info("Try to open the stream with no transport method set, which should fail")
         try:
             no_transport_method_stream.open("file", Stream.Mode.Publish)
@@ -69,6 +67,23 @@ def run_test_incorrect_stream_settings():
             this_actor.info("Caught expected error for missing transport method")
         else:
             pass # Test passes
+
+        file_engine_with_staging_transport_stream = dtl.add_stream("file_engine_with_staging_transport_stream")
+        file_engine_with_staging_transport_stream.set_engine_type(DTLEngine.Type.File)
+        this_actor.info("Try to set a invalid transport method for this engine type")
+        try:
+            file_engine_with_staging_transport_stream.set_transport_method(Transport.Method.MQ)
+        except InvalidEngineAndTransportCombinationException:
+            pass # Test passes
+
+        staging_engine_with_file_transport_stream = dtl.add_stream("staging_engine_with_file_transport_stream")
+        staging_engine_with_file_transport_stream.set_transport_method(Transport.Method.File)
+        this_actor.info("Try to set a invalid engine type for this transport method");
+        try:
+            staging_engine_with_file_transport_stream.set_engine_type(DTLEngine.Type.Staging)
+        except InvalidEngineAndTransportCombinationException:
+            pass # Test passes
+
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()
 

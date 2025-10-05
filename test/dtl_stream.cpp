@@ -61,23 +61,42 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
+    xbt_log_control_set("root.t:info");
     prod_host_->add_actor("TestProducerActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> no_engine_type_stream;
       std::shared_ptr<dtlmod::Stream> no_transport_method_stream;
+      std::shared_ptr<dtlmod::Stream> file_engine_with_staging_transport_stream;
+      std::shared_ptr<dtlmod::Stream> staging_engine_with_file_transport_stream;
       XBT_INFO("Connect to the DTL");
       ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
-      XBT_INFO("Create the streams with missing or incorrect settings");
+
       ASSERT_NO_THROW(no_engine_type_stream = dtl->add_stream("no_engine_type_stream"));
       ASSERT_NO_THROW(no_engine_type_stream->set_transport_method(dtlmod::Transport::Method::File));
-      ASSERT_NO_THROW(no_transport_method_stream = dtl->add_stream("no_transport_method_stream"));
-      ASSERT_NO_THROW(no_transport_method_stream->set_engine_type(dtlmod::Engine::Type::File));
       XBT_INFO("Try to open the stream with no engine type set, which should fail");
       ASSERT_THROW(no_engine_type_stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish),
-                   dtlmod::UndefinedEngineTypeException);
+      dtlmod::UndefinedEngineTypeException);
+
+      ASSERT_NO_THROW(no_transport_method_stream = dtl->add_stream("no_transport_method_stream"));
+      ASSERT_NO_THROW(no_transport_method_stream->set_engine_type(dtlmod::Engine::Type::File));
       XBT_INFO("Try to open the stream with no transport method set, which should fail");
       ASSERT_THROW(no_transport_method_stream->open("file", dtlmod::Stream::Mode::Publish),
                    dtlmod::UndefinedTransportMethodException);
+
+      ASSERT_NO_THROW(file_engine_with_staging_transport_stream =
+        dtl->add_stream("file_engine_with_staging_transport_stream"));
+      ASSERT_NO_THROW(file_engine_with_staging_transport_stream->set_engine_type(dtlmod::Engine::Type::File));
+      XBT_INFO("Try to set a invalid transport method for this engine type");
+      ASSERT_THROW(file_engine_with_staging_transport_stream->set_transport_method(dtlmod::Transport::Method::MQ),
+                   dtlmod::InvalidEngineAndTransportCombinationException);
+
+      ASSERT_NO_THROW(staging_engine_with_file_transport_stream =
+        dtl->add_stream("staging_engine_with_file_transport_stream"));
+      ASSERT_NO_THROW(staging_engine_with_file_transport_stream->set_transport_method(dtlmod::Transport::Method::File));
+      XBT_INFO("Try to set a invalid engine type for this transport method");
+      ASSERT_THROW(staging_engine_with_file_transport_stream->set_engine_type(dtlmod::Engine::Type::Staging),
+                   dtlmod::InvalidEngineAndTransportCombinationException);
+
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
