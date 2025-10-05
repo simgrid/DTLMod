@@ -8,7 +8,6 @@
 
 #include "dtlmod/DTL.hpp"
 #include "dtlmod/DTLException.hpp"
-#define JSON_USE_IMPLICIT_CONVERSIONS 0
 #include <fstream>
 #include <nlohmann/json.hpp>
 

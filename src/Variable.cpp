@@ -74,8 +74,7 @@ const std::pair<unsigned int, unsigned int>& Variable::get_subscriber_transactio
 void Variable::add_transaction_metadata(unsigned int transaction_id, sg4::ActorPtr publisher,
                                         const std::string& location)
 {
-  auto start_and_count = std::make_pair(local_start_[publisher], local_count_[publisher]);
-  metadata_->transaction_infos_[transaction_id][start_and_count] = std::make_pair(location, publisher);
+  metadata_->add_transaction(transaction_id, local_start_[publisher], local_count_[publisher], location, publisher);
 }
 
 std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_block(unsigned int transaction_id,
@@ -84,7 +83,7 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
 {
   std::vector<std::pair<std::string, sg_size_t>> get_sizes_per_block;
   // TODO add sanity checks
-  auto blocks = metadata_->transaction_infos_[transaction_id];
+  auto blocks = metadata_->get_blocks_for_transaction(transaction_id);
   XBT_DEBUG("%zu block(s) to check for transaction %u", blocks.size(), transaction_id);
   for (const auto& [block_info, location] : blocks) {
     size_t size_to_get              = element_size_;
@@ -98,18 +97,15 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
                 block_count[i]);
       size_t size_in_dim = 0;
       bool element_found = false;
-      if (start[i] <= block_start[i]) {
-        if ((block_start[i] - start[i]) <= count[i]) {
+      if (start[i] <= block_start[i] && (block_start[i] - start[i]) <= count[i]) {
           size_in_dim   = std::min(block_count[i], count[i] - (block_start[i] - start[i]));
           element_found = true;
-        }
-      } else {
-        if ((start[i] - block_start[i]) <= block_count[i]) {
+      }
+      if (start[i] > block_start[i] && (start[i] - block_start[i]) <= block_count[i]) {
           size_in_dim   = std::min(count[i], block_count[i] - (start[i] - block_start[i]));
           element_found = true;
-        }
       }
-
+      
       if (element_found && size_in_dim > 0) {
         something_to_get[i] = true;
         XBT_DEBUG("Mutiply size to read by %zu elements", size_in_dim);
@@ -119,7 +115,7 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
 
     if (std::all_of(something_to_get.begin(), something_to_get.end(), [](bool v) { return v; })) {
       XBT_DEBUG("Total size to read from %s: %zu)", where.c_str(), size_to_get);
-      get_sizes_per_block.emplace_back(std::make_pair(where, size_to_get));
+      get_sizes_per_block.emplace_back(where, size_to_get);
     }
   }
   return get_sizes_per_block;

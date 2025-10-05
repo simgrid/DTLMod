@@ -41,7 +41,7 @@ void FileTransport::put(std::shared_ptr<Variable> var, size_t size)
   var->add_transaction_metadata(tid, self, file->get_path());
 
   XBT_DEBUG("Actor '%s' is writing %lu bytes into file '%s'", self->get_cname(), size, file->get_path().c_str());
-  to_write_in_transaction_[self].emplace_back(std::make_pair(file, size));
+  to_write_in_transaction_[self].emplace_back(file, size);
 }
 
 void FileTransport::close_pub_files() const
@@ -71,7 +71,7 @@ void FileTransport::get(std::shared_ptr<Variable> var)
       XBT_DEBUG("Actor '%s' is opening file '%s'", self->get_cname(), filename.c_str());
       auto file = fs->open(filename, "r");
       // Keep track of what to read from this file for this get
-      to_read_in_transaction_[self].emplace_back(std::make_pair(file, size));
+      to_read_in_transaction_[self].emplace_back(file, size);
     }
   }
 }

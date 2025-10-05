@@ -44,8 +44,8 @@ void StagingTransport::put(std::shared_ptr<Variable> var, size_t simulated_size_
   // Each Subscriber will send a put request to each publisher in the Stream. They can request for a certain size if
   // they need something from this publisher or 0 otherwise.
   // Start with posting all asynchronous gets and creating an ActivitySet.
-  for (unsigned int i = 0; i < e->get_num_subscribers(); i++)
-    pending_put_requests[pub_name].push(get_publisher_put_requests_mq(pub_name)->get_async());
+  for (size_t i = 0; i < e->get_num_subscribers(); i++)
+    pending_put_requests_[pub_name].push(get_publisher_put_requests_mq(pub_name)->get_async());
 }
 
 void StagingTransport::get(std::shared_ptr<Variable> var)

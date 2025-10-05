@@ -30,8 +30,8 @@ void StagingMqTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
   auto pub_name = publisher->get_name();
   // Wait for the reception of the messages. If something is requested, post a put in the message queue for the
   // corresponding publisher-subscriber couple
-  while (not pending_put_requests[pub_name].empty()) {
-    auto request     = boost::static_pointer_cast<sg4::Mess>(pending_put_requests[pub_name].wait_any());
+  while (pending_put_requests_exist_for(pub_name)) {
+    auto request     = boost::static_pointer_cast<sg4::Mess>(wait_any_pending_put_request_for(pub_name));
     const auto* subscriber = request->get_sender();
     auto* req_size   = static_cast<size_t*>(request->get_payload());
     if (*req_size > 0) {

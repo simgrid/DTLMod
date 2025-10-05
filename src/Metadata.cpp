@@ -11,6 +11,13 @@ XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
 
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
+void Metadata::add_transaction(int id, const std::vector<size_t>& start, const std::vector<size_t>& count,
+                       const std::string& location, sg4::ActorPtr publisher)
+{
+  auto start_and_count = std::make_pair(start, count);
+  transaction_infos_[id][start_and_count] = std::make_pair(location, publisher);
+}
+
 void Metadata::export_to_file(std::ofstream& ostream) const
 {
   XBT_DEBUG("Variable %s:", variable_->get_cname());
