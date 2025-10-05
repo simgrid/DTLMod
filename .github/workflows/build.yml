@@ -41,7 +41,7 @@ jobs:
           cd file-system-module
           mkdir build
           cd build
-          cmake ..
+          cmake .. -Denable_lib_in_jar=OFF -Denable_sthread=OFF
           make -j4
           sudo make install
 
