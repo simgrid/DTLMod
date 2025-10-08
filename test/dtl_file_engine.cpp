@@ -78,9 +78,9 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
     this->setup_platform();
     sg4::Host::by_name("node-0")->add_actor("TestActor", [this]() {
       auto dtl    = dtlmod::DTL::connect();
-      auto stream = dtl->add_stream("my-output")
-                        ->set_transport_method(dtlmod::Transport::Method::File)
-                        ->set_engine_type(dtlmod::Engine::Type::File);
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
       XBT_INFO("Create a 2D-array variable with 20kx20k double");
       auto var = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
       auto engine =
@@ -126,9 +126,9 @@ TEST_F(DTLFileEngineTest, SinglePubSingleSubLocalStorage)
     this->setup_platform();
     sg4::Host::by_name("node-0")->add_actor("TestActor", [this]() {
       auto dtl    = dtlmod::DTL::connect();
-      auto stream = dtl->add_stream("my-output")
-                        ->set_transport_method(dtlmod::Transport::Method::File)
-                        ->set_engine_type(dtlmod::Engine::Type::File);
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
       XBT_INFO("Create a 2D-array variable with 20kx20k double");
       auto var = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
       auto engine =
@@ -202,9 +202,9 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
     for (long unsigned int i = 0; i < 2; i++) {
       pub_hosts[i]->add_actor(pub_hosts[i]->get_name() + "_pub", [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
-        auto stream = dtl->add_stream("my-output")
-                          ->set_transport_method(dtlmod::Transport::Method::File)
-                          ->set_engine_type(dtlmod::Engine::Type::File);
+        auto stream = dtl->add_stream("my-output");
+        stream->set_transport_method(dtlmod::Transport::Method::File);
+        stream->set_engine_type(dtlmod::Engine::Type::File);
         XBT_INFO("Create a 2D-array variable with 20kx20k double, each publisher owns one half (along 2nd dimension)");
         auto var    = stream->define_variable("var", {20000, 20000}, {0, 10000 * i}, {20000, 10000}, sizeof(double));
         auto engine = stream->open("cluster:my_fs:/pfs/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
@@ -264,9 +264,9 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
 
     pub_host->add_actor("node-0_pub",  [this]() {
       auto dtl    = dtlmod::DTL::connect();
-      auto stream = dtl->add_stream("my-output")
-                        ->set_transport_method(dtlmod::Transport::Method::File)
-                        ->set_engine_type(dtlmod::Engine::Type::File);
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
       XBT_INFO("Create a 2D-array variable with 10kx10k double");
       auto var    = stream->define_variable("var", {10000, 10000}, {0, 0}, {10000, 10000}, sizeof(double));
       auto engine = stream->open("cluster:my_fs:/pfs/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
@@ -323,9 +323,9 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
     this->setup_platform();
     sg4::Host::by_name("node-0")->add_actor("TestActor", [this]() {
       auto dtl    = dtlmod::DTL::connect();
-      auto stream = dtl->add_stream("my-output")
-                       ->set_transport_method(dtlmod::Transport::Method::File)
-                       ->set_engine_type(dtlmod::Engine::Type::File);
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
       XBT_INFO("Create a 2D-array variable with 20kx20k double  and publish it in 5 transactions");
       auto var = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
       auto engine =

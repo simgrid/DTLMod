@@ -61,9 +61,9 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
   
     pub_host->add_actor("PubTestActor", [this]() {
       auto dtl    = dtlmod::DTL::connect();
-      auto stream = dtl->add_stream("my-output")
-                        ->set_engine_type(dtlmod::Engine::Type::Staging)
-                        ->set_transport_method(dtlmod::Transport::Method::MQ);
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::MQ);
       XBT_INFO("Create a 2D-array variable with 20kx20k double");
       auto var    = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
       auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
@@ -129,9 +129,9 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
     for (long unsigned int i = 0; i < 2; i++) {
       pub_hosts[i]->add_actor("Pub" + std::to_string(i), [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
-        auto stream = dtl->add_stream("my-output")
-                          ->set_engine_type(dtlmod::Engine::Type::Staging)
-                          ->set_transport_method(dtlmod::Transport::Method::MQ);
+        auto stream = dtl->add_stream("my-output");
+        stream->set_engine_type(dtlmod::Engine::Type::Staging);
+        stream->set_transport_method(dtlmod::Transport::Method::MQ);
         XBT_INFO("Create a 2D-array variable with 10kx10k double, publishers own 3/4 and 1/4 (along 2nd dimension)");
         auto var    = stream->define_variable("var", {10000, 10000}, {0, 2500 * 3 * i}, {10000, 7500 - (5000 * i)},
                                               sizeof(double));
@@ -193,9 +193,9 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
     for (long unsigned int i = 0; i < 2; i++) {
       pub_hosts[i]->add_actor("Pub" + std::to_string(i), [this, i]() {
         auto dtl    = dtlmod::DTL::connect();
-        auto stream = dtl->add_stream("my-output")
-                          ->set_engine_type(dtlmod::Engine::Type::Staging)
-                          ->set_transport_method(dtlmod::Transport::Method::Mailbox);
+        auto stream = dtl->add_stream("my-output");
+        stream->set_engine_type(dtlmod::Engine::Type::Staging);
+        stream->set_transport_method(dtlmod::Transport::Method::Mailbox);
         XBT_INFO("Create a 2D-array variable with 10kx10k double, publishers own 3/4 and 1/4 (along 2nd dimension)");
         auto var    = stream->define_variable("var", {10000, 10000}, {0, 2500 * 3 * i}, {10000, 7500 - (5000 * i)},
                                               sizeof(double));
