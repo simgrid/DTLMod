@@ -4,6 +4,9 @@
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
 #include <gtest/gtest.h>
+#include <iostream>
+#include <fstream>
+#include <cstdio>
 
 #include <fsmod/FileSystem.hpp>
 #include <fsmod/OneDiskStorage.hpp>
@@ -14,6 +17,7 @@
 
 #include "./test_util.hpp"
 #include "dtlmod/DTL.hpp"
+#include "dtlmod/DTLException.hpp"
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod_config, "Logging category for this dtlmod test");
 
@@ -81,5 +85,30 @@ TEST_F(DTLConfigTest, ConfigFile)
 
     // Run the simulation
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLConfigTest, BogusConfigFile)
+{
+  DO_TEST_WITH_FORK([this]() {
+    auto* root = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_full("root");
+    auto host  = root->add_host("host", "1Gf");
+    root->seal();
+
+    std::string bogus_engine_json =
+      R"({"streams": [ { "name": "Stream1", "engine": { "type": "Whatever", "transport_method": "File" } } ] })";
+    std::ofstream tmp_file("./bogus_engine.json");
+    tmp_file << bogus_engine_json;
+    tmp_file.close();
+    ASSERT_THROW(dtlmod::DTL::create("./bogus_engine.json"), dtlmod::UnknownEngineTypeException) ;
+    std::remove("./bogus_engine.json");
+
+    std::string bogus_transport_json =
+       R"({"streams": [ { "name": "Stream1", "engine": { "type": "File", "transport_method": "Whatever" } } ] })";
+    std::ofstream tmp_file2("./bogus_transport.json");
+    tmp_file2 << bogus_transport_json;
+    tmp_file2.close();
+    ASSERT_THROW(dtlmod::DTL::create("./bogus_transport.json"), dtlmod::UnknownTransportMethodException) ;
+    std::remove("./bogus_transport.json");
   });
 }
