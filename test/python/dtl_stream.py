@@ -7,7 +7,8 @@ import sys
 import multiprocessing
 from simgrid import Engine, this_actor
 from fsmod import FileSystem, JBODStorage
-from dtlmod import DTL, Stream, Transport, Engine as DTLEngine, UndefinedEngineTypeException, UndefinedTransportMethodException, InvalidEngineAndTransportCombinationException
+from dtlmod import DTL, Stream, Transport, Engine as DTLEngine
+from dtlmod import UnknownOpenModeException, UndefinedEngineTypeException, UndefinedTransportMethodException, MultipleTransportMethodException, MultipleEngineTypeException, InvalidEngineAndTransportCombinationException,UnknownEngineTypeException,UnknownTransportMethodException
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -68,21 +69,62 @@ def run_test_incorrect_stream_settings():
         else:
             pass # Test passes
 
-        file_engine_with_staging_transport_stream = dtl.add_stream("file_engine_with_staging_transport_stream")
-        file_engine_with_staging_transport_stream.set_engine_type(DTLEngine.Type.File)
+        file_engine_with_mq_transport_stream = dtl.add_stream("file_engine_with_mq_transport_stream")
+        file_engine_with_mq_transport_stream.set_engine_type(DTLEngine.Type.File)
         this_actor.info("Try to set a invalid transport method for this engine type")
         try:
-            file_engine_with_staging_transport_stream.set_transport_method(Transport.Method.MQ)
+            file_engine_with_mq_transport_stream.set_transport_method(Transport.Method.MQ)
+        except InvalidEngineAndTransportCombinationException:
+            pass # Test passes
+
+        mq_transport_with_file_engine = dtl.add_stream("mq_transport_with_file_engine")
+        mq_transport_with_file_engine.set_transport_method(Transport.Method.MQ)
+        this_actor.info("Try to set a invalid engine type for this transport method")
+        try:
+            mq_transport_with_file_engine.set_engine_type(DTLEngine.Type.File)
+        except InvalidEngineAndTransportCombinationException:
+            pass # Test passes
+
+        file_transport_with_staging_engine_stream = dtl.add_stream("file_transport_with_staging_engine_stream")
+        file_transport_with_staging_engine_stream.set_transport_method(Transport.Method.File)
+        this_actor.info("Try to set a invalid engine type for this transport method")
+        try:
+            file_transport_with_staging_engine_stream.set_engine_type(DTLEngine.Type.Staging)
         except InvalidEngineAndTransportCombinationException:
             pass # Test passes
 
         staging_engine_with_file_transport_stream = dtl.add_stream("staging_engine_with_file_transport_stream")
-        staging_engine_with_file_transport_stream.set_transport_method(Transport.Method.File)
-        this_actor.info("Try to set a invalid engine type for this transport method");
+        staging_engine_with_file_transport_stream.set_engine_type(DTLEngine.Type.Staging)
+        this_actor.info("Try to set a invalid transport method for this engine type")
         try:
-            staging_engine_with_file_transport_stream.set_engine_type(DTLEngine.Type.Staging)
+            staging_engine_with_file_transport_stream.set_transport_method(Transport.Method.File)
         except InvalidEngineAndTransportCombinationException:
             pass # Test passes
+
+        unknown = dtl.add_stream("unknown")
+        try:
+            unknown.set_engine_type(DTLEngine.Type(2))
+        except UnknownEngineTypeException:
+            pass
+        try:
+            unknown.set_transport_method(Transport.Method(2))
+        except UnknownTransportMethodException:
+            pass
+        multiple = dtl.add_stream("multiple")
+        multiple.set_engine_type(DTLEngine.Type.Staging)
+        try:
+            multiple.set_engine_type(DTLEngine.Type.File)
+        except MultipleEngineTypeException:
+            pass
+        multiple.set_transport_method(Transport.Method.MQ)
+        try:
+            multiple.set_transport_method(Transport.Method.Mailbox)
+        except MultipleTransportMethodException:
+            pass
+        try:
+            multiple.open("file", Stream.Mode(2))
+        except UnknownOpenModeException:
+            pass
 
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()

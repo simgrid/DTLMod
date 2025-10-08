@@ -61,13 +61,12 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
-    xbt_log_control_set("root.t:info");
     prod_host_->add_actor("TestProducerActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> no_engine_type_stream;
       std::shared_ptr<dtlmod::Stream> no_transport_method_stream;
-      std::shared_ptr<dtlmod::Stream> file_engine_with_staging_transport_stream;
-      std::shared_ptr<dtlmod::Stream> staging_engine_with_file_transport_stream;
+      std::shared_ptr<dtlmod::Stream> file_transport_with_staging_engine_stream;
+      std::shared_ptr<dtlmod::Stream> file_engine_with_mq_transport_stream;
       XBT_INFO("Connect to the DTL");
       ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
 
@@ -75,7 +74,7 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
       ASSERT_NO_THROW(no_engine_type_stream->set_transport_method(dtlmod::Transport::Method::File));
       XBT_INFO("Try to open the stream with no engine type set, which should fail");
       ASSERT_THROW(no_engine_type_stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish),
-      dtlmod::UndefinedEngineTypeException);
+                   dtlmod::UndefinedEngineTypeException);
 
       ASSERT_NO_THROW(no_transport_method_stream = dtl->add_stream("no_transport_method_stream"));
       ASSERT_NO_THROW(no_transport_method_stream->set_engine_type(dtlmod::Engine::Type::File));
@@ -83,19 +82,43 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
       ASSERT_THROW(no_transport_method_stream->open("file", dtlmod::Stream::Mode::Publish),
                    dtlmod::UndefinedTransportMethodException);
 
-      ASSERT_NO_THROW(file_engine_with_staging_transport_stream =
-        dtl->add_stream("file_engine_with_staging_transport_stream"));
-      ASSERT_NO_THROW(file_engine_with_staging_transport_stream->set_engine_type(dtlmod::Engine::Type::File));
+      ASSERT_NO_THROW(file_engine_with_mq_transport_stream = dtl->add_stream("file_engine_with_mq_transport_stream"));
+      ASSERT_NO_THROW(file_engine_with_mq_transport_stream->set_engine_type(dtlmod::Engine::Type::File));
       XBT_INFO("Try to set a invalid transport method for this engine type");
-      ASSERT_THROW(file_engine_with_staging_transport_stream->set_transport_method(dtlmod::Transport::Method::MQ),
+      ASSERT_THROW(file_engine_with_mq_transport_stream->set_transport_method(dtlmod::Transport::Method::MQ),
                    dtlmod::InvalidEngineAndTransportCombinationException);
 
-      ASSERT_NO_THROW(staging_engine_with_file_transport_stream =
-        dtl->add_stream("staging_engine_with_file_transport_stream"));
-      ASSERT_NO_THROW(staging_engine_with_file_transport_stream->set_transport_method(dtlmod::Transport::Method::File));
+      auto mq_transport_with_file_engine = dtl->add_stream("mq_transport_with_file_engine");
+      mq_transport_with_file_engine->set_transport_method(dtlmod::Transport::Method::MQ);
       XBT_INFO("Try to set a invalid engine type for this transport method");
-      ASSERT_THROW(staging_engine_with_file_transport_stream->set_engine_type(dtlmod::Engine::Type::Staging),
+      ASSERT_THROW(mq_transport_with_file_engine->set_engine_type(dtlmod::Engine::Type::File),
                    dtlmod::InvalidEngineAndTransportCombinationException);
+
+      ASSERT_NO_THROW(file_transport_with_staging_engine_stream =
+                          dtl->add_stream("file_transport_with_staging_engine_stream"));
+      ASSERT_NO_THROW(file_transport_with_staging_engine_stream->set_transport_method(dtlmod::Transport::Method::File));
+      XBT_INFO("Try to set a invalid engine type for this transport method");
+      ASSERT_THROW(file_transport_with_staging_engine_stream->set_engine_type(dtlmod::Engine::Type::Staging),
+                   dtlmod::InvalidEngineAndTransportCombinationException);
+
+      auto staging_engine_with_file_transport_stream = dtl->add_stream("staging_engine_with_file_transport_stream");
+      staging_engine_with_file_transport_stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      XBT_INFO("Try to set a invalid transport method for this engine type");
+      ASSERT_THROW(staging_engine_with_file_transport_stream->set_transport_method(dtlmod::Transport::Method::File),
+                   dtlmod::InvalidEngineAndTransportCombinationException);
+
+      auto unknown = dtl->add_stream("unknown");
+      ASSERT_THROW(unknown->set_engine_type(static_cast<dtlmod::Engine::Type>(4)), dtlmod::UnknownEngineTypeException);
+      ASSERT_THROW(unknown->set_transport_method(static_cast<dtlmod::Transport::Method>(4)),
+                   dtlmod::UnknownTransportMethodException);
+      auto multiple = dtl->add_stream("multiple");
+      multiple->set_engine_type(dtlmod::Engine::Type::Staging);
+      ASSERT_THROW(multiple->set_engine_type(dtlmod::Engine::Type::File), dtlmod::MultipleEngineTypeException);
+      multiple->set_transport_method(dtlmod::Transport::Method::MQ);
+      ASSERT_THROW(multiple->set_transport_method(dtlmod::Transport::Method::Mailbox),
+                   dtlmod::MultipleTransportMethodException);
+      ASSERT_THROW(multiple->open("file", static_cast<dtlmod::Stream::Mode>(2)),
+                   dtlmod::UnknownOpenModeException);
 
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
@@ -193,4 +216,3 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
-
