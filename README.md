@@ -55,6 +55,7 @@ If you use this software in your research, please cite:
 }
 ```
 
-This article comes with a complete experimental artifact that can be found on [figshare][https://doi.org/10.6084/m9.figshare.28872509.v1].
+This article comes with a complete experimental artifact that can be
+found on [figshare](https://doi.org/10.6084/m9.figshare.28872509.v1).
 
 ---
