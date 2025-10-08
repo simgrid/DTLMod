@@ -97,7 +97,7 @@ def run_test_single_pub_single_sub_local_storage():
         var = stream.define_variable("var", (20000, 20000), (0, 0), (20000, 20000), ctypes.sizeof(ctypes.c_double))
         this_actor.info("Open the stream")
         engine = stream.open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", Stream.Mode.Publish)
-        this_actor.info(f"Stream {stream.name} is ready for Publish data into the DTL")
+        this_actor.info(f"Stream {stream.name} (Engine {engine.name}) is ready for Publish data into the DTL")
         
         this_actor.sleep_for(1)
         this_actor.info("Start a transaction")

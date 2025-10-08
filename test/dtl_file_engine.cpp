@@ -85,7 +85,8 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
       auto var = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
       auto engine =
           stream->open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
-      XBT_INFO("Stream '%s' is ready for Publish data into the DTL", stream->get_cname());
+      XBT_INFO("Stream '%s' (Engine '%s') is ready for Publish data into the DTL", stream->get_cname(), 
+               engine->get_cname());
       for (int i = 0; i < 5; i++) {
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
         XBT_INFO("Start a Transaction");
