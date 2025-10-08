@@ -33,7 +33,7 @@ Stream* Stream::set_engine_type(const Engine::Type& engine_type)
 
   // Check if this engine type is known
   if (engine_type != Engine::Type::File && engine_type != Engine::Type::Staging)
-    throw UnkownEngineTypeException(XBT_THROW_POINT, "");
+    throw UnknownEngineTypeException(XBT_THROW_POINT, "");
 
   // Check is one tries to redefine the engine type
   if (engine_type_ != Engine::Type::Undefined)
@@ -130,7 +130,7 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
     } else if (engine_type_ == Engine::Type::File) {
       engine_ = std::make_shared<FileEngine>(name, this);
     } else {
-      throw UnkownEngineTypeException(XBT_THROW_POINT, get_engine_type_str());
+      throw UnknownEngineTypeException(XBT_THROW_POINT, get_engine_type_str());
     }
     engine_->create_transport(transport_method_);
   }

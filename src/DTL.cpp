@@ -40,7 +40,7 @@ DTL::DTL(const std::string& filename)
     else if (stream["engine"]["type"] == "Staging")
       type = Engine::Type::Staging;
     else
-      throw UnkownEngineTypeException(XBT_THROW_POINT, "");
+      throw UnknownEngineTypeException(XBT_THROW_POINT, "");
 
     // Parse the Transport Method
     Transport::Method transport_method;
