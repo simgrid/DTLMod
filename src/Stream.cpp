@@ -129,8 +129,6 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
       engine_ = std::make_shared<StagingEngine>(name, this);
     } else if (engine_type_ == Engine::Type::File) {
       engine_ = std::make_shared<FileEngine>(name, this);
-    } else {
-      throw UnknownEngineTypeException(XBT_THROW_POINT, get_engine_type_str());
     }
     engine_->create_transport(transport_method_);
   }
