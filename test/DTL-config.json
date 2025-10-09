@@ -13,6 +13,13 @@
                 "type": "Staging",
                 "transport_method": "MQ"
             }
+        },
+        {
+            "name": "Stream3",
+            "engine": {
+                "type": "Staging",
+                "transport_method": "Mailbox"
+            }
         }
     ]
 }
