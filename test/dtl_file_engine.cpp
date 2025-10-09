@@ -18,6 +18,7 @@
 
 #include "./test_util.hpp"
 #include "dtlmod/DTL.hpp"
+#include "dtlmod/DTLException.hpp"
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod_file_engine, "Logging category for this dtlmod test");
 
@@ -71,6 +72,35 @@ public:
     dtlmod::DTL::create();
   }
 };
+
+TEST_F(DTLFileEngineTest, BogusStoragePaths)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    sg4::Host::by_name("node-0")->add_actor("TestActor", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      XBT_INFO("Try to open the stream with a badly formatted first argument");
+      ASSERT_THROW(stream->open("/node-0/scratch/my-working-dir/my-output", 
+                   dtlmod::Stream::Mode::Publish), dtlmod::IncorrectPathDefinitionException);
+      XBT_INFO("Try to open the stream with a bogus NetZone name");
+      ASSERT_THROW(stream->open("bogus_zone:my_fs:/node-0/scratch/my-working-dir/my-output", 
+                   dtlmod::Stream::Mode::Publish), dtlmod::IncorrectPathDefinitionException);
+      XBT_INFO("Try to open the stream with a bogus file system name");
+      ASSERT_THROW(stream->open("cluster:bogus_fs:/node-0/scratch/my-working-dir/my-output", 
+                   dtlmod::Stream::Mode::Publish), dtlmod::IncorrectPathDefinitionException);
+      XBT_INFO("Try to open the stream with a bogus partition name");
+      ASSERT_THROW(stream->open("cluster:my_fs:/bogus_partition/my-working-dir/my-output", 
+                   dtlmod::Stream::Mode::Publish), dtlmod::IncorrectPathDefinitionException);
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+      });
+    XBT_INFO("Simulation will fail as the Stream::open throws an exception from a critical section");
+    ASSERT_DEATH(sg4::Engine::get_instance()->run(), ".*");
+  });
+}
 
 TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
 {

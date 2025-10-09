@@ -34,15 +34,18 @@ FileEngine::FileEngine(const std::string& fullpath, Stream* stream) : Engine(ful
   // Get the NetZone first
   netzone_ = sg4::Engine::get_instance()->netzone_by_name_or_null(tokens[0]);
   if (!netzone_)
-    throw std::invalid_argument("Unknown NetZone named: " + tokens[0]);
+    throw IncorrectPathDefinitionException(XBT_THROW_POINT,"Unknown NetZone named: " + tokens[0]);
 
   // Get the file system in this NetZone. If no file system with the given name exists, the .at() raises an exception
-  file_system_ = sgfs::FileSystem::get_file_systems_by_netzone(netzone_).at(tokens[1]);
-
+  try{
+    file_system_ = sgfs::FileSystem::get_file_systems_by_netzone(netzone_).at(tokens[1]);
+  } catch (std::out_of_range) {
+    throw IncorrectPathDefinitionException(XBT_THROW_POINT,"Unknown File System named: " + tokens[1]);
+  }
   // Extract the partition from the PathToDirectory
   partition_ = file_system_->get_partition_for_path_or_null(tokens[2]);
   if (!partition_)
-    throw std::invalid_argument("Cannot find a partition for that name: " + tokens[2]);
+     throw IncorrectPathDefinitionException(XBT_THROW_POINT, "Cannot find a partition for that name: " + tokens[2]);
 
   // Parse the path within the partition for debug purposes
   auto simplified_path                   = sgfs::PathUtil::simplify_path_string(tokens[2]);
