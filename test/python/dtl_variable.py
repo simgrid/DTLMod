@@ -35,7 +35,7 @@ def run_test_define_variable():
         this_actor.info("Create a 3D variable")
         var3d = stream.define_variable("var3d", (64, 64, 64), (0, 0, 0), (64, 64, 64), 
                                        ctypes.sizeof(ctypes.c_double))
-        this_actor.info("Check name")
+        this_actor.info("Check name of {var3d.name}")
         assert var3d.name == "var3d"
         this_actor.info("Check size: should be 64^3 times 8 as elements are double")
         assert var3d.global_size == (64 * 64 * 64 * 8)

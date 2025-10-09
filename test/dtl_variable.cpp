@@ -52,7 +52,7 @@ TEST_F(DTLVariableTest, DefineVariable)
       ASSERT_NO_THROW(scalar = stream->define_variable("scalar", sizeof(int)));
       XBT_INFO("Create a 3D variable");
       ASSERT_NO_THROW(var3D = stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
-      XBT_INFO("Check name");
+      XBT_INFO("Check name of '%s'", var3D->get_cname());
       ASSERT_TRUE(var3D->get_name() == "var3D");
       XBT_INFO("Check size: should be 64^3 times 8 as elements are double");
       ASSERT_DOUBLE_EQ(var3D->get_global_size(), 64 * 64 * 64 * 8);
