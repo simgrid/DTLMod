@@ -68,8 +68,10 @@ TEST_F(DTLConfigTest, ConfigFile)
       XBT_INFO("Close the engine");
       ASSERT_NO_THROW(engine->close());
 
-      XBT_INFO("Create a stream");
-      ASSERT_NO_THROW(stream = dtl->add_stream("Stream2"));
+      XBT_INFO("Get a stream by name from the DTL");
+      ASSERT_NO_THROW(stream = dtl->get_stream_by_name_or_null("Stream2"));
+      XBT_INFO("Try to get a stream by name from the DTL that doesn't exist. Should return nullptr");
+      ASSERT_EQ(dtl->get_stream_by_name_or_null("Unknown Stream"), nullptr);
       XBT_INFO("Open the stream");
       ASSERT_NO_THROW(engine = stream->open("staging", dtlmod::Stream::Mode::Publish));
       XBT_INFO("Stream 2 is opened (%s, %s)", stream->get_engine_type_str(), stream->get_transport_method_str());
