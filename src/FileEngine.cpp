@@ -39,7 +39,7 @@ FileEngine::FileEngine(const std::string& fullpath, Stream* stream) : Engine(ful
   // Get the file system in this NetZone. If no file system with the given name exists, the .at() raises an exception
   try{
     file_system_ = sgfs::FileSystem::get_file_systems_by_netzone(netzone_).at(tokens[1]);
-  } catch (std::out_of_range) {
+  } catch (const std::out_of_range&) {
     throw IncorrectPathDefinitionException(XBT_THROW_POINT,"Unknown File System named: " + tokens[1]);
   }
   // Extract the partition from the PathToDirectory

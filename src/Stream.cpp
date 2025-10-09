@@ -136,7 +136,7 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
       try {
         engine_ = std::make_shared<FileEngine>(name, this);
         engine_->create_transport(transport_method_);
-      } catch(IncorrectPathDefinitionException e) {
+      } catch(const IncorrectPathDefinitionException& e) {
         got_exception = true;
         exception_msg = std::string(e.what());
       }
