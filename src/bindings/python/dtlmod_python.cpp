@@ -91,10 +91,10 @@ PYBIND11_MODULE(dtlmod, m)
                              "Check whether some simulated actors are currently connected to the DTL (read-only)")
       .def("add_stream", &DTL::add_stream, py::call_guard<py::gil_scoped_release>(), py::arg("name"),
            "Add a data stream to the DTL")
-      .def_property_readonly("get_all_streams", &DTL::get_all_streams,
+      .def_property_readonly("all_streams", &DTL::get_all_streams,
                              "Retrieve all streams declared in the DTL (read-only)")
-      .def_property_readonly("get_stream_by_name_or_null", &DTL::get_stream_by_name_or_null,
-                             "Retrieve a data stream from the DTL by its name  (read-only)");
+      .def("stream_by_name_or_null", &DTL::get_stream_by_name_or_null, py::arg("name"),
+           "Retrieve a data stream from the DTL by its name  (read-only)");
 
   /* Class Stream */
   py::class_<Stream, std::shared_ptr<Stream>> stream(
