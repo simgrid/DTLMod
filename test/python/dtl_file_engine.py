@@ -154,7 +154,7 @@ def run_test_single_pub_single_sub_local_storage():
 def run_test_multiple_pub_single_sub_shared_storage():
     e = setup_platform()
     pub_hosts = [Host.by_name("node-0"), Host.by_name("node-1")]
-    sub_host  = Host.by_name("node-2")
+    sub_host = Host.by_name("node-2")
 
     def pub_test_actor(id):
         dtl = DTL.connect()
@@ -214,7 +214,7 @@ def run_test_multiple_pub_single_sub_shared_storage():
 def run_test_single_pub_multiple_sub_shared_storage():
     e = setup_platform()
     pub_host = Host.by_name("node-0") 
-    sub_hosts  = [Host.by_name("node-1"), Host.by_name("node-2")]
+    sub_hosts = [Host.by_name("node-1"), Host.by_name("node-2")]
 
     def pub_test_actor():
         dtl = DTL.connect()

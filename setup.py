@@ -29,7 +29,7 @@ class CMakeExtension(Extension):
 class CMakeBuild(build_ext):
     def run(self):
         try:
-            subprocess.check_output(['cmake', '--version'])
+            subprocess.check_output(['/usr/bin/cmake', '--version'])
         except OSError:
             raise RuntimeError(
                 "CMake must be installed to build python bindings of DTLMod")
@@ -98,6 +98,6 @@ setup(
         "Topic :: System :: Systems Administration",
     ],
     project_urls={
-        'Source':  'https://github.com/simgrid/dtlmod',
+        'Source': 'https://github.com/simgrid/dtlmod',
     },
 )

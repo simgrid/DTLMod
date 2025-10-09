@@ -168,7 +168,6 @@ void StagingEngine::end_sub_transaction()
   num_subscribers_starting_--;
    XBT_DEBUG("Subscribe Transaction %u end by %s (%d/%lu)", current_sub_transaction_id_, sg4::Actor::self()->get_cname(),
             num_subscribers_starting_,get_num_subscribers());
-
 }
 
 void StagingEngine::sub_close()
