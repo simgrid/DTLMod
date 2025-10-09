@@ -122,17 +122,30 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
     throw UnknownOpenModeException(XBT_THROW_POINT, mode_to_str(mode));
 
   // Only the first Actor calling Stream::open has to create the corresponding Engine and Transport method.
-  // Hence, we use a critical section.
+  // Hence, we use a critical section. The creation of a FileEngine can raise an exception in the critical section
+  // which requires special handling.
+  bool got_exception = false;
+  std::string exception_msg;
+
   dtl_->lock();
   if (not engine_) {
     if (engine_type_ == Engine::Type::Staging) {
       engine_ = std::make_shared<StagingEngine>(name, this);
+      engine_->create_transport(transport_method_);
     } else if (engine_type_ == Engine::Type::File) {
-      engine_ = std::make_shared<FileEngine>(name, this);
+      try {
+        engine_ = std::make_shared<FileEngine>(name, this);
+        engine_->create_transport(transport_method_);
+      } catch(IncorrectPathDefinitionException e) {
+        got_exception = true;
+        exception_msg = std::string(e.what());
+      }
     }
-    engine_->create_transport(transport_method_);
   }
   dtl_->unlock();
+  // Check if an exception has been raised and caugth while creating a FileEngine. If yes, throw it again.
+  if (got_exception)
+    throw IncorrectPathDefinitionException(XBT_THROW_POINT, exception_msg);
 
   while (not engine_) {
     XBT_DEBUG("%s waits for the creation of the engine", sg4::this_actor::get_cname());

@@ -98,7 +98,7 @@ TEST_F(DTLFileEngineTest, BogusStoragePaths)
       dtlmod::DTL::disconnect();
       });
     XBT_INFO("Simulation will fail as the Stream::open throws an exception from a critical section");
-    ASSERT_DEATH(sg4::Engine::get_instance()->run(), ".*");
+    sg4::Engine::get_instance()->run();
   });
 }
 
