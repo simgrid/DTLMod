@@ -16,6 +16,7 @@
 #include <simgrid/s4u/Host.hpp>
 
 #include "./test_util.hpp"
+#include "dtlmod/version.hpp"
 #include "dtlmod/DTL.hpp"
 #include "dtlmod/DTLException.hpp"
 
@@ -50,6 +51,12 @@ TEST_F(DTLConfigTest, ConfigFile)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
+    int ver_major;
+    int ver_minor;
+    int ver_patch;
+    ASSERT_NO_THROW(dtlmod_version_get(&ver_major, &ver_minor, &ver_patch));
+    XBT_INFO("Using DTLMod v%d.%d.%d",ver_major, ver_minor, ver_patch);
+    
     host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
