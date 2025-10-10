@@ -58,6 +58,12 @@ def run_test_inconsistent_variable_definition():
         dtl = DTL.connect()
         this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream")
+        this_actor.info("Create a 1D variable with an element count bigger than the shape, should fail.")
+        try:
+            stream.define_variable("var", (64), (0), (128), ctypes.sizeof(ctypes.c_double))
+            assert False, "Expected InconsistentVariableDefinitionException was not raised"
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
         this_actor.info("Create a 3D variable with only two offsets, should fail.")
         try:
             stream.define_variable("var3d", (64, 64, 64), (0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))                   

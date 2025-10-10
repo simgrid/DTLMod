@@ -3,6 +3,7 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
+#include <cmath>
 #include <gtest/gtest.h>
 #include <simgrid/host.h>
 #include <simgrid/s4u/Actor.hpp>
@@ -80,6 +81,9 @@ TEST_F(DTLVariableTest, InconsistentVariableDefinition)
       ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
+      XBT_INFO("Create a 1D variable with an element count bigger than the shape, should fail.");
+      ASSERT_THROW(stream->define_variable("var", {64}, {0}, {128}, sizeof(double)),
+                   dtlmod::InconsistentVariableDefinitionException);
       XBT_INFO("Create a 3D variable with only two offsets, should fail.");
       ASSERT_THROW(stream->define_variable("var3D", {64, 64, 64}, {0, 0}, {64, 64, 64}, sizeof(double)),
                    dtlmod::InconsistentVariableDefinitionException);
