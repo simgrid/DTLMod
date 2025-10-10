@@ -53,8 +53,6 @@ PYBIND11_MODULE(dtlmod, m)
 
   m.attr("dtlmod_version") = get_dtlmod_version();
 
-  py::register_exception<dtlmod::DTLInitBadSenderException>(m, "DTLInitBadSenderException");
-
   py::register_exception<dtlmod::UnknownEngineTypeException>(m, "UnknownEngineTypeException");
   py::register_exception<dtlmod::UndefinedEngineTypeException>(m, "UndefinedEngineTypeException");
   py::register_exception<dtlmod::MultipleEngineTypeException>(m, "MultipleEngineTypeException");

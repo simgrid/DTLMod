@@ -31,8 +31,6 @@
 namespace dtlmod {
 
 // All these exceptions derive from simgrid::Exception (but are in the dtlmod namespace)
-DECLARE_DTLMOD_EXCEPTION(DTLInitBadSenderException, "No sender specified?!");
-
 DECLARE_DTLMOD_EXCEPTION(UnknownEngineTypeException, "Unknown Engine Type");
 DECLARE_DTLMOD_EXCEPTION(UndefinedEngineTypeException, "Undefined Engine Type. Cannot open Stream");
 DECLARE_DTLMOD_EXCEPTION(MultipleEngineTypeException, "Stream can only use one engine type. Check your code.");

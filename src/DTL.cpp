@@ -92,8 +92,6 @@ __attribute__((noreturn)) void DTL::internal_server_init(std::shared_ptr<DTL> dt
     auto mess     = connect_mq->get_async(&connect);
     mess->wait();
     auto* sender = mess->get_sender();
-    if (!sender)
-      throw DTLInitBadSenderException(XBT_THROW_POINT, "");
     if (*connect) { // Connection
       dtl->internal_connect(sender);
       // Return a handler on the DTL to the newly connected actor
