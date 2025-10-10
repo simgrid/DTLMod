@@ -46,6 +46,34 @@ public:
   }
 };
 
+TEST_F(DTLConnectionTest, DoubleConnectionAndDisconnection)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    hosts_[0]->add_actor("client", [this]() {
+        XBT_INFO("Connect to the DTL");
+        ASSERT_NO_THROW(dtlmod::DTL::connect());
+        XBT_INFO("Let the actor sleep for 1 second");
+        ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
+        XBT_INFO("Connect to the DTL a second time, which should issue a warning but not fail");
+        xbt_log_control_set("dtlmod.fmt:'%m'");
+        ASSERT_NO_THROW(testing::internal::CaptureStderr());
+        ASSERT_NO_THROW(dtlmod::DTL::connect());
+        ASSERT_EQ(testing::internal::GetCapturedStderr(), "client is already connected to the DTL. Check your code. ");
+        XBT_INFO("Disconnect the actor from the DTL");
+        ASSERT_NO_THROW(dtlmod::DTL::disconnect());
+        XBT_INFO("Disconnect from the DTL a second time, which should issue a warning but not fail");
+        ASSERT_NO_THROW(testing::internal::CaptureStderr());
+        ASSERT_NO_THROW(dtlmod::DTL::disconnect());
+        ASSERT_EQ(testing::internal::GetCapturedStderr(),
+                  "client is not connected to the DTL. Check your code. The DTL has no active connection");
+      });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLConnectionTest, SyncConSyncDecon)
 {
   DO_TEST_WITH_FORK([this]() {
@@ -76,7 +104,7 @@ TEST_F(DTLConnectionTest, AsyncConSyncDecon)
         XBT_INFO("Let actor %s sleep for %.1f second", sg4::this_actor::get_cname(), 0.1 * i);
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(0.1 * i));
         XBT_INFO("Connect to the DTL");
-        ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
+        ASSERT_NO_THROW(dtlmod::DTL::connect());
         XBT_INFO("Let actor %s sleep for %.1f second", sg4::this_actor::get_cname(), 1 - (0.1 * i));
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(1 - (0.1 * i)));
         XBT_INFO("Disconnect the actor from the DTL");
@@ -96,7 +124,7 @@ TEST_F(DTLConnectionTest, SyncConAsyncDecon)
       hosts_[i]->add_actor(std::string("client-") + std::to_string(i), [this, i]() {
         std::shared_ptr<dtlmod::DTL> dtl;
         XBT_INFO("Connect to the DTL");
-        ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
+        ASSERT_NO_THROW(dtlmod::DTL::connect());
         XBT_INFO("Let actor %s sleep for %.1f second", sg4::this_actor::get_cname(), 0.1 * i);
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(0.1 * i));
         XBT_INFO("Disconnect the actor from the DTL");
@@ -119,7 +147,7 @@ TEST_F(DTLConnectionTest, AsyncConAsyncDecon)
         XBT_INFO("Connect to the DTL");
         XBT_INFO("Let actor %s sleep for %.1f second", sg4::this_actor::get_cname(), 0.1 * i);
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(0.1 * i));
-        ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
+        ASSERT_NO_THROW(dtlmod::DTL::connect());
         XBT_INFO("Let actor %s sleep for 1 second", sg4::this_actor::get_cname());
         ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
         XBT_INFO("Disconnect the actor from the DTL");

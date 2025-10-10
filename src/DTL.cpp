@@ -68,13 +68,13 @@ void DTL::internal_connect(sg4::Actor* actor)
     XBT_DEBUG("Connection of %s to internal DTL server: %zu active connections", actor->get_cname(),
               active_connections_.size());
   } else
-    XBT_WARN("%s is already connected to the DTL. Check your code", actor->get_cname());
+    XBT_WARN("%s is already connected to the DTL. Check your code. ", actor->get_cname());
 }
 
 void DTL::internal_disconnect(sg4::Actor* actor)
 {
   if (active_connections_.find(actor) == active_connections_.end()) {
-    XBT_WARN("%s is not connected to the DTL. Check your code", actor->get_cname());
+    XBT_WARN("%s is not connected to the DTL. Check your code. ", actor->get_cname());
   } else {
     active_connections_.erase(actor);
     XBT_DEBUG("Disconnection from internal DTL server: %zu active connections", active_connections_.size());
