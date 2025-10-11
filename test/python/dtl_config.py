@@ -43,7 +43,7 @@ def run_test_config_file():
         assert True == stream.metadata_export
         this_actor.info("Change the metadata export setting and check again")
         stream.unset_metadata_export()
-        assert False  == stream.metadata_export
+        assert False == stream.metadata_export
         this_actor.info("Let the actor sleep for 1 second")
         this_actor.sleep_for(1)
         this_actor.info("Close the engine")
