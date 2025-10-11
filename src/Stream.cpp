@@ -101,6 +101,17 @@ Stream* Stream::set_transport_method(const Transport::Method& transport_method)
   return this;
 }
 
+Stream* Stream::set_metadata_export()
+{
+  metadata_export_ = true;
+  return this;
+}
+Stream* Stream::unset_metadata_export()
+{
+  metadata_export_ = false;
+  return this;
+}
+
 /****** Engine Factory ******/
 
 /// When multiple actors open the same Stream, only the first one to call this function is in charge of creating an

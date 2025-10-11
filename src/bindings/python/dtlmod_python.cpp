@@ -102,10 +102,16 @@ PYBIND11_MODULE(dtlmod, m)
                              "Print out the engine type of this Stream (read-only)")
       .def_property_readonly("transport_method", &Stream::get_transport_method_str,
                              "Print out the transport method of this Stream (read-only)")
+      .def_property_readonly("metadata_export", &Stream::does_export_metadata,
+           "Does the stream export metadata (read only)")
       .def("set_engine_type", &Stream::set_engine_type, py::arg("type"),
            "Set the engine type associated to this Stream")
       .def("set_transport_method", &Stream::set_transport_method, py::arg("method"),
            "Set the transport method associated to this Stream")
+      .def("set_metadata_export", &Stream::set_metadata_export,
+           "Specify that metadata must be exported for that stream")
+      .def("unset_metadata_export", &Stream::unset_metadata_export,
+           "Specify that metadata must not be exported for that stream")
       // Engine factory
       .def("open", &Stream::open, py::arg("name"), py::call_guard<py::gil_scoped_release>(), py::arg("mode"),
            "Open a Stream and create an Engine")
@@ -170,6 +176,8 @@ PYBIND11_MODULE(dtlmod, m)
            "End a transaction on this Engine")
       .def_property_readonly("current_transaction", &Engine::get_current_transaction,
                              "The id of the current transaction on this Engine (read-only)")
+      .def_property_readonly("metadata_file_name", &Engine::get_metadata_file_name,
+           "The name of the file in which the engine stored metadata (read-only)")
       .def("close", &Engine::close, py::call_guard<py::gil_scoped_release>(), "Close this Engine");
 
   py::enum_<Engine::Type>(engine, "Type", "The type of Engine")

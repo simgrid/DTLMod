@@ -56,7 +56,7 @@ TEST_F(DTLConfigTest, ConfigFile)
     int ver_patch;
     ASSERT_NO_THROW(dtlmod_version_get(&ver_major, &ver_minor, &ver_patch));
     XBT_INFO("Using DTLMod v%d.%d.%d",ver_major, ver_minor, ver_patch);
-    
+
     host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::DTL> dtl;
       std::shared_ptr<dtlmod::Stream> stream;
@@ -70,6 +70,11 @@ TEST_F(DTLConfigTest, ConfigFile)
       XBT_INFO("Stream 1 is opened (%s, %s)", stream->get_engine_type_str(), stream->get_transport_method_str());
       ASSERT_TRUE(strcmp(stream->get_engine_type_str(), "Engine::Type::File") == 0);
       ASSERT_TRUE(strcmp(stream->get_transport_method_str(), "Transport::Method::File") == 0);
+      XBT_INFO("Check if this stream is set to export metadata (it is)");
+      ASSERT_TRUE(stream->does_export_metadata());
+      XBT_INFO("Change the metadata export setting and check again");
+      ASSERT_NO_THROW(stream->unset_metadata_export());
+      ASSERT_FALSE(stream->does_export_metadata());
       XBT_INFO("Let the actor sleep for 1 second");
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
       XBT_INFO("Close the engine");

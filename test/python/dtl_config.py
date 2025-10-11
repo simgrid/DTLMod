@@ -39,6 +39,11 @@ def run_test_config_file():
         this_actor.info(f"Stream 1 is opened ({stream.engine_type},{stream.transport_method})")
         assert stream.engine_type == "Engine::Type::File"
         assert stream.transport_method == "Transport::Method::File"
+        this_actor.info("Check if this stream is set to export metadata (it is)")
+        assert True == stream.metadata_export
+        this_actor.info("Change the metadata export setting and check again")
+        stream.unset_metadata_export()
+        assert False  == stream.metadata_export
         this_actor.info("Let the actor sleep for 1 second")
         this_actor.sleep_for(1)
         this_actor.info("Close the engine")

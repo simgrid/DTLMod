@@ -4,6 +4,9 @@
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
 #include <gtest/gtest.h>
+#include <cstdio>
+#include <fstream>
+#include <string>
 
 #include <simgrid/s4u/Actor.hpp>
 #include <simgrid/s4u/Engine.hpp>
@@ -241,6 +244,87 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
         dtlmod::DTL::disconnect();
       });
     }
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLStagingEngineTest, MetadataExport)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    auto* pub_host = sg4::Host::by_name("host-0.prod");
+    auto* sub_host = sg4::Host::by_name("host-0.cons");
+
+    pub_host->add_actor("PubTestActor", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::MQ);
+      XBT_INFO("Set metadata export for that stream");
+      stream->set_metadata_export();
+
+      XBT_INFO("Create a 2D-array variable with 20kx20k double");
+      auto var    = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+      XBT_INFO("Stream '%s' is ready for Publish data into the DTL", stream->get_cname());
+      sg4::this_actor::sleep_for(1);
+
+      XBT_INFO("Start a Transaction");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      XBT_INFO("Put Variable 'var' into the DTL");
+      ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+      XBT_INFO("End the Transaction");
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      XBT_INFO("Close the engine");
+      ASSERT_NO_THROW(engine->close());
+
+      XBT_INFO("Get the name of the metadata file");
+      auto metadata_file_name = engine->get_metadata_file_name();
+      XBT_INFO("Check the contents of '%s'", metadata_file_name.c_str());
+      std::ifstream file(metadata_file_name);
+      ASSERT_TRUE(file.is_open());
+      std::string file_contents((std::istreambuf_iterator<char>(file)),
+                                 std::istreambuf_iterator<char>());
+
+      file.close();
+      const std::string& expected_contents =
+        "8\tvar\t1*{20000,20000}\n"
+        "  Transaction 1:\n"
+        "    PubTestActor: [0:20000, 0:20000]\n";
+
+      ASSERT_EQ(file_contents, expected_contents);
+      std::remove(metadata_file_name.c_str());
+
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", [this]() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+      ASSERT_TRUE(var_sub->get_name() == "var");
+      auto shape   = var_sub->get_shape();
+      ASSERT_TRUE(shape[0] == 20000 && shape[1] == 20000);
+      ASSERT_DOUBLE_EQ(var_sub->get_global_size(), 8. * 20000 * 20000);
+
+      XBT_INFO("Start a Transaction");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      XBT_INFO("Get a the Variable 'var' from the DTL");
+      ASSERT_NO_THROW(engine->get(var_sub));
+      XBT_INFO("End the Transaction");
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      XBT_INFO("Close the engine");
+      ASSERT_NO_THROW(engine->close());
+
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+    });
 
     // Run the simulation
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());

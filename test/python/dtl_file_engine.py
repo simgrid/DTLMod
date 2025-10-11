@@ -5,6 +5,7 @@
 
 import ctypes
 import math
+import os
 import sys
 import multiprocessing
 from simgrid import Engine, Host, this_actor, Link, LinkInRoute
@@ -328,13 +329,63 @@ def run_test_set_transation_selection():
 
     e.run()
 
+def run_test_metadata_export():
+    e = setup_platform()
+
+    def test_actor():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output").set_engine_type(DTLEngine.Type.File).set_transport_method(Transport.Method.File)
+        this_actor.info("Set metadata export for that stream")
+        stream.set_metadata_export()
+        this_actor.info("Create a 2D-array variable with 20kx20k double")
+        var = stream.define_variable("var", (20000, 20000), (0, 0), (20000, 20000), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Open the stream")
+        engine = stream.open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", Stream.Mode.Publish)
+        this_actor.info(f"Stream {stream.name} is ready for Publish data into the DTL")
+        for _ in range(2):
+            this_actor.sleep_for(1)
+            this_actor.info("Start a transaction")
+            engine.begin_transaction()
+            this_actor.info("Put Variable 'var' into the DTL")
+            engine.put(var, var.local_size)
+            this_actor.info("End the transaction")
+            engine.end_transaction()
+
+        this_actor.info("Close the engine")
+        engine.close()
+  
+        this_actor.info("Get the name of the metadata file")
+        metadata_file_name = engine.metadata_file_name
+        this_actor.info(f"Check the contents of {metadata_file_name}")
+        with open(metadata_file_name, 'r') as file:
+            file_contents = file.read()
+
+        expected_contents = (
+            "8\tvar\t2*{20000,20000}\n"
+            "  Transaction 1:\n"
+            "    /node-0/scratch/my-working-dir/my-output/data.0: [0:20000, 0:20000]\n"
+            "  Transaction 2:\n"
+            "    /node-0/scratch/my-working-dir/my-output/data.0: [0:20000, 0:20000]\n"
+        )
+
+        assert file_contents == expected_contents
+        os.remove(metadata_file_name)
+
+        this_actor.info("Disconnect from the DTL")
+        DTL.disconnect()
+
+    Host.by_name("node-0").add_actor("TestActor", test_actor)
+
+    e.run()
+
 if __name__ == '__main__':
     tests = [
         run_test_single_pub_local_storage,
         run_test_single_pub_single_sub_local_storage,
         run_test_multiple_pub_single_sub_shared_storage,
         run_test_single_pub_multiple_sub_shared_storage,
-        run_test_set_transation_selection
+        run_test_set_transation_selection,
+        run_test_metadata_export
     ]
 
     for test in tests:

@@ -34,6 +34,7 @@ class Stream {
   std::shared_ptr<Engine> engine_     = nullptr;
   Engine::Type engine_type_           = Engine::Type::Undefined;
   Transport::Method transport_method_ = Transport::Method::Undefined;
+  bool metadata_export_               = false;
   sg4::MutexPtr mutex_                = sg4::Mutex::create();
 
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
@@ -83,6 +84,7 @@ public:
   [[nodiscard]] const char* get_transport_method_str() const;
   /// @brief Helper function to print out the access Mode of the Stream.
   /// @return The corresponding C-string
+  [[nodiscard]] bool does_export_metadata() const { return metadata_export_; }
 
   /// @brief Stream configuration function: set the Engine type to create.
   /// @param engine_type The type of Engine to create when opening the Stream.
@@ -92,6 +94,12 @@ public:
   /// @param transport_method the Transport methode to use when opening the Stream.
   /// @return The calling Stream (enable method chaining).
   Stream* set_transport_method(const Transport::Method& transport_method);
+  /// @brief Stream configuration function: specify that metadata must be exported
+  /// @return The calling Stream (enable method chaining).
+  Stream* set_metadata_export();
+  /// @brief Stream configuration function: specify that metadata must not be exported
+  /// @return The calling Stream (enable method chaining).
+  Stream* unset_metadata_export();
 
   /******* Engine Factory *******/
 

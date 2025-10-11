@@ -151,6 +151,8 @@ void FileEngine::pub_close()
     XBT_DEBUG("Closing opened files");
     transport->close_pub_files();
     XBT_DEBUG("Engine '%s' is now closed for all publishers ", get_cname());
+    if (stream_->does_export_metadata())
+      export_metadata_to_file();
   }
 }
 

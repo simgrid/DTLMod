@@ -77,7 +77,8 @@ public:
   virtual void end_sub_transaction()       = 0;
   virtual void sub_close()                 = 0;
 
-  void export_metadata_to_file() const;
+  std::string metadata_file_;
+  void export_metadata_to_file();
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -143,6 +144,10 @@ public:
   /// @brief Get the id of the current transaction (on the Publish side).
   /// @return The id of the ongoing transaction.
   [[nodiscard]] unsigned int get_current_transaction() const { return current_pub_transaction_id_; }
+
+  /// @brief Get the name of the file in which the engine stored metadata
+  /// @return The name of the file.
+  [[nodiscard]] const std::string& get_metadata_file_name() const { return metadata_file_; }
 
   /// @brief Close the Engine associated to a Stream.
   void close();

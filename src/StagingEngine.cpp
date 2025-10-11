@@ -108,6 +108,8 @@ void StagingEngine::pub_close()
     XBT_DEBUG("All publishers have called the Engine::close() function");
     close_stream();
     XBT_DEBUG("Engine '%s' is now closed for all publishers ", get_cname());
+    if (stream_->does_export_metadata())
+      export_metadata_to_file();
   }
 }
 
