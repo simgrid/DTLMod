@@ -5,9 +5,12 @@ import sys
 
 # -- Project information -----------------------------------------------------
 
-project = 'DTLMOD'
-copyright = '2024-2025, SWAT'
-author = 'SWAT Team'
+# -- Project information -----------------------------------------------------
+
+version = u'0.1.0'
+project = u'DTLMod'
+copyright = u'2002-2025, The SWAT Team'
+author = u'The SWAT Team'
 
 # -- General configuration ---------------------------------------------------
 
