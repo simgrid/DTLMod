@@ -30,21 +30,54 @@ python bindings (optional):
 JSON:
   - On Debian / Ubuntu: ``apt install nlohmann-json3-dev``
 
-^^^^^^^^^^^^^^^^^^^
 Getting the Sources
 ^^^^^^^^^^^^^^^^^^^
 
 You can find the latest **stable release** on  `Github
-<https://github.com/simgrid/DTLMod/-/releases>`_, and compile it as follows:
+<https://github.com/simgrid/DTLMod/releases>`_, and compile it as follows.
+
+We recommend an **out-of-source** build where all the files produced during the compilation are placed in a separate
+directory. Cleaning the building tree then becomes as easy as removing this directory, and you can have several such
+directories to test different parameter sets or compiling toolchains.
 
 .. code-block:: console
 
-   $ tar xf simgrid-3-XX.tar.gz
-   $ cd simgrid-*
-   $ cmake -DCMAKE_INSTALL_PREFIX=/opt/simgrid -GNinja .
-   $ ninja                     # or 'make' if you remove the '-GNinja' above
-   $ ninja install
+   $ tar xf v0.X.tar.gz # where X is the minor version number of the release 
+   $ cd DTLMod-*
+   $ mkdir build
+   $ cd build 
+   $ cmake ..
+   $ make
+   $ sudo make install
+   $ cd ..
 
-If you want to stay on the **bleeding edge**, get the current git version,
-and recompile it as with stable archives. You may need some extra
-dependencies.
+To benefit of the latest developments, get the current git version and recompile it as with stable archives. 
+
+.. code-block:: console
+
+   $ git clone https://github.com/simgrid/DTLMod.git
+   $ cd DTLMod
+   $ mkdir build
+   $ cd build 
+   $ cmake ..
+   $ make
+   $ sudo make install
+   $ cd ..
+
+Testing your build
+^^^^^^^^^^^^^^^^^^
+
+Once everything is built, you may want to test the result. DTLMod comes with an extensive test suite which requires to
+install ``googletest`` first. These tests are not built by default. You first have to build them with 
+``make unit_tests``. You can then run them with ``./unit_tests``. Additionally, the Python API can also be tested as
+follows:
+
+.. code-block:: console
+
+   $ cd test/python
+   $ python unit_tests_python.pymkdir build
+   $ cd - 
+
+We run both test suites on every commit as part of a **github action** and the results can be found 
+`there <https://github.com/simgrid/DTLMod/actions>`_.  
+
