@@ -55,7 +55,7 @@ html_favicon = 'favicon.png'
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ['_static']
 
-html_logo = ""
+html_logo = "img/DTLMod_logo.png"
 html_css_files = [
     'css/custom.css',
 ]
