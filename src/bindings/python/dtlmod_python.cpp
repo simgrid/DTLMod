@@ -102,6 +102,8 @@ PYBIND11_MODULE(dtlmod, m)
                              "Print out the engine type of this Stream (read-only)")
       .def_property_readonly("transport_method", &Stream::get_transport_method_str,
                              "Print out the transport method of this Stream (read-only)")
+      .def_property_readonly("access_mode", &Stream::get_access_mode_str,
+                             "Print out the access mode of this Stream (read-only)")
       .def_property_readonly("metadata_export", &Stream::does_export_metadata,
            "Does the stream export metadata (read only)")
       .def("set_engine_type", &Stream::set_engine_type, py::arg("type"),

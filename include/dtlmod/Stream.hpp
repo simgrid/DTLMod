@@ -29,16 +29,6 @@ class Stream {
   friend class FileEngine;
   friend class StagingEngine;
 
-  const std::string name_;
-  DTL* dtl_                           = nullptr;
-  std::shared_ptr<Engine> engine_     = nullptr;
-  Engine::Type engine_type_           = Engine::Type::Undefined;
-  Transport::Method transport_method_ = Transport::Method::Undefined;
-  bool metadata_export_               = false;
-  sg4::MutexPtr mutex_                = sg4::Mutex::create();
-
-  std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
-
 public:
   /// @brief An enum that defines the access mode for a Stream
   enum class Mode {
@@ -47,6 +37,18 @@ public:
     /// @brief Subscribe. To retrieve data from the DTL.
     Subscribe = 1
   };
+
+private:
+  const std::string name_;
+  DTL* dtl_                           = nullptr;
+  std::shared_ptr<Engine> engine_     = nullptr;
+  Engine::Type engine_type_           = Engine::Type::Undefined;
+  Transport::Method transport_method_ = Transport::Method::Undefined;
+  bool metadata_export_               = false;
+  sg4::MutexPtr mutex_                = sg4::Mutex::create();
+  Mode access_mode_;
+
+  std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -82,8 +84,14 @@ public:
   /// @brief Helper function to print out the Transport::Method of the Stream.
   /// @return The corresponding C-string
   [[nodiscard]] const char* get_transport_method_str() const;
+  /// @brief Helper function to know the access Mode of the Stream.
+  /// @return The corresponding Stream::Mode
+  [[nodiscard]] Mode get_access_mode() const { return access_mode_; }
   /// @brief Helper function to print out the access Mode of the Stream.
   /// @return The corresponding C-string
+  [[nodiscard]] const char* get_access_mode_str() const { return mode_to_str(access_mode_); }
+  /// @brief Helper function to know if the Stream does export metadata or not
+  /// @return a boolean indicating if the Stream does export metadata or not
   [[nodiscard]] bool does_export_metadata() const { return metadata_export_; }
 
   /// @brief Stream configuration function: set the Engine type to create.

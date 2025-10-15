@@ -152,6 +152,7 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
         exception_msg = std::string(e.what());
       }
     }
+    access_mode_ = mode;
   }
   dtl_->unlock();
   // Check if an exception has been raised and caugth while creating a FileEngine. If yes, throw it again.

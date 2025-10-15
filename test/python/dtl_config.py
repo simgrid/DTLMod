@@ -39,6 +39,7 @@ def run_test_config_file():
         this_actor.info(f"Stream 1 is opened ({stream.engine_type},{stream.transport_method})")
         assert stream.engine_type == "Engine::Type::File"
         assert stream.transport_method == "Transport::Method::File"
+        assert stream.access_mode == "Mode::Publish"
         this_actor.info("Check if this stream is set to export metadata (it is)")
         assert True == stream.metadata_export
         this_actor.info("Change the metadata export setting and check again")

@@ -70,6 +70,8 @@ TEST_F(DTLConfigTest, ConfigFile)
       XBT_INFO("Stream 1 is opened (%s, %s)", stream->get_engine_type_str(), stream->get_transport_method_str());
       ASSERT_TRUE(strcmp(stream->get_engine_type_str(), "Engine::Type::File") == 0);
       ASSERT_TRUE(strcmp(stream->get_transport_method_str(), "Transport::Method::File") == 0);
+      ASSERT_TRUE(strcmp(stream->get_access_mode_str(), "Mode::Publish") == 0);
+      ASSERT_EQ(stream->get_access_mode(), dtlmod::Stream::Mode::Publish);
       XBT_INFO("Check if this stream is set to export metadata (it is)");
       ASSERT_TRUE(stream->does_export_metadata());
       XBT_INFO("Change the metadata export setting and check again");
