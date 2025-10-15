@@ -70,7 +70,7 @@ file(REMOVE ${CMAKE_BINARY_DIR}/include/dtlmod/version.hpp.generated)
 
 
 # Python binding (with pybind11)
-################
+################################
 if((NOT DEFINED enable_python) OR enable_python)
   find_package(Python3 COMPONENTS Interpreter)
   if(NOT Python3_Interpreter_FOUND)
@@ -220,13 +220,14 @@ else()
 endif()
 
 # Python test
-add_custom_target(copy_python_tests ALL
+add_custom_target(copy_python_tests
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/test/python
     COMMAND ${CMAKE_COMMAND} -E copy_directory
             ${CMAKE_SOURCE_DIR}/test/python
             ${CMAKE_BINARY_DIR}/test/python
     COMMENT "Copying Python test scripts to build directory"
 )
+add_dependencies(unit_tests copy_python_tests)
 
 # Documentation
 include(${CMAKE_HOME_DIRECTORY}/conf/cmake/Documentation.cmake)
