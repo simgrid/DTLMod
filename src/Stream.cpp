@@ -234,8 +234,8 @@ std::vector<std::string> Stream::get_all_variables() const
 {
   std::vector<std::string> variable_names;
   variable_names.reserve(variables_.size());
-  for (const auto& pair : variables_)
-    variable_names.push_back(pair.first);
+  for (const auto& [name, var] : variables_)
+    variable_names.push_back(name);
   return variable_names;
 }
 
