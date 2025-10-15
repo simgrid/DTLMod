@@ -136,6 +136,7 @@ PYBIND11_MODULE(dtlmod, m)
              size_t element_size) { return self.define_variable(name, shape, start, count, element_size); },
           py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("shape"), py::arg("start"),
           py::arg("count"), py::arg("element_size"), "Define a variable for this Stream")
+      .def_property_readonly("all_variables", &Stream::get_all_variables, "Retrieve the list of Variables by names")
       .def("inquire_variable", &Stream::inquire_variable, py::arg("name"), "Retrieve a Variable information by name")
       .def("remove_variable", &Stream::remove_variable, py::arg("name"), "Remove a Variable from this Stream");
 

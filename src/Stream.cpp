@@ -230,6 +230,15 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
   }
 }
 
+std::vector<std::string> Stream::get_all_variables() const
+{
+  std::vector<std::string> variable_names;
+  variable_names.reserve(variables_.size());
+  for (const auto& pair : variables_)
+    variable_names.push_back(pair.first);
+  return variable_names;
+}
+
 std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) const
 {
   auto var = variables_.find(name);

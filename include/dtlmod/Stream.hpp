@@ -53,7 +53,7 @@ private:
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   [[nodiscard]] const Transport::Method& get_transport_method() const { return transport_method_; }
-  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Variable>>& get_all_variables() const
+  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Variable>>& get_all_variables_internal() const
   {
     return variables_;
   }
@@ -142,6 +142,10 @@ public:
   std::shared_ptr<Variable> define_variable(const std::string& name, const std::vector<size_t>& shape,
                                             const std::vector<size_t>& start, const std::vector<size_t>& count,
                                             size_t element_size);
+
+  /// @brief Retrieve the list of Variables defined on this stream
+  /// @return the list of Variable names
+  std::vector<std::string> get_all_variables() const;
 
   /// @brief Retrieve a Variable information by name.
   /// @param name The name of desired Variable.
