@@ -60,7 +60,7 @@ def run_test_inconsistent_variable_definition():
         stream = dtl.add_stream("Stream")
         this_actor.info("Create a 1D variable with an element count bigger than the shape, should fail.")
         try:
-            stream.define_variable("var", (64), (0), (128), ctypes.sizeof(ctypes.c_double))
+            stream.define_variable("var", (64,), (0,), (128,), ctypes.sizeof(ctypes.c_double))
             assert False, "Expected InconsistentVariableDefinitionException was not raised"
         except InconsistentVariableDefinitionException:
             pass  # Test passes
@@ -244,6 +244,43 @@ def run_test_inquire_variable_remote():
     host.add_actor("TestActorConsumer", inquire_variable_remote_consumer)
     e.run()
 
+def run_test_get_all_variables():
+    e, host = setup_platform()
+
+    def producer():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Create 3 variables of different shapes")
+        stream.define_variable("var1D", (64,), (0,), (64,), ctypes.sizeof(ctypes.c_double))
+        stream.define_variable("var2D", (64, 64), (0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
+        stream.define_variable("var3D", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    def consumer():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.sleep_for(1)
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Inquire the different variables created by the producer")
+        var_list = stream.all_variables
+        ndims = 3
+        for var_name in var_list:
+            var = stream.inquire_variable(var_name)
+            this_actor.info(f"Check name and size of the inquired variable:" + var_name)
+            assert var.name == var_name
+            assert var.global_size == pow(64, ndims) * 8
+            ndims = ndims - 1
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    host.add_actor("TestActorProducer", producer)
+    host.add_actor("TestActorConsumer", consumer)
+    e.run()
+
 if __name__ == '__main__':
     tests = [
         run_test_define_variable,
@@ -252,7 +289,8 @@ if __name__ == '__main__':
         run_test_distributed_variable,
         run_test_remove_variable,
         run_test_inquire_variable_local,
-        run_test_inquire_variable_remote
+        run_test_inquire_variable_remote,
+        run_test_get_all_variables
     ]
 
     for test in tests:

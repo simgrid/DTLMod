@@ -152,6 +152,7 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
         exception_msg = std::string(e.what());
       }
     }
+    access_mode_ = mode;
   }
   dtl_->unlock();
   // Check if an exception has been raised and caugth while creating a FileEngine. If yes, throw it again.
@@ -227,6 +228,15 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
     variables_.try_emplace(name, new_var);
     return new_var;
   }
+}
+
+std::vector<std::string> Stream::get_all_variables() const
+{
+  std::vector<std::string> variable_names;
+  variable_names.reserve(variables_.size());
+  for (const auto& [name, var] : variables_)
+    variable_names.push_back(name);
+  return variable_names;
 }
 
 std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) const
