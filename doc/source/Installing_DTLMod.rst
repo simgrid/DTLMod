@@ -7,12 +7,12 @@ Installing DTLMod
 
 .. _install_src:
 
-Installing from the Source
---------------------------
+Installing from source
+----------------------
 
 .. _install_src_deps:
 
-Getting the Dependencies
+Getting the dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 C++ compiler
@@ -30,8 +30,8 @@ python bindings (optional):
 JSON:
   - On Debian / Ubuntu: ``apt install nlohmann-json3-dev``
 
-Getting the Sources
-^^^^^^^^^^^^^^^^^^^
+Getting the source
+^^^^^^^^^^^^^^^^^^
 
 You can find the latest **stable release** on  `Github
 <https://github.com/simgrid/DTLMod/releases>`_, and compile it as follows.
@@ -81,3 +81,33 @@ follows:
 We run both test suites on every commit as part of a **github action** and the results can be found 
 `there <https://github.com/simgrid/DTLMod/actions>`_.  
 
+Python-specific instructions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Once you have the Python development headers installed as well as a recent version of `pybind11 <https://pybind11.readthedocs.io/en/stable/>`_
+(version at least 2.4), recompiling the Python bindings from the source amounts to:
+
+.. code-block:: console
+
+  # cd DTLMod-source-tree
+  $ python setup.py build install
+
+.. SimGrid 3.13, it should even be possible to install simgrid without downloading the source with pip:
+
+.. .. code-block:: console
+
+..  $ pip install simgrid
+
+You may have to tell Python where to find the libraries (DTLMod, FSMod, and SimGrid), e.g., if you installed them in a
+non-standard directory, as follows:
+
+.. code-block:: console
+
+  $ PYTHONPATH="/usr/local/lib/python3.13/dist-packages" LD_LIBRARY_PATH="/usr/local/lib" python your_script.py
+
+You can add those variables to your bash profile to not specify it each time by adding these lines to your ``~/.profile``:
+
+.. code-block:: console
+
+  export PYTHONPATH="$PYTHONPATH:/usr/local/lib/python3.13/dist-packages"
+  export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/lib"

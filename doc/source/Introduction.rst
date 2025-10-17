@@ -38,6 +38,6 @@ the writing of simulators of in situ processing.
 What DTLMod allows you to do
 ----------------------------
 
-  - **Prototype **. 
+  - **Prototype**.
   - **Compare**. 
   - **Explore**.

@@ -1,6 +1,7 @@
+.. Copyright 2025
 .. DTLMod documentation master file
-.. _index:
 
+.. _index:
 
 DTLMod: The SimGrid Data Transport Layer Module
 ===============================================
@@ -29,4 +30,6 @@ effects of resource allocation strategies.
 
       Introduction <Introduction.rst>
          Installing DTLMod <Installing_DTLMod.rst>
-      
+         Start your own project <New_project.rst>
+      Describing your in situ workflow <Workflow.rst>
+         The DTLMod programming interface <app_API.rst>
