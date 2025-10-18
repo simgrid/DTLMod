@@ -152,12 +152,14 @@ set(SOURCE_FILES
 )
 
 set(HEADER_FILES
+  include/dtlmod/DecimationReductionMethod.hpp
   include/dtlmod/DTL.hpp
   include/dtlmod/DTLException.hpp
   include/dtlmod/Engine.hpp
   include/dtlmod/FileEngine.hpp
   include/dtlmod/FileTransport.hpp
   include/dtlmod/Metadata.hpp
+  include/dtlmod/ReductionMethod.hpp
   include/dtlmod/StagingEngine.hpp
   include/dtlmod/StagingMboxTransport.hpp
   include/dtlmod/StagingMqTransport.hpp

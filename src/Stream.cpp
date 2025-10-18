@@ -3,11 +3,13 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
-#include "dtlmod/Stream.hpp"
+#include "dtlmod/CompressionReductionMethod.hpp"
+#include "dtlmod/DecimationReductionMethod.hpp"
 #include "dtlmod/DTL.hpp"
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/FileEngine.hpp"
 #include "dtlmod/StagingEngine.hpp"
+#include "dtlmod/Stream.hpp"
 #include "dtlmod/Variable.hpp"
 
 XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
@@ -111,6 +113,20 @@ Stream* Stream::unset_metadata_export()
   metadata_export_ = false;
   return this;
 }
+
+std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)
+{
+  std::shared_ptr<ReductionMethod> reduction_method;
+  if (name == "Decimation" || name == "decimation")
+    reduction_method = std::make_shared<DecimationReductionMethod>(name);
+  else if (name == "Compression" || name == "compression")
+    reduction_method = std::make_shared<CompressionReductionMethod>(name);  
+
+  reduction_methods_.push_back(reduction_method);
+
+  return reduction_method;
+}
+
 
 /****** Engine Factory ******/
 

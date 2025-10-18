@@ -9,6 +9,7 @@
 #include <simgrid/s4u/ConditionVariable.hpp>
 
 #include "dtlmod/Engine.hpp"
+#include "dtlmod/ReductionMethod.hpp"
 
 namespace dtlmod {
 
@@ -49,6 +50,7 @@ private:
   Mode access_mode_;
 
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
+  std::vector<std::shared_ptr<ReductionMethod>> reduction_methods_;
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -108,6 +110,11 @@ public:
   /// @brief Stream configuration function: specify that metadata must not be exported
   /// @return The calling Stream (enable method chaining).
   Stream* unset_metadata_export();
+
+  /// @brief Define a new reduction method that can be applied to that Stream
+  /// @param name the name of the reduction method
+  /// @return a shared pointer on the newly created ReductionMethod object
+  std::shared_ptr<ReductionMethod> define_reduction_method(const std::string& name);
 
   /******* Engine Factory *******/
 
