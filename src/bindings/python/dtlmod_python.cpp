@@ -171,8 +171,11 @@ PYBIND11_MODULE(dtlmod, m)
   engine.def_property_readonly("name", &Engine::get_name, "The name of the Engine (read-only)")
       .def("begin_transaction", &Engine::begin_transaction, py::call_guard<py::gil_scoped_release>(),
            "Begin a transaction on this Engine")
-      .def("put", &Engine::put, py::arg("var"), py::call_guard<py::gil_scoped_release>(),
-           py::arg("simulated_size_in_bytes"), "Put a Variable in the DTL using this Engine")
+      .def("put", py::overload_cast<std::shared_ptr<Variable>>(&Engine::put, py::const_), py::arg("var"),
+           py::call_guard<py::gil_scoped_release>(), "Put a Variable in the DTL using this Engine")
+      .def("put", py::overload_cast<std::shared_ptr<Variable>, size_t>(&Engine::put, py::const_), py::arg("var"),
+           py::arg("simulated_size_in_bytes"), py::call_guard<py::gil_scoped_release>(),
+           "Put a Variable in the DTL using this Engine")
       .def("get", &Engine::get, py::arg("var"), py::call_guard<py::gil_scoped_release>(),
            "Get a Variable from the DTL using this Engine")
       .def("end_transaction", &Engine::end_transaction, py::call_guard<py::gil_scoped_release>(),

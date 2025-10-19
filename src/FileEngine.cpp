@@ -3,6 +3,9 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+
 #include <fsmod/FileSystem.hpp>
 #include <fsmod/PathUtil.hpp>
 

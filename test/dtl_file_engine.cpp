@@ -124,7 +124,7 @@ TEST_F(DTLFileEngineTest, SinglePublisherLocalStorage)
         XBT_INFO("Start a Transaction");
         ASSERT_NO_THROW(engine->begin_transaction());
         XBT_INFO("Put Variable 'var' into the DTL");
-        ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+        ASSERT_NO_THROW(engine->put(var));
         XBT_INFO("End a Transaction");
         ASSERT_NO_THROW(engine->end_transaction());
       }
@@ -171,7 +171,7 @@ TEST_F(DTLFileEngineTest, SinglePubSingleSubLocalStorage)
       XBT_INFO("Start a Transaction");
       ASSERT_NO_THROW(engine->begin_transaction());
       XBT_INFO("Put Variable 'var' into the DTL");
-      ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+      ASSERT_NO_THROW(engine->put(var));
       XBT_INFO("End a Transaction");
       ASSERT_NO_THROW(engine->end_transaction());
 
@@ -245,7 +245,7 @@ TEST_F(DTLFileEngineTest, MultiplePubSingleSubSharedStorage)
         XBT_INFO("Start a Transaction");
         ASSERT_NO_THROW(engine->begin_transaction());
         XBT_INFO("Put Variable 'var' into the DTL");
-        ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+        ASSERT_NO_THROW(engine->put(var));
         XBT_INFO("End a Transaction");
         ASSERT_NO_THROW(engine->end_transaction());
 
@@ -307,7 +307,7 @@ TEST_F(DTLFileEngineTest, SinglePubMultipleSubSharedStorage)
       XBT_INFO("Start a Transaction");
       ASSERT_NO_THROW(engine->begin_transaction());
       XBT_INFO("Put Variable 'var' into the DTL");
-      ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+      ASSERT_NO_THROW(engine->put(var));
       XBT_INFO("End a Transaction");
       ASSERT_NO_THROW(engine->end_transaction());
 
@@ -364,7 +364,7 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
           stream->open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
       for (int i = 0; i < 5; i++) {
         engine->begin_transaction();
-        engine->put(var, var->get_local_size());
+        engine->put(var);
         engine->end_transaction();
         sg4::this_actor::sleep_for(1);
       }
@@ -433,7 +433,7 @@ TEST_F(DTLFileEngineTest, MetadataExport)
         XBT_INFO("Start a Transaction");
         ASSERT_NO_THROW(engine->begin_transaction());
         XBT_INFO("Put Variable 'var' into the DTL");
-        ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+        ASSERT_NO_THROW(engine->put(var));
         XBT_INFO("End a Transaction");
         ASSERT_NO_THROW(engine->end_transaction());
       }
