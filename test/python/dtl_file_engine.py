@@ -65,7 +65,7 @@ def run_test_single_pub_local_storage():
             this_actor.info("Start a transaction")
             engine.begin_transaction()
             this_actor.info("Put Variable 'var' into the DTL")
-            engine.put(var, var.local_size)
+            engine.put(var)
             this_actor.info("End the transaction")
             engine.end_transaction()
 
@@ -104,7 +104,7 @@ def run_test_single_pub_single_sub_local_storage():
         this_actor.info("Start a transaction")
         engine.begin_transaction()
         this_actor.info("Put Variable 'var' into the DTL")
-        engine.put(var, var.local_size)
+        engine.put(var)
         this_actor.info("End the transaction")
         engine.end_transaction()
 
@@ -169,7 +169,7 @@ def run_test_multiple_pub_single_sub_shared_storage():
         this_actor.info("Start a transaction")
         engine.begin_transaction()
         this_actor.info("Put Variable 'var' into the DTL")
-        engine.put(var, var.local_size)
+        engine.put(var)
         this_actor.info("End the transaction")
         engine.end_transaction()
 
@@ -229,7 +229,7 @@ def run_test_single_pub_multiple_sub_shared_storage():
         this_actor.info("Start a transaction")
         engine.begin_transaction()
         this_actor.info("Put Variable 'var' into the DTL")
-        engine.put(var, var.local_size)
+        engine.put(var)
         this_actor.info("End the transaction")
         engine.end_transaction()
 
@@ -284,7 +284,7 @@ def run_test_set_transation_selection():
         for i in range(5):
             this_actor.sleep_for(1)
             engine.begin_transaction()
-            engine.put(var, var.local_size)
+            engine.put(var)
             engine.end_transaction()
             this_actor.sleep_for(1)
 
@@ -347,7 +347,7 @@ def run_test_metadata_export():
             this_actor.info("Start a transaction")
             engine.begin_transaction()
             this_actor.info("Put Variable 'var' into the DTL")
-            engine.put(var, var.local_size)
+            engine.put(var)
             this_actor.info("End the transaction")
             engine.end_transaction()
 
