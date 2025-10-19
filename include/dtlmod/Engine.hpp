@@ -131,7 +131,11 @@ public:
 
   /// @brief Put a Variable in the DTL using a specific Engine.
   /// @param var The variable to put in the DTL
-  /// @param simulated_size_in_bytes The size of the (subset of) the Variable
+  void put(std::shared_ptr<Variable> var) const;
+
+  /// @brief Put a Variable in the DTL using a specific Engine.
+  /// @param var The variable to put in the DTL
+  /// @param simulated_size_in_bytes The simulated size of the Variable (can be different of actual size)
   void put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) const;
 
   /// @brief Get a Variable from the DTL

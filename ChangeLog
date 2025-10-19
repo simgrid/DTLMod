@@ -5,8 +5,10 @@ DTLMod (0.2) unreleased. Target: fall 2025
   - Full python bindings
   - Improved code coverage
   - Reduced technical debt
-  - Make metadata export configurable at stream level
-
+  - API:
+    - Make metadata export configurable at stream level.
+    - Have a simpler version of Engine::put() that automatically uses the
+      local size of the Variable.
 ----------------------------------------------------------------------------
 
 DTLMod (0.1) July 4. 2025
