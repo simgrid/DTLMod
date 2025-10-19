@@ -15,9 +15,14 @@ class CompressionReductionMethod : public ReductionMethod{
 
 public:
   CompressionReductionMethod(const std::string& name) : ReductionMethod(name) {}
-  void parse_parameters(std::map<std::string, std::string> parameters) override {}
+  void parse_parameters(std::shared_ptr<Variable> var, const std::map<std::string, std::string>& parameters) override
+  {
+    for (const auto& [key, value] : parameters) {
+      // TODO do something
+    }
+  }
 
 };
-
+/// \endcond
 } // namespace dtlmod
 #endif //__DTLMOD_COMPRESSIN_REDUCTION_METHOD_HPP__

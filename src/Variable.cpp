@@ -46,6 +46,13 @@ void Variable::set_transaction_selection(unsigned int begin, unsigned int count)
   subscriber_transaction_selections_[sg4::Actor::self()] = std::make_pair(begin, count);
 }
 
+void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
+                                       std::map<std::string, std::string> parameters)
+{
+  method->parse_parameters(shared_from_this(), parameters);
+  // TODO do something
+}
+
 ////////////////////////////////////////////
 ///////////////// INTERNALS ////////////////
 ////////////////////////////////////////////

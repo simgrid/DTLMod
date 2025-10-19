@@ -45,7 +45,7 @@ public:
     for (int i = 0; i < 4; i++) {
       std::string hostname = std::string("node-") + std::to_string(i);
       auto* host           = cluster->add_host(hostname, "1Gf");
-      sg4::Disk* disk      = host->add_disk(hostname + "_disk", "5.5GBps", "2.1GBps");
+      auto* disk           = host->add_disk(hostname + "_disk", "5.5GBps", "2.1GBps");
       local_storages.push_back(sgfs::OneDiskStorage::create(hostname + "_local_storage", disk));
 
       std::string linkname = std::string("link_") + std::to_string(i);

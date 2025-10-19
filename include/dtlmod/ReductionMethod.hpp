@@ -7,9 +7,12 @@
 #define __DTLMOD_REDUCTION_METHOD_HPP__
 
 #include <map>
+#include <memory>
 #include <string>
 
 namespace dtlmod {
+
+class Variable;
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class ReductionMethod {
@@ -19,7 +22,8 @@ class ReductionMethod {
 
 public:
   ReductionMethod(const std::string& name) : name_(name){}
-  virtual void parse_parameters(std::map<std::string, std::string> parameters) = 0;
+  virtual void parse_parameters(std::shared_ptr<Variable> var,
+                                const std::map<std::string, std::string>& parameters) = 0;
   
   /// @brief Helper function to print out the name of the ReductionMethod.
   /// @return The corresponding string
@@ -28,6 +32,6 @@ public:
   /// @return The corresponding C-string
   [[nodiscard]] const char* get_cname() const { return name_.c_str(); }
 };
-
+///\endcond
 } // namespace dtlmod
 #endif //__DTLMOD_REDUCTION_METHOD_HPP__

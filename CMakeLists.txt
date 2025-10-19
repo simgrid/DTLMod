@@ -203,6 +203,7 @@ if(GTEST_LIBRARY)
       test/dtl_config.cpp
       test/dtl_connection.cpp
       test/dtl_file_engine.cpp
+      test/dtl_reduction.cpp
       test/dtl_staging_engine.cpp
       test/dtl_stream.cpp
       test/dtl_variable.cpp

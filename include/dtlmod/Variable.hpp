@@ -11,11 +11,12 @@
 #include <vector>
 
 #include "dtlmod/Metadata.hpp"
+#include "dtlmod/ReductionMethod.hpp"
 
 namespace dtlmod {
 
 /// @brief A class to translate a piece of data from an application into an object handled by the DTL and its metadata.
-class Variable {
+class Variable : public std::enable_shared_from_this<Variable> {
   friend class Engine;
   friend class Stream;
   friend class Transport;
@@ -107,6 +108,12 @@ public:
   /// @param begin the id at which the range of transactions to get begins.
   /// @param count the number of transactions in the range.
   void set_transaction_selection(unsigned int begin, unsigned int count);
+
+  /// @brief Assign a parametrized reduction method to the Variable.
+  /// @param method a ReductionMethod (already defined).
+  /// @param paramaters specific parameters in key-value form to apply the reduction method to the Variable.
+  void set_reduction_operation(std::shared_ptr<ReductionMethod> method,
+                               std::map<std::string, std::string> parameters);
 };
 } // namespace dtlmod
 
