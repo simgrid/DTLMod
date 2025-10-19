@@ -6,8 +6,6 @@
 #ifndef __DTLMOD_ENGINE_FILE_HPP__
 #define __DTLMOD_ENGINE_FILE_HPP__
 
-#include <boost/algorithm/string.hpp>
-#include <boost/algorithm/string/split.hpp>
 #include <fsmod/FileSystem.hpp>
 #include <fsmod/Partition.hpp>
 #include <simgrid/plugins/jbod.hpp>
