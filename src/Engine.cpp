@@ -36,6 +36,11 @@ void Engine::begin_transaction()
 }
 
 /// The actual data transport is delegated to the Transport method associated to the Engine.
+void Engine::put(std::shared_ptr<Variable> var) const
+{
+  transport_->put(var, var->get_local_size());
+}
+
 void Engine::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) const
 {
   transport_->put(var, simulated_size_in_bytes);

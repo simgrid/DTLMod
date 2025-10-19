@@ -51,7 +51,7 @@ def run_test_single_pub_single_sub_same_cluster():
         this_actor.info("Start a transaction")
         engine.begin_transaction()
         this_actor.info("Put Variable 'var' into the DTL")
-        engine.put(var, var.local_size)
+        engine.put(var)
         this_actor.info("End the transaction")
         engine.end_transaction()
 
@@ -107,7 +107,7 @@ def run_test_multiple_pub_single_sub_message_queue():
 
         this_actor.info("Start a transaction")
         engine.begin_transaction()
-        engine.put(var, var.local_size)
+        engine.put(var)
         this_actor.info("End the transaction")
         engine.end_transaction()
 

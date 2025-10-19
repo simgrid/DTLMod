@@ -76,7 +76,7 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
       XBT_INFO("Start a Transaction");
       ASSERT_NO_THROW(engine->begin_transaction());
       XBT_INFO("Put Variable 'var' into the DTL");
-      ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+      ASSERT_NO_THROW(engine->put(var));
       XBT_INFO("End the Transaction");
       ASSERT_NO_THROW(engine->end_transaction());
 
@@ -144,7 +144,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMessageQueue)
         XBT_INFO("Start a Transaction");
         ASSERT_NO_THROW(engine->begin_transaction());
         XBT_INFO("Put Variable 'var' into the DTL");
-        ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+        ASSERT_NO_THROW(engine->put(var));
         XBT_INFO("End a Transaction");
         ASSERT_NO_THROW(engine->end_transaction());
 
@@ -208,7 +208,7 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
         XBT_INFO("Start a Transaction");
         ASSERT_NO_THROW(engine->begin_transaction());
         XBT_INFO("Put Variable 'var' into the DTL");
-        ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+        ASSERT_NO_THROW(engine->put(var));
         XBT_INFO("End a Transaction");
         ASSERT_NO_THROW(engine->end_transaction());
 
