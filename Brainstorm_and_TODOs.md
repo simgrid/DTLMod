@@ -1,43 +1,75 @@
-# Brainstorm and TODOs to add data reduction to DTLMod
+# Brainstorm to add data reduction to DTLMod
+## Assumptions
+- Only one **reduction method** can be applied to a Variable **at a given time**.
+- It should be possible to **change** the reduction method or its parametrization from **one transaction to another**.
+- If we want to apply **different reduction methods** to the same Variable, it must be over **different Streams**.
+  - in that case, we define a Variable for each stream (with the same name, shape, and distribution) and then apply a single reduction method at a time.
+- A reduction method should be applied to a Variable either on the Publisher or the Subscriber side.
+- As long as a reduction method is defined for a Variable, it must applied to each transaction that involves this Variable
 
-## Brainstorm
-- Need to be able to attach a **reduction** technique to each **variable** published to the DTL
+## Notes on ADIOS does manage Variable reduction
+- Has an Operator class (broader definition than just reduction, can also be encryption for instance)
+- Has IO::defineOperator(name, type, parameters) to configure the operation for that IO (a.k.a. Stream in the DTL)
+  - This function must be called when parsing the configuration file
+- Has IO::addOperation(variable, operatorType, parameters) and Variable::addOperation(Operator, parameters) the former is to define the operation before the variable while the latter does the work
+  - multiple operations can be applied to a single variable
+- Has Variable::removeOperation
+- The doc says that the same operation can be applied to "a set of variables", but nothing in the code looks like that.
+- In the ADIOS XML configuration file, uses a <operator type="name"> and a set of key/value parameters (which provides a uniform way to parse), the name refers (mostly) to a specific lossy compressor. In the case of the DTL, it will rather be the name of a technique (e.g., decimation, compression, refactoring) all gather under "reduction" rather than "operator" 
 
-- Consider the following techniques to start with:
-  - **Simple decimation:** This simply amounts to ignore some elements of the variables, likely *one every other X* in each dimension.
-    - The applied *stride* can be different for each dimension, e.g, {X, Y, Z} for a 3D variable
-    - Implications:
-        - Reduces the local and global size by X * Y * Z (roughly) on the Publisher side
-        - Does not cost a lot of computation, but still have to simulate a traversal of the data. A few flops per element will do.
-  - **Decimation with interpolation:** Similar technique but in addition to the stride, we simulate the fact that the elements kept capture information about the discarded elements. This would increase the simulated cost associated to the decimation.
-    - Depending on the shape of the variable (i.e., number of dimensions), interpolation methods can for instance be *linear*, *quadatric*, or *cubic*, referring to how many neighbors are considered.
-    - Not sure it is worth considering, in a first implementation, elements that are needed by a rank to for compute the interpolation but are owned by another rank.
-  - **Lossy compression:** With compression, the simulated cost to reduce the size of a variable on the publisher side  is likely to be much higher than for decimation. Moreover, this cost and the size of the reduced version of the variable (or compression ratio) is related to an *accuracy* (usually expressed as 10 to the minus X). The lower the accuracy value (meaning more decimals must be kept), the lower the compression ratio, and the lower the compression cost. Finally, a cost to decompress the variable must also be applied on the subscriber side. Both compression and decompression costs are proportional to the number of elements in the variable (must consider each and every element), hence we can use a cost per element as a first approximation. This can also allow us to distinguish executions on CPU or GPU at some point. 
+## Considered Reduction Methods
 
-- Have to distinguish the behavior depending on either we use File-based or Staging engines and on the reduction method:
-  - File-based: If data is reduced on the publishing side, it's to speed up I/O and reduce the storage footprint. Then, the raw version of the (data) is not kept.
-    - With decimation, the initial definition of the variable is changed (less elements per dimension)
-    - With compression, the initial definition of the variable is kept (as decompressing will come back to that) but the local/global sizes are impacted
-      - Add a local_compressed_size and a global_compressed_size (uniform across ranks or not is to be decided)
-      - Use the local_compressed_size in the put() and when transforming the put() into I/O operations
-        - The variable must also be tagged as "stored_compressed", likely with extra details about the compression technique, ratio, ...
-      - the reduction operation has to be applied in every transaction (at the beginning of the put() on the publisher side, decompression happens at the end of the get())
-  - Staging: here reduction only aims at speeding up data transport as data is not stored
-    - With simple decimation, the reduction can be initiated by a subscriber. Specifying strides is another type of selection
+### Decimation
+- This method amounts to ignore some elements of the variables, i.e., *one every other X* in each dimension.
+- It is parametrized by:
+  - The applied **stride** that can be different for each dimension, e.g, {X, Y, Z} for a 3D variable
+  - A **cost per element**. By default, as we have to simulate a traversal of the data, we can account for a couple flops per element (**e.g., 1 or 2**).
+  - An optional **interpolation technique**
+    - It simulates the fact that the elements kept capture information about the discarded elements. This would **increase the simulated cost per element** associated to the decimation.
+    - Depending on the **shape** of the variable (i.e., number of dimensions), interpolation methods can for instance be **linear**, **quadatric**, or **cubic** ,referring to how many neighbors are considered.
+    - **Assumptions for the first implementation:**
+      - We do not consider interpolation beyond three dimensions
+      - We do not consider the fact that elements needed by a rank to compute the interpolation are owned by another rank.
+- Impact on the local and global sizes of the variable:
+  - For each of its dimensions, a Variable is defined by a *shape* (the total #elements) and two arrays of *local_start* (the offset for each actor owning a part of the data) and *local_count* (the number of elements owned by each actor) values. When we apply a decimation of stride *X* on a dimension, we have:
+    - **reduced_shape** = ceil(shape / (1.0 * X ))
+    - **reduced_local_start** = ceil(local_start / (1.0 * X )) and 0 if greater than (reduced_shape - 1)
+    - **reduced_local_count** = min(shape - 1, ceil((local_start - local_count) / 1.0 * X)) - ceil(local_start / (1.0 * X)) 
+  - The `get_global_reduced_size()` method will return the product of the element size by the `reduced_shape` of each dimension.
+  - The `get_local_reduced_size()` method will return the product of the `reduced_locla_count` of each dimension.
+  - **Note:** these two functions may be for internal purposes only and not user-facing.
+
+- **Behavior depending on the engine type**
+  - With a **File** engine
+    - If the reduction method is applied on the **publisher side**, it's to speed up I/O and reduce the storage footprint (e.g., for a checkpoint operation). A `put()` of a Variable on which decimation is applied considers the **local_reduced_size** for the I/O operations triggered by the put. This is automatically reflected in the metadata stored for this Variable.
+    - If the reduction method is applied on the **subscriber side**, this means that the subscriber does not want to fetch the entire data from storage. The behavior is thus similar to that of calling `set_selection()`.    
+  - With a **Staging** engine
+    - The reduction method can be applied on either side of the stream with the same effect. The internal behavior is close to that of a transaction with a selection. The exact data transfer pattern is determined when the subscribers specify what they need from the publishers. In that case, this means to consider the **reduced** versions of **shape**, **start**, and **count** to determine the block to exchange. A notable difference is that if the reduction method is applied on one side, the other side must compute the reduced information first.   
     - When the decimation does interpolation, the cost of its computation must be simulated on the publisher side, but only when determining the exchanges between individual pairs of publishers and subscribers.
-    - With compression, as for files, the reduction operation has to be applied in every transaction (at the beginning of the put() on the publisher side, decompression happens at the end of the get())       
 
-- How does ADIOS manage a reduction method associated to a variable?
-  - Has an Operator class (broader definition than just reduction, can also be encryption for instance)
-  - Has IO::defineOperator(name, type, parameters) to configure the operation for that IO (a.k.a. Stream in the DTL)
-    - This function must be called when parsing the configuration file
-  - Has IO::addOperation(variable, operatorType, parameters) and Variable::addOperation(Operator, parameters) the former is to define the operation before the variable while the latter does the work
-    - multiple operations can be applied to a single variable
-  - Has Variable::removeOperation
-  - The doc says that the same operation can be applied to "a set of variables", but nothing in the code looks like that.
-  - In the AIDOS XML configuration file, uses a <operator type="name"> and a set of key/value parameters (which provides a uniform way to parse), the name refers (mostly) to a specific lossy compressor. In the case of the DTL, it will rather be the name of a technique (e.g., decimation, compression, refactoring) all gather under "reduction" rather than "operator" 
 
-- Proposed API and behavior
+### Compression
+- This methods produces a smaller version of a variable on the publisher side, but keep the same metadata information (shape, start, and, count).
+- It is parametrized by:
+  - An **accuracy** (usually expressed as 10 to the minus X). The lower the accuracy value (meaning more decimals must be kept), the lower the compression ratio, and the lower the compression cost.
+  - A **compression cost per element** applied on the **publisher side**
+  - A **decompression cost per element** applied on the **subscriber side**
+- The overall reduction cost and the size of the reduced version of the variable (or compression ratio) are related to the **accuracy** 
+- The compression and decompression costs are is likely to be much higher than for decimation, but still are proportional to the number of elements in the variable (must consider each and every element), which motivated the use of a cost per element as a first approximation. This will also allow us to distinguish executions on CPU or GPU at some point (in the later version).
+
+- **Behavior depending on the engine type**
+  - With a **File** engine
+    - The initial definition of the variable is kept (as decompressing will come back to that) but the local/global sizes are impacted
+    - Add a `local_compressed_size` and a `global_compressed_size` (uniform across ranks or not is to be decided)
+       Use the `local_compressed_size` in the `put()` and when transforming the `put()` into I/O operations
+        - The variable must also be tagged as `stored_compressed`, likely with extra details about the compression technique, ratio, ...
+  - With a **Staging** engine
+    - Here reduction only aims at speeding up data transport as data is not stored. Blocks to exchange are computed based on the original description of the data, but the size of each block is reduced to be transferred
+      - **Note:** as a first approximation we assume a **uniform** compression of each block.  
+  - In both cases, the compression happens at the beginning of the `put()` on the publisher side, while decompression happens at the end of the `get()` on the subscriber side.
+
+
+## Proposed API and behavior (WIP)
   - [x] new `ReductionMethod` class
     - members:
       - [x] `std::string name_`
