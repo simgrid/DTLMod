@@ -77,28 +77,35 @@
       - [x] `get_name` and `get_cname`
     - behavior:
       - An abstract class from which decimation and compression will inherit
-    - [ ] new `DecimationReductionMethod` class
-      - members:
-        - [x] `std::map<std::shared_ptr<Variable>, ParametrizedDecimation> per_variable_parametrizations_`
-      - methods:
-        - [ ] `void parse_parameters(std::shared_ptr<Variable> var, std::map<std::string, std::string> parameters)`
-      - behavior:
-        - The parameters used by the decimation method can be different for each variable. They must be stored in a map whose key is the Variable (assuming that the a `ReductionMethod` can only be applied once to a variable). The values in that map are A `ParametrizedDecimation` objects that contain the `stride`, `interpolation_method`, and `cost_per_element` to use for this variable.
-        - The parametrization to use for a variable is set when calling `Variable::add_reduction_operation`
+
+  - [ ] new `DecimationReductionMethod` class
+    - members:
+      - [x] `std::map<std::shared_ptr<Variable>, ParametrizedDecimation> per_variable_parametrizations_`
+    - methods:
+      - [x] `void parse_parameters(std::shared_ptr<Variable> var, std::map<std::string, std::string> parameters)`
+    - behavior:
+      - The parameters used by the decimation method can be different for each variable. They must be stored in a map whose key is the Variable (assuming that the a `ReductionMethod` can only be applied once to a variable). The values in that map are A `ParametrizedDecimation` objects that contain the `stride`, `interpolation_method`, and `cost_per_element` to use for this variable.
+      - The parametrization to use for a variable is set when calling `Variable::add_reduction_operation`
+
   - [ ] new `CompressionReductionMethod` class
     - members:
-      - [ ]
+      - [x] `std::map<std::shared_ptr<Variable>, ParametrizedCompression> per_variable_parametrizations_`
     - methods:
-      - [ ] `void parse_parameters(std::shared_ptr<Variable> var, std::map<std::string, std::string> parameters)`
+      - [x] `void parse_parameters(std::shared_ptr<Variable> var, std::map<std::string, std::string> parameters)`
     - behavior:
-  - [ ]`std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)`
-    - behavior:
-      - [ ] creates a new ReductionMethod object
-        - [x] Implies to store a vector of ReductionMethods in the Stream object (in `reduction_methods_`)
-  - [ ] `void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod>, std::map<std::string, std::string> parameters)`
-    - behavior:
-      - [ ] parse `parameters`
-        - For the `DecimationReductionMethod`
+        - The parameters used by the compression method can be different for each variable. They must be stored in a map whose key is the Variable (assuming that the a `ReductionMethod` can only be applied once to a variable). The values in that map are A `ParametrizedCompression` objects that contain the `accuracy`, `compression_cost_per_element`, and `decompression_cost_per_element` to use for this variable.
+        - The parametrization to use for a variable is set when calling `Variable::add_reduction_operation`
+
+  - [ ] New member(s) and function(s) in `Stream` class
+    - members:
+      - [x] `reduction_methods_`, a vector of `ReductionMethod` objects
+    - methods:
+      - [x]`std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)` to create and store a new `ReductionMethod` object
+
+  - [ ] New member(s) and function(s) in `Variable` class
+    - members:
+    - methods:
+      - [x] `void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod>, std::map<std::string, std::string> parameters)` that triggers the parameter parsing of the `ReductionMethod` passed in argument
 
 ## TODOs
 - [ ] add tests in `test/dtl_reduction.cpp`
