@@ -24,27 +24,35 @@ class ParametrizedDecimation {
   double cost_per_element_;
 
   std::vector<size_t> reduced_shape_;
+  std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>> reduced_local_start_and_count_;
 
 protected:
   const std::vector<size_t>& get_stride() const { return stride_; }
 
   void set_reduced_shape(const std::vector<size_t>& reduced_shape) { reduced_shape_ = reduced_shape; }
+  void set_reduced_local_start_and_count(
+      std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>>
+          reduced_local_start_and_count)
+  {
+    reduced_local_start_and_count_ = reduced_local_start_and_count;
+  }
 
 public:
   ParametrizedDecimation(const std::vector<size_t> stride, const std::string interpolation_method,
                          double cost_per_element)
-    : stride_(stride), interpolation_method_(interpolation_method), cost_per_element_(cost_per_element) {}
-
+      : stride_(stride), interpolation_method_(interpolation_method), cost_per_element_(cost_per_element)
+  {
+  }
 };
 
-
-class DecimationReductionMethod : public ReductionMethod{
+class DecimationReductionMethod : public ReductionMethod {
   std::map<std::shared_ptr<Variable>, std::shared_ptr<ParametrizedDecimation>> per_variable_parametrizations_;
 
 public:
   DecimationReductionMethod(const std::string& name) : ReductionMethod(name) {}
 
-  void parametrize_for_variable(std::shared_ptr<Variable> var, const std::map<std::string, std::string>& parameters) override
+  void parametrize_for_variable(std::shared_ptr<Variable> var,
+                                const std::map<std::string, std::string>& parameters) override
   {
     std::vector<size_t> stride;
     std::string interpolation_method = "";
@@ -54,6 +62,7 @@ public:
       if (key == "stride") {
         std::vector<std::string> tokens;
         boost::split(tokens, value, boost::is_any_of(","), boost::token_compress_on);
+        // TODO Add Sanity check that the number of tokens equals the number of dimension of var
         for (const auto t : tokens)
           stride.push_back(std::stoul(t));
       } else if (key == "interpolation") {
@@ -63,23 +72,43 @@ public:
       } // else
         // TODO handle invalid key
     }
-    per_variable_parametrizations_.try_emplace(var, std::make_shared<ParametrizedDecimation>(stride, interpolation_method, cost_per_element));
+
+    per_variable_parametrizations_.try_emplace(
+        var, std::make_shared<ParametrizedDecimation>(stride, interpolation_method, cost_per_element));
   }
 
-  void reduce_variable(std::shared_ptr<Variable> var) 
+  void reduce_variable(std::shared_ptr<Variable> var)
   {
     auto parametrization = per_variable_parametrizations_[var];
-    auto stride = parametrization->get_stride();
-    
+    auto shape           = var->get_shape();
+    auto stride          = parametrization->get_stride();
+
     std::vector<size_t> reduced_shape;
     size_t i = 0;
-    for (auto dim_size : var->get_shape())
-    reduced_shape.push_back(std::ceil(dim_size/(stride[i++] * 1.0)));
-    
-    std::unordered_map<sg4::ActorPtr, std::vector<size_t>> local_reduced_start;
-    std::unordered_map<sg4::ActorPtr, std::vector<size_t>> local_reduced_count;
-    
+    for (auto dim_size : shape)
+      reduced_shape.push_back(std::ceil(dim_size / (stride[i++] * 1.0)));
+
+    std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>>
+        reduced_local_start_and_count;
+    for (const auto& [actor, start_and_count] : var->get_local_start_and_count()) {
+      auto [start, count] = start_and_count;
+      std::vector<size_t> reduced_start;
+      std::vector<size_t> reduced_count;
+
+      for (size_t i = 0; i < shape.size(); i++) {
+        // Sanity checks that shape, start, and count have the same size have already been done
+        size_t r_start = std::ceil(start[i] / (stride[i] * 1.0));
+        size_t r_next_start =
+            std::min(shape[i] - 1, static_cast<size_t>(std::ceil((start[i] - count[i]) / (stride[i] * 1.0))));
+        reduced_start.push_back(r_start);
+        reduced_count.push_back(r_next_start - r_start);
+        i++;
+      }
+      reduced_local_start_and_count.try_emplace(actor, std::make_pair(reduced_start, reduced_count));
+    }
+
     parametrization->set_reduced_shape(reduced_shape);
+    parametrization->set_reduced_local_start_and_count(reduced_local_start_and_count);
   }
 };
 ///\endcond

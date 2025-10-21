@@ -22,6 +22,7 @@ class Variable : public std::enable_shared_from_this<Variable> {
   friend class Transport;
   friend class FileTransport;
   friend class StagingTransport;
+  friend class DecimationReductionMethod;
 
   std::string name_;
   size_t element_size_;
@@ -48,9 +49,11 @@ protected:
   {
     local_start_and_count_[actor] = local_start_and_count;
   }
-  const std::pair<std::vector<size_t>, std::vector<size_t>>& get_local_start_and_count(sg4::ActorPtr actor)
+
+  const std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>>&
+  get_local_start_and_count() const
   {
-    return local_start_and_count_[actor];
+    return local_start_and_count_;
   }
 
   void add_transaction_metadata(unsigned int transaction_id, sg4::ActorPtr publisher, const std::string& location);
@@ -108,8 +111,7 @@ public:
   /// @brief Assign a parametrized reduction method to the Variable.
   /// @param method a ReductionMethod (already defined).
   /// @param paramaters specific parameters in key-value form to apply the reduction method to the Variable.
-  void set_reduction_operation(std::shared_ptr<ReductionMethod> method,
-                               std::map<std::string, std::string> parameters);
+  void set_reduction_operation(std::shared_ptr<ReductionMethod> method, std::map<std::string, std::string> parameters);
 };
 } // namespace dtlmod
 
