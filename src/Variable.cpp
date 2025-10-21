@@ -29,7 +29,7 @@ size_t Variable::get_local_size() const
 {
   size_t total_size = element_size_;
   auto issuer       = sg4::Actor::self();
-  for (const auto& c : local_count_.at(issuer))
+  for (const auto& c : local_start_and_count_.at(issuer).second)
     total_size *= c;
   if (transaction_start_ >= 0)
     total_size *= transaction_count_;
@@ -81,7 +81,7 @@ const std::pair<unsigned int, unsigned int>& Variable::get_subscriber_transactio
 void Variable::add_transaction_metadata(unsigned int transaction_id, sg4::ActorPtr publisher,
                                         const std::string& location)
 {
-  metadata_->add_transaction(transaction_id, local_start_[publisher], local_count_[publisher], location, publisher);
+  metadata_->add_transaction(transaction_id, local_start_and_count_[publisher], location, publisher);
 }
 
 std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_block(unsigned int transaction_id,
@@ -105,14 +105,14 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
       size_t size_in_dim = 0;
       bool element_found = false;
       if (start[i] <= block_start[i] && (block_start[i] - start[i]) <= count[i]) {
-          size_in_dim   = std::min(block_count[i], count[i] - (block_start[i] - start[i]));
-          element_found = true;
+        size_in_dim   = std::min(block_count[i], count[i] - (block_start[i] - start[i]));
+        element_found = true;
       }
       if (start[i] > block_start[i] && (start[i] - block_start[i]) <= block_count[i]) {
-          size_in_dim   = std::min(count[i], block_count[i] - (start[i] - block_start[i]));
-          element_found = true;
+        size_in_dim   = std::min(count[i], block_count[i] - (start[i] - block_start[i]));
+        element_found = true;
       }
-      
+
       if (element_found && size_in_dim > 0) {
         something_to_get[i] = true;
         XBT_DEBUG("Mutiply size to read by %zu elements", size_in_dim);

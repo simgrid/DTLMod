@@ -5,9 +5,9 @@
 
 #include <simgrid/s4u/MessageQueue.hpp>
 
-#include "dtlmod/StagingTransport.hpp"
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/StagingEngine.hpp"
+#include "dtlmod/StagingTransport.hpp"
 #include "dtlmod/Stream.hpp"
 
 XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
@@ -33,9 +33,9 @@ sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(const std::st
 void StagingTransport::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes)
 {
   // Register who (this actor) writes in this transaction
-  const auto* e       = get_engine();
-  auto tid      = e->get_current_transaction();
-  auto self     = sg4::Actor::self();
+  const auto* e        = get_engine();
+  auto tid             = e->get_current_transaction();
+  auto self            = sg4::Actor::self();
   const auto& pub_name = self->get_name();
 
   // Use actor's name as temporary location. It's only half of the Mailbox Name

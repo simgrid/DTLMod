@@ -131,9 +131,8 @@ void StagingEngine::begin_sub_transaction()
   }
 
   num_subscribers_starting_++;
-  XBT_DEBUG("Subscribe Transaction %u started by %s (%d/%lu)", current_sub_transaction_id_, sg4::Actor::self()->get_cname(),
-            num_subscribers_starting_,get_num_subscribers());
-
+  XBT_DEBUG("Subscribe Transaction %u started by %s (%d/%lu)", current_sub_transaction_id_,
+            sg4::Actor::self()->get_cname(), num_subscribers_starting_, get_num_subscribers());
 
   // The last subscriber to start a transaction notifies the publishers
   if (num_subscribers_starting_ == get_num_subscribers() &&
@@ -168,8 +167,8 @@ void StagingEngine::end_sub_transaction()
     sub_transaction_in_progress_ = false;
   // Decrease counter for next iteration
   num_subscribers_starting_--;
-   XBT_DEBUG("Subscribe Transaction %u end by %s (%d/%lu)", current_sub_transaction_id_, sg4::Actor::self()->get_cname(),
-            num_subscribers_starting_,get_num_subscribers());
+  XBT_DEBUG("Subscribe Transaction %u end by %s (%d/%lu)", current_sub_transaction_id_, sg4::Actor::self()->get_cname(),
+            num_subscribers_starting_, get_num_subscribers());
 }
 
 void StagingEngine::sub_close()

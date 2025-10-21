@@ -43,8 +43,7 @@ Transport::check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var) 
     throw GetWhenNoTransactionException(XBT_THROW_POINT, var->get_name());
 
   // Store the local count and start for 'var' on this actor
-  var->set_local_start(self, start);
-  var->set_local_count(self, count);
+  var->set_local_start_and_count(self, std::make_pair(start, count));
 
   // Update the number of stored transactions. Every transaction reset this information
   var->set_transaction_start(std::min(transaction_start, var->get_metadata()->get_current_transaction()));

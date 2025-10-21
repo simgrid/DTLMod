@@ -28,11 +28,15 @@ protected:
   void set_publisher_put_requests_mq(const std::string& publisher_name);
   [[nodiscard]] sg4::MessageQueue* get_publisher_put_requests_mq(const std::string& publisher_name) const;
   [[nodiscard]] bool pending_put_requests_exist_for(const std::string& pub_name)
-  { return not pending_put_requests_[pub_name].empty(); }
+  {
+    return not pending_put_requests_[pub_name].empty();
+  }
   [[nodiscard]] sg4::ActivityPtr wait_any_pending_put_request_for(const std::string& pub_name)
-  { return pending_put_requests_[pub_name].wait_any(); }
-  
-  public:
+  {
+    return pending_put_requests_[pub_name].wait_any();
+  }
+
+public:
   ~StagingTransport() override = default;
   void put(std::shared_ptr<Variable> var, size_t /*simulated_size_in_bytes*/) override;
   void get(std::shared_ptr<Variable> var) override;

@@ -6,13 +6,13 @@
 #ifndef DTLMOD_VERSION_HPP
 #define DTLMOD_VERSION_HPP
 
-#define DTLMOD_GIT_VERSION   "@GIT_VERSION@"
+#define DTLMOD_GIT_VERSION "@GIT_VERSION@"
 
 /** Define the version numbers of the used header files.
   See dtlmod_version_get() to retrieve the version of the dynamic library. */
-#define DTLMOD_VERSION_MAJOR @DTLMOD_VERSION_MAJOR@
-#define DTLMOD_VERSION_MINOR @DTLMOD_VERSION_MINOR@
-#define DTLMOD_VERSION_PATCH @DTLMOD_VERSION_PATCH@
+#define DTLMOD_VERSION_MAJOR @DTLMOD_VERSION_MAJOR @
+#define DTLMOD_VERSION_MINOR @DTLMOD_VERSION_MINOR @
+#define DTLMOD_VERSION_PATCH @DTLMOD_VERSION_PATCH @
 #define DTLMOD_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
 
 /** Retrieves the version numbers of the used dynamic library (so, DLL or dynlib), while
