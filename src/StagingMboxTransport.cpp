@@ -3,11 +3,11 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
- #include <simgrid/s4u/Mess.hpp>
+#include <simgrid/s4u/Mess.hpp>
 
-#include "dtlmod/StagingMboxTransport.hpp"
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/StagingEngine.hpp"
+#include "dtlmod/StagingMboxTransport.hpp"
 #include "dtlmod/Stream.hpp"
 
 XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
@@ -32,9 +32,9 @@ void StagingMboxTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
   // Wait for the reception of the messages. If something is requested, post a put in the mailbox for the
   // corresponding publisher-subscriber couple
   while (pending_put_requests_exist_for(pub_name)) {
-    auto request     = boost::static_pointer_cast<sg4::Mess>(wait_any_pending_put_request_for(pub_name));
+    auto request           = boost::static_pointer_cast<sg4::Mess>(wait_any_pending_put_request_for(pub_name));
     const auto* subscriber = request->get_sender();
-    auto* req_size   = static_cast<size_t*>(request->get_payload());
+    auto* req_size         = static_cast<size_t*>(request->get_payload());
     if (*req_size > 0) {
       std::string mbox_name = pub_name + "_" + subscriber->get_name() + "_mbox";
       XBT_DEBUG("%s received a put request from %s. Put a Message in %s with %lu as payload", pub_name.c_str(),

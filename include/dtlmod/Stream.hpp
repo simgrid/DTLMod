@@ -67,8 +67,8 @@ protected:
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   Stream(const std::string& name, DTL* dtl) : name_(name), dtl_(dtl) {}
-  ~Stream() noexcept = default;
-  Stream(const Stream& other) noexcept = default;
+  ~Stream() noexcept                              = default;
+  Stream(const Stream& other) noexcept            = default;
   Stream& operator=(const Stream& other) noexcept = default;
   /// \endcond
 
