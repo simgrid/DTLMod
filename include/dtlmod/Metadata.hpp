@@ -22,18 +22,22 @@ class Metadata {
   friend Variable;
   Variable* variable_;
 
-  std::map<unsigned int,                                          // Transaction id
-    std::map<std::pair<std::vector<size_t>, std::vector<size_t>>, // starts and counts
-             std::pair<std::string, sg4::ActorPtr>,               // filename and publisher
-             std::less<>>,
-    std::less<>> transaction_infos_;
+  std::map<unsigned int,                                                 // Transaction id
+           std::map<std::pair<std::vector<size_t>, std::vector<size_t>>, // starts and counts
+                    std::pair<std::string, sg4::ActorPtr>,               // filename and publisher
+                    std::less<>>,
+           std::less<>>
+      transaction_infos_;
 
 protected:
-  const std::map<std::pair<std::vector<size_t>, std::vector<size_t>>, 
-             std::pair<std::string, sg4::ActorPtr>, std::less<>>& get_blocks_for_transaction(int id) 
-    { return transaction_infos_[id]; }
-  void add_transaction(int id, const std::vector<size_t>& start, const std::vector<size_t>& count,
-                       const std::string& filename, sg4::ActorPtr publisher); 
+  const std::map<std::pair<std::vector<size_t>, std::vector<size_t>>, std::pair<std::string, sg4::ActorPtr>,
+                 std::less<>>&
+  get_blocks_for_transaction(int id)
+  {
+    return transaction_infos_[id];
+  }
+  void add_transaction(int id, const std::pair<std::vector<size_t>, std::vector<size_t>>& start_and_count,
+                       const std::string& filename, sg4::ActorPtr publisher);
 
 public:
   explicit Metadata(Variable* variable) : variable_(variable) {}

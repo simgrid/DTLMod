@@ -147,7 +147,7 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
       try {
         engine_ = std::make_shared<FileEngine>(name, this);
         engine_->create_transport(transport_method_);
-      } catch(const IncorrectPathDefinitionException& e) {
+      } catch (const IncorrectPathDefinitionException& e) {
         got_exception = true;
         exception_msg = std::string(e.what());
       }
@@ -217,14 +217,12 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
     if (var->second->get_shape().size() != shape.size() || var->second->get_element_size() != element_size)
       throw MultipleVariableDefinitionException(XBT_THROW_POINT, name + " already exists in Stream " + get_name());
     else {
-      var->second->set_local_start(publisher, start);
-      var->second->set_local_count(publisher, count);
+      var->second->set_local_start_and_count(publisher, std::make_pair(start, count));
       return var->second;
     }
   } else {
     auto new_var = std::make_shared<Variable>(name, element_size, shape);
-    new_var->set_local_start(publisher, start);
-    new_var->set_local_count(publisher, count);
+    new_var->set_local_start_and_count(publisher, std::make_pair(start, count));
     variables_.try_emplace(name, new_var);
     return new_var;
   }
@@ -250,8 +248,8 @@ std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) cons
     return var->second;
   else {
     auto new_var = std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape());
-    new_var->set_local_start(actor, std::vector<size_t>(var->second->get_shape().size(), 0));
-    new_var->set_local_count(actor, std::vector<size_t>(var->second->get_shape().size(), 0));
+    new_var->set_local_start_and_count(actor, std::make_pair(std::vector<size_t>(var->second->get_shape().size(), 0),
+                                                             std::vector<size_t>(var->second->get_shape().size(), 0)));
     new_var->set_metadata(var->second->get_metadata());
 
     return new_var;
