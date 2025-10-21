@@ -36,7 +36,7 @@
     - **reduced_local_start** = ceil(local_start / (1.0 * X )) and 0 if greater than (reduced_shape - 1)
     - **reduced_local_count** = min(shape - 1, ceil((local_start - local_count) / 1.0 * X)) - ceil(local_start / (1.0 * X)) 
   - The `get_global_reduced_size()` method will return the product of the element size by the `reduced_shape` of each dimension.
-  - The `get_local_reduced_size()` method will return the product of the `reduced_locla_count` of each dimension.
+  - The `get_local_reduced_size()` method will return the product of the `reduced_local_count` of each dimension.
   - **Note:** these two functions may be for internal purposes only and not user-facing.
 
 - **Behavior depending on the engine type**

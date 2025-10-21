@@ -22,8 +22,8 @@ class ReductionMethod {
 
 public:
   ReductionMethod(const std::string& name) : name_(name){}
-  virtual void parse_parameters(std::shared_ptr<Variable> var,
-                                const std::map<std::string, std::string>& parameters) = 0;
+  virtual void parametrize_for_variable(std::shared_ptr<Variable> var,
+                                        const std::map<std::string, std::string>& parameters) = 0;
   
   /// @brief Helper function to print out the name of the ReductionMethod.
   /// @return The corresponding string

@@ -44,6 +44,9 @@ protected:
   void set_transaction_count(int count) { transaction_count_ = count; }
   [[nodiscard]] unsigned int get_transaction_count() const { return transaction_count_; }
 
+  const std::unordered_map<sg4::ActorPtr, std::vector<size_t>>& get_local_start() const { return local_start_ ;}
+  const std::unordered_map<sg4::ActorPtr, std::vector<size_t>>& get_local_count() const { return local_count_ ;}
+  
   void set_local_start(sg4::ActorPtr actor, const std::vector<size_t>& local_start)
   {
     local_start_[actor] = local_start;

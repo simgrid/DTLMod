@@ -49,7 +49,7 @@ void Variable::set_transaction_selection(unsigned int begin, unsigned int count)
 void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
                                        std::map<std::string, std::string> parameters)
 {
-  method->parse_parameters(shared_from_this(), parameters);
+  method->parametrize_for_variable(shared_from_this(), parameters);
   // TODO do something
 }
 

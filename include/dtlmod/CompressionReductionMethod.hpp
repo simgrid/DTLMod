@@ -18,7 +18,7 @@ class ParametrizedCompression {
   double compression_cost_per_element_;
   double decompression_cost_per_element_;
 
-protected:
+public:
   ParametrizedCompression(double accuracy, double compression_cost_per_element, double decompression_cost_per_element)
     : accuracy_(accuracy)
     , compression_cost_per_element_(compression_cost_per_element)
@@ -28,11 +28,11 @@ protected:
 
 
 class CompressionReductionMethod : public ReductionMethod{
-  std::map<std::shared_ptr<Variable>, ParametrizedCompression> per_variable_parametrizations_;
+  std::map<std::shared_ptr<Variable>, std::shared_ptr<ParametrizedCompression>> per_variable_parametrizations_;
 
 public:
   CompressionReductionMethod(const std::string& name) : ReductionMethod(name) {}
-  void parse_parameters(std::shared_ptr<Variable> var, const std::map<std::string, std::string>& parameters) override
+  void parametrize_for_variable(std::shared_ptr<Variable> var, const std::map<std::string, std::string>& parameters) override
   {
     double accuracy;
     double compression_cost_per_element;
@@ -48,7 +48,7 @@ public:
       } // else
         // TODO handle invalid key
     }
-    per_variable_parametrizations_.try_emplace(var, ParametrizedCompression(accuracy, compression_cost_per_element, decompression_cost_per_element));
+    per_variable_parametrizations_.try_emplace(var, std::make_shared<ParametrizedCompression>(accuracy, compression_cost_per_element, decompression_cost_per_element));
   }
 
 };
