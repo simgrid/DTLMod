@@ -25,6 +25,7 @@ class ParametrizedDecimation {
 
   std::vector<size_t> reduced_shape_;
   std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>> reduced_local_start_and_count_;
+  size_t element_size_;
 
 protected:
   const std::vector<size_t>& get_stride() const { return stride_; }
@@ -37,10 +38,30 @@ protected:
     reduced_local_start_and_count_ = reduced_local_start_and_count;
   }
 
+  size_t get_global_reduced_size() const
+  {
+    size_t total_size = element_size_;
+    for (const auto& s : reduced_shape_)
+      total_size *= s;
+    return total_size;
+  }
+
+  size_t get_local_reduced_size() const
+  {
+    size_t total_size = element_size_;
+    auto issuer       = sg4::Actor::self();
+    for (const auto& c : reduced_local_start_and_count_.at(issuer).second)
+      total_size *= c;
+    return total_size;
+  }
+
 public:
   ParametrizedDecimation(const std::vector<size_t> stride, const std::string interpolation_method,
-                         double cost_per_element)
-      : stride_(stride), interpolation_method_(interpolation_method), cost_per_element_(cost_per_element)
+                         double cost_per_element, size_t element_size)
+      : stride_(stride)
+      , interpolation_method_(interpolation_method)
+      , cost_per_element_(cost_per_element)
+      , element_size_(element_size)
   {
   }
 };
@@ -74,7 +95,8 @@ public:
     }
 
     per_variable_parametrizations_.try_emplace(
-        var, std::make_shared<ParametrizedDecimation>(stride, interpolation_method, cost_per_element));
+        var, std::make_shared<ParametrizedDecimation>(stride, interpolation_method, cost_per_element,
+                                                      var->get_element_size()));
   }
 
   void reduce_variable(std::shared_ptr<Variable> var)
@@ -109,6 +131,16 @@ public:
 
     parametrization->set_reduced_shape(reduced_shape);
     parametrization->set_reduced_local_start_and_count(reduced_local_start_and_count);
+  }
+
+  size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const
+  {
+    return per_variable_parametrizations_.at(var)->get_global_reduced_size();
+  }
+
+  size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const
+  {
+    return per_variable_parametrizations_.at(var)->get_local_reduced_size();
   }
 };
 ///\endcond
