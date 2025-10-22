@@ -108,7 +108,7 @@ public:
   /// @param count the number of transactions in the range.
   void set_transaction_selection(unsigned int begin, unsigned int count);
 
-  /// @brief Assign a parametrized reduction method to the Variable.
+  /// @brief Assign a parameterized reduction method to the Variable.
   /// @param method a ReductionMethod (already defined).
   /// @param paramaters specific parameters in key-value form to apply the reduction method to the Variable.
   void set_reduction_operation(std::shared_ptr<ReductionMethod> method, std::map<std::string, std::string> parameters);

@@ -17,7 +17,7 @@ namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 
-class ParametrizedDecimation {
+class ParameterizedDecimation {
   friend class DecimationReductionMethod;
   std::vector<size_t> stride_;
   std::string interpolation_method_ = "";
@@ -56,7 +56,7 @@ protected:
   }
 
 public:
-  ParametrizedDecimation(const std::vector<size_t> stride, const std::string interpolation_method,
+  ParameterizedDecimation(const std::vector<size_t> stride, const std::string interpolation_method,
                          double cost_per_element, size_t element_size)
       : stride_(stride)
       , interpolation_method_(interpolation_method)
@@ -67,12 +67,12 @@ public:
 };
 
 class DecimationReductionMethod : public ReductionMethod {
-  std::map<std::shared_ptr<Variable>, std::shared_ptr<ParametrizedDecimation>> per_variable_parametrizations_;
+  std::map<std::shared_ptr<Variable>, std::shared_ptr<ParameterizedDecimation>> per_variable_parameterizations_;
 
 public:
   DecimationReductionMethod(const std::string& name) : ReductionMethod(name) {}
 
-  void parametrize_for_variable(std::shared_ptr<Variable> var,
+  void parameterize_for_variable(std::shared_ptr<Variable> var,
                                 const std::map<std::string, std::string>& parameters) override
   {
     std::vector<size_t> stride;
@@ -94,16 +94,16 @@ public:
         // TODO handle invalid key
     }
 
-    per_variable_parametrizations_.try_emplace(
-        var, std::make_shared<ParametrizedDecimation>(stride, interpolation_method, cost_per_element,
+    per_variable_parameterizations_.try_emplace(
+        var, std::make_shared<ParameterizedDecimation>(stride, interpolation_method, cost_per_element,
                                                       var->get_element_size()));
   }
 
   void reduce_variable(std::shared_ptr<Variable> var)
   {
-    auto parametrization = per_variable_parametrizations_[var];
+    auto parameterization = per_variable_parameterizations_[var];
     auto shape           = var->get_shape();
-    auto stride          = parametrization->get_stride();
+    auto stride          = parameterization->get_stride();
 
     std::vector<size_t> reduced_shape;
     size_t i = 0;
@@ -129,18 +129,18 @@ public:
       reduced_local_start_and_count.try_emplace(actor, std::make_pair(reduced_start, reduced_count));
     }
 
-    parametrization->set_reduced_shape(reduced_shape);
-    parametrization->set_reduced_local_start_and_count(reduced_local_start_and_count);
+    parameterization->set_reduced_shape(reduced_shape);
+    parameterization->set_reduced_local_start_and_count(reduced_local_start_and_count);
   }
 
   size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const
   {
-    return per_variable_parametrizations_.at(var)->get_global_reduced_size();
+    return per_variable_parameterizations_.at(var)->get_global_reduced_size();
   }
 
   size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const
   {
-    return per_variable_parametrizations_.at(var)->get_local_reduced_size();
+    return per_variable_parameterizations_.at(var)->get_local_reduced_size();
   }
 };
 ///\endcond

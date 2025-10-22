@@ -1,7 +1,7 @@
 # Brainstorm to add data reduction to DTLMod
 ## Assumptions
 - Only one **reduction method** can be applied to a Variable **at a given time**.
-- It should be possible to **change** the reduction method or its parametrization from **one transaction to another**.
+- It should be possible to **change** the reduction method or its parameterization from **one transaction to another**.
 - If we want to apply **different reduction methods** to the same Variable, it must be over **different Streams**.
   - in that case, we define a Variable for each stream (with the same name, shape, and distribution) and then apply a single reduction method at a time.
 - A reduction method should be applied to a Variable either on the Publisher or the Subscriber side.
@@ -21,7 +21,7 @@
 
 ### Decimation
 - This method amounts to ignore some elements of the variables, i.e., *one every other X* in each dimension.
-- It is parametrized by:
+- It is parameterized by:
   - The applied **stride** that can be different for each dimension, e.g, {X, Y, Z} for a 3D variable
   - A **cost per element**. By default, as we have to simulate a traversal of the data, we can account for a couple flops per element (**e.g., 1 or 2**).
   - An optional **interpolation technique**
@@ -50,7 +50,7 @@
 
 ### Compression
 - This methods produces a smaller version of a variable on the publisher side, but keep the same metadata information (shape, start, and, count).
-- It is parametrized by:
+- It is parameterized by:
   - An **accuracy** (usually expressed as 10 to the minus X). The lower the accuracy value (meaning more decimals must be kept), the lower the compression ratio, and the lower the compression cost.
   - A **compression cost per element** applied on the **publisher side**
   - A **decompression cost per element** applied on the **subscriber side**
@@ -80,21 +80,21 @@
 
   - [ ] new `DecimationReductionMethod` class
     - members:
-      - [x] `std::map<std::shared_ptr<Variable>, ParametrizedDecimation> per_variable_parametrizations_`
+      - [x] `std::map<std::shared_ptr<Variable>, ParameterizedDecimation> per_variable_parameterizations_`
     - methods:
       - [x] `void parse_parameters(std::shared_ptr<Variable> var, std::map<std::string, std::string> parameters)`
     - behavior:
-      - The parameters used by the decimation method can be different for each variable. They must be stored in a map whose key is the Variable (assuming that the a `ReductionMethod` can only be applied once to a variable). The values in that map are A `ParametrizedDecimation` objects that contain the `stride`, `interpolation_method`, and `cost_per_element` to use for this variable.
-      - The parametrization to use for a variable is set when calling `Variable::add_reduction_operation`
+      - The parameters used by the decimation method can be different for each variable. They must be stored in a map whose key is the Variable (assuming that the a `ReductionMethod` can only be applied once to a variable). The values in that map are A `ParameterizedDecimation` objects that contain the `stride`, `interpolation_method`, and `cost_per_element` to use for this variable.
+      - The parameterization to use for a variable is set when calling `Variable::add_reduction_operation`
 
   - [ ] new `CompressionReductionMethod` class
     - members:
-      - [x] `std::map<std::shared_ptr<Variable>, ParametrizedCompression> per_variable_parametrizations_`
+      - [x] `std::map<std::shared_ptr<Variable>, ParameterizedCompression> per_variable_parameterizations_`
     - methods:
       - [x] `void parse_parameters(std::shared_ptr<Variable> var, std::map<std::string, std::string> parameters)`
     - behavior:
-        - The parameters used by the compression method can be different for each variable. They must be stored in a map whose key is the Variable (assuming that the a `ReductionMethod` can only be applied once to a variable). The values in that map are A `ParametrizedCompression` objects that contain the `accuracy`, `compression_cost_per_element`, and `decompression_cost_per_element` to use for this variable.
-        - The parametrization to use for a variable is set when calling `Variable::add_reduction_operation`
+        - The parameters used by the compression method can be different for each variable. They must be stored in a map whose key is the Variable (assuming that the a `ReductionMethod` can only be applied once to a variable). The values in that map are A `ParameterizedCompression` objects that contain the `accuracy`, `compression_cost_per_element`, and `decompression_cost_per_element` to use for this variable.
+        - The parameterization to use for a variable is set when calling `Variable::add_reduction_operation`
 
   - [ ] New member(s) and function(s) in `Stream` class
     - members:
