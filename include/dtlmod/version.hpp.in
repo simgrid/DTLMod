@@ -6,7 +6,7 @@
 #ifndef DTLMOD_VERSION_HPP
 #define DTLMOD_VERSION_HPP
 
-#define DTLMOD_GIT_VERSION   "@GIT_VERSION@"
+#define DTLMOD_GIT_VERSION "@GIT_VERSION@"
 
 /** Define the version numbers of the used header files.
   See dtlmod_version_get() to retrieve the version of the dynamic library. */

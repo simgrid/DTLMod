@@ -25,8 +25,7 @@ class Variable {
   std::string name_;
   size_t element_size_;
   std::vector<size_t> shape_;
-  std::unordered_map<sg4::ActorPtr, std::vector<size_t>> local_start_;
-  std::unordered_map<sg4::ActorPtr, std::vector<size_t>> local_count_;
+  std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>> local_start_and_count_;
   int transaction_start_          = -1;
   unsigned int transaction_count_ = 0;
 
@@ -43,18 +42,15 @@ protected:
   void set_transaction_count(int count) { transaction_count_ = count; }
   [[nodiscard]] unsigned int get_transaction_count() const { return transaction_count_; }
 
-  void set_local_start(sg4::ActorPtr actor, const std::vector<size_t>& local_start)
+  void set_local_start_and_count(sg4::ActorPtr actor,
+                                 const std::pair<std::vector<size_t>, std::vector<size_t>>& local_start_and_count)
   {
-    local_start_[actor] = local_start;
+    local_start_and_count_[actor] = local_start_and_count;
   }
-  const std::vector<size_t>& get_local_start(sg4::ActorPtr actor) { return local_start_[actor]; }
-
-  void set_local_count(sg4::ActorPtr actor, const std::vector<size_t>& local_count)
+  const std::pair<std::vector<size_t>, std::vector<size_t>>& get_local_start_and_count(sg4::ActorPtr actor)
   {
-    local_count_[actor] = local_count;
+    return local_start_and_count_[actor];
   }
-
-  const std::vector<size_t>& get_local_count(sg4::ActorPtr actor) { return local_count_[actor]; }
 
   void add_transaction_metadata(unsigned int transaction_id, sg4::ActorPtr publisher, const std::string& location);
   std::vector<std::pair<std::string, sg_size_t>>

@@ -118,7 +118,8 @@ void DTL::create(const std::string& filename)
 {
   XBT_DEBUG("Creating the DTL server"); // as a daemon running on the first actor in the platform
   sg4::Engine::get_instance()
-      ->get_all_hosts().front()
+      ->get_all_hosts()
+      .front()
       ->add_actor("dtlmod::internal_server", DTL::internal_server_init, std::make_shared<DTL>(filename))
       ->daemonize();
 }
