@@ -106,6 +106,8 @@ protected:
   [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const { return subscribers_.find(actor) != subscribers_.end(); }
   // Synchronize subscribers on engine closing
   [[nodiscard]] int is_last_subscriber() const { return subscribers_.empty(); }
+
+  void set_metadata_file_name();
   /// \endcond
 
 public:

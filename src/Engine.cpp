@@ -88,12 +88,15 @@ void Engine::add_subscriber(sg4::ActorPtr actor)
 
 void Engine::export_metadata_to_file()
 {
-  metadata_file_ = boost::replace_all_copy(name_, "/", "#") + "#md." +
-                   std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
   std::ofstream metadata_export(metadata_file_, std::ofstream::out);
   for (const auto& [name, v] : stream_->get_all_variables_internal())
     v->get_metadata()->export_to_file(metadata_export);
   metadata_export.close();
+}
+void Engine::set_metadata_file_name()
+{
+  metadata_file_ = boost::replace_all_copy(name_, "/", "#") + "#md." +
+                   std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
 }
 
 void Engine::close_stream()

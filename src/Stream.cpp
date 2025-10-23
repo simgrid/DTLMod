@@ -153,6 +153,8 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
       }
     }
     access_mode_ = mode;
+    if (metadata_export_)
+      engine_->set_metadata_file_name();
   }
   dtl_->unlock();
   // Check if an exception has been raised and caugth while creating a FileEngine. If yes, throw it again.
