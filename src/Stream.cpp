@@ -241,6 +241,7 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
   } else {
     auto new_var = std::make_shared<Variable>(name, element_size, shape);
     new_var->set_local_start_and_count(publisher, std::make_pair(start, count));
+    new_var->create_metadata();
     variables_.try_emplace(name, new_var);
     return new_var;
   }

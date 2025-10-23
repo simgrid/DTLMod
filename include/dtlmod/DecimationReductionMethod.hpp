@@ -30,7 +30,7 @@ class ParameterizedDecimation {
   size_t element_size_;
 
 protected:
-  const std::vector<size_t>& get_stride() const { return stride_; }
+  [[nodiscard]] const std::vector<size_t>& get_stride() const { return stride_; }
 
   void set_reduced_shape(const std::vector<size_t>& reduced_shape) { reduced_shape_ = reduced_shape; }
   void set_reduced_local_start_and_count(
@@ -40,7 +40,7 @@ protected:
     reduced_local_start_and_count_ = reduced_local_start_and_count;
   }
 
-  size_t get_global_reduced_size() const
+  [[nodiscard]] size_t get_global_reduced_size() const
   {
     size_t total_size = element_size_;
     for (const auto& s : reduced_shape_)
@@ -48,7 +48,7 @@ protected:
     return total_size;
   }
 
-  size_t get_local_reduced_size() const
+  [[nodiscard]] size_t get_local_reduced_size() const
   {
     size_t total_size = element_size_;
     auto issuer       = sg4::Actor::self();
@@ -56,10 +56,16 @@ protected:
       total_size *= c;
     return total_size;
   }
+  [[nodiscard]] const std::vector<size_t>& get_reduced_shape() const { return reduced_shape_; }
+  [[nodiscard]] const std::pair<std::vector<size_t>, std::vector<size_t>>&
+  get_reduced_start_and_count_for(sg4::ActorPtr publisher) const
+  {
+    return reduced_local_start_and_count_.at(publisher);
+  }
 
 public:
   ParameterizedDecimation(const std::vector<size_t> stride, const std::string interpolation_method,
-                         double cost_per_element, size_t element_size)
+                          double cost_per_element, size_t element_size)
       : stride_(stride)
       , interpolation_method_(interpolation_method)
       , cost_per_element_(cost_per_element)
@@ -73,7 +79,7 @@ class DecimationReductionMethod : public ReductionMethod {
 
 protected:
   void parameterize_for_variable(std::shared_ptr<Variable> var,
-                                const std::map<std::string, std::string>& parameters) override
+                                 const std::map<std::string, std::string>& parameters) override
   {
     std::vector<size_t> stride;
     std::string interpolation_method = "";
@@ -96,14 +102,14 @@ protected:
 
     per_variable_parameterizations_.try_emplace(
         var, std::make_shared<ParameterizedDecimation>(stride, interpolation_method, cost_per_element,
-                                                      var->get_element_size()));
+                                                       var->get_element_size()));
   }
 
   void reduce_variable(std::shared_ptr<Variable> var)
   {
     auto parameterization = per_variable_parameterizations_[var];
-    auto shape           = var->get_shape();
-    auto stride          = parameterization->get_stride();
+    auto shape            = var->get_shape();
+    auto stride           = parameterization->get_stride();
 
     std::vector<size_t> reduced_shape;
     size_t i = 0;
@@ -122,8 +128,8 @@ protected:
         size_t r_start = std::ceil(start[i] / (stride[i] * 1.0));
         size_t r_next_start =
             std::min(shape[i], static_cast<size_t>(std::ceil((start[i] + count[i]) / (stride[i] * 1.0))));
-        XBT_CDEBUG(dtlmod,"Dim %lu: stride = %lu, Start = %lu, r_start = %lu, Count = %lu, r_count = %lu",
-                  i, stride[i], start[i], r_start, count[i], r_next_start - r_start);
+        XBT_CDEBUG(dtlmod, "Dim %lu: stride = %lu, Start = %lu, r_start = %lu, Count = %lu, r_count = %lu", i,
+                   stride[i], start[i], r_start, count[i], r_next_start - r_start);
         reduced_start.push_back(r_start);
         reduced_count.push_back(r_next_start - r_start);
       }
@@ -134,14 +140,23 @@ protected:
     parameterization->set_reduced_local_start_and_count(reduced_local_start_and_count);
   }
 
-  size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const override
+  [[nodiscard]] size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const override
   {
     return per_variable_parameterizations_.at(var)->get_global_reduced_size();
   }
 
-  size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const override
+  [[nodiscard]] size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const override
   {
     return per_variable_parameterizations_.at(var)->get_local_reduced_size();
+  }
+  [[nodiscard]] const std::vector<size_t>& get_reduced_variable_shape(std::shared_ptr<Variable> var) const override
+  {
+    return per_variable_parameterizations_.at(var)->get_reduced_shape();
+  }
+  [[nodiscard]] const std::pair<std::vector<size_t>, std::vector<size_t>>&
+  get_reduced_start_and_count_for(std::shared_ptr<Variable> var, sg4::ActorPtr publisher) const override
+  {
+    return per_variable_parameterizations_.at(var)->get_reduced_start_and_count_for(publisher);
   }
 
 public:

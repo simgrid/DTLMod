@@ -20,19 +20,20 @@ class ParameterizedCompression {
 
 public:
   ParameterizedCompression(double accuracy, double compression_cost_per_element, double decompression_cost_per_element)
-    : accuracy_(accuracy)
-    , compression_cost_per_element_(compression_cost_per_element)
-    , decompression_cost_per_element_(decompression_cost_per_element)
-  {}
+      : accuracy_(accuracy)
+      , compression_cost_per_element_(compression_cost_per_element)
+      , decompression_cost_per_element_(decompression_cost_per_element)
+  {
+  }
 };
 
-
-class CompressionReductionMethod : public ReductionMethod{
+class CompressionReductionMethod : public ReductionMethod {
   std::map<std::shared_ptr<Variable>, std::shared_ptr<ParameterizedCompression>> per_variable_parameterizations_;
 
 public:
   CompressionReductionMethod(const std::string& name) : ReductionMethod(name) {}
-  void parameterize_for_variable(std::shared_ptr<Variable> var, const std::map<std::string, std::string>& parameters) override
+  void parameterize_for_variable(std::shared_ptr<Variable> var,
+                                 const std::map<std::string, std::string>& parameters) override
   {
     double accuracy;
     double compression_cost_per_element;
@@ -48,11 +49,23 @@ public:
       } // else
         // TODO handle invalid key
     }
-    per_variable_parameterizations_.try_emplace(var, std::make_shared<ParameterizedCompression>(accuracy, compression_cost_per_element, decompression_cost_per_element));
+    per_variable_parameterizations_.try_emplace(
+        var, std::make_shared<ParameterizedCompression>(accuracy, compression_cost_per_element,
+                                                        decompression_cost_per_element));
   }
   void reduce_variable(std::shared_ptr<Variable> var) override {}
-  size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const override { return 0; }
-  size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const override { return 0; }
+  [[nodiscard]] size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const override { return 0; }
+  [[nodiscard]] size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const override { return 0; }
+  [[nodiscard]] const std::vector<size_t>& get_reduced_variable_shape(std::shared_ptr<Variable> var) const override
+  {
+    return var->get_shape();
+  }
+  [[nodiscard]] const std::pair<std::vector<size_t>, std::vector<size_t>>&
+  get_reduced_start_and_count_for(std::shared_ptr<Variable> var, sg4::ActorPtr publisher) const override
+  {
+    throw std::runtime_error("not implemented");
+    // return;// std::make_pair(std::vector<size_t>(), std::vector<size_t>());
+  }
 };
 /// \endcond
 } // namespace dtlmod

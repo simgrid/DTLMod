@@ -83,7 +83,11 @@ const std::pair<unsigned int, unsigned int>& Variable::get_subscriber_transactio
 void Variable::add_transaction_metadata(unsigned int transaction_id, sg4::ActorPtr publisher,
                                         const std::string& location)
 {
-  metadata_->add_transaction(transaction_id, local_start_and_count_[publisher], location, publisher);
+  if (is_reduced_with_) {
+    auto start_and_count = is_reduced_with_->get_reduced_start_and_count_for(shared_from_this(), publisher);
+    metadata_->add_transaction(transaction_id, start_and_count, location, publisher);
+  } else
+    metadata_->add_transaction(transaction_id, local_start_and_count_[publisher], location, publisher);
 }
 
 std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_block(unsigned int transaction_id,

@@ -39,6 +39,7 @@ class Variable : public std::enable_shared_from_this<Variable> {
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
+  void create_metadata() { metadata_ = std::make_shared<Metadata>(shared_from_this()); }
   void set_metadata(std::shared_ptr<Metadata> metadata) { metadata_ = metadata; }
   void set_transaction_start(int start) { transaction_start_ = start; }
   [[nodiscard]] int get_transaction_start() const { return transaction_start_; }
@@ -71,7 +72,7 @@ protected:
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   Variable(const std::string& name, size_t element_size, const std::vector<size_t>& shape)
-      : name_(name), element_size_(element_size), shape_(shape), metadata_(std::make_shared<Metadata>(this))
+      : name_(name), element_size_(element_size), shape_(shape)
   {
   }
   /// \endcond

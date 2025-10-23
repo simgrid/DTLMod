@@ -20,7 +20,7 @@ class Variable;
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class Metadata {
   friend Variable;
-  Variable* variable_;
+  std::shared_ptr<Variable> variable_;
 
   std::map<unsigned int,                                                 // Transaction id
            std::map<std::pair<std::vector<size_t>, std::vector<size_t>>, // starts and counts
@@ -40,7 +40,7 @@ protected:
                        const std::string& filename, sg4::ActorPtr publisher);
 
 public:
-  explicit Metadata(Variable* variable) : variable_(variable) {}
+  explicit Metadata(const std::shared_ptr<Variable>& variable) : variable_(variable) {}
   int get_current_transaction() const { return transaction_infos_.empty() ? -1 : (transaction_infos_.rbegin())->first; }
   void export_to_file(std::ofstream& ostream) const;
 };
