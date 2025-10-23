@@ -50,6 +50,8 @@ void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
                                        std::map<std::string, std::string> parameters)
 {
   method->parameterize_for_variable(shared_from_this(), parameters);
+  method->reduce_variable(shared_from_this());
+  is_reduced_with_ = method;
   // TODO do something
 }
 

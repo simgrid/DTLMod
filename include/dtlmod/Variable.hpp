@@ -35,6 +35,7 @@ class Variable : public std::enable_shared_from_this<Variable> {
 
   std::map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>, std::less<>> subscriber_selections_;
   std::map<sg4::ActorPtr, std::pair<unsigned int, unsigned int>, std::less<>> subscriber_transaction_selections_;
+  std::shared_ptr<ReductionMethod> is_reduced_with_ = nullptr;
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -112,6 +113,9 @@ public:
   /// @param method a ReductionMethod (already defined).
   /// @param paramaters specific parameters in key-value form to apply the reduction method to the Variable.
   void set_reduction_operation(std::shared_ptr<ReductionMethod> method, std::map<std::string, std::string> parameters);
+
+  [[nodiscard]] bool is_reduced() const { return is_reduced_with_ != nullptr; }
+  [[nodiscard]] const std::shared_ptr<ReductionMethod>& get_reduction_method() const { return is_reduced_with_; }
 };
 } // namespace dtlmod
 

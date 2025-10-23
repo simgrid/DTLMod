@@ -38,7 +38,12 @@ void Engine::begin_transaction()
 /// The actual data transport is delegated to the Transport method associated to the Engine.
 void Engine::put(std::shared_ptr<Variable> var) const
 {
-  transport_->put(var, var->get_local_size());
+  if (var->is_reduced()) {
+    XBT_INFO("Put of a reduced version of %s (initial size = %lu, reduced size = %lu)", var->get_cname(),
+             var->get_local_size(), var->get_reduction_method()->get_reduced_variable_local_size(var));
+    transport_->put(var, var->get_reduction_method()->get_reduced_variable_local_size(var));
+  } else
+    transport_->put(var, var->get_local_size());
 }
 
 void Engine::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) const
