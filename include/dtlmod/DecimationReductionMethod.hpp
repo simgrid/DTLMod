@@ -13,6 +13,8 @@
 #include "dtlmod/ReductionMethod.hpp"
 #include "dtlmod/Variable.hpp"
 
+XBT_LOG_EXTERNAL_CATEGORY(dtlmod);
+
 namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -69,9 +71,7 @@ public:
 class DecimationReductionMethod : public ReductionMethod {
   std::map<std::shared_ptr<Variable>, std::shared_ptr<ParameterizedDecimation>> per_variable_parameterizations_;
 
-public:
-  DecimationReductionMethod(const std::string& name) : ReductionMethod(name) {}
-
+protected:
   void parameterize_for_variable(std::shared_ptr<Variable> var,
                                 const std::map<std::string, std::string>& parameters) override
   {
@@ -121,10 +121,11 @@ public:
         // Sanity checks that shape, start, and count have the same size have already been done
         size_t r_start = std::ceil(start[i] / (stride[i] * 1.0));
         size_t r_next_start =
-            std::min(shape[i] - 1, static_cast<size_t>(std::ceil((start[i] - count[i]) / (stride[i] * 1.0))));
+            std::min(shape[i], static_cast<size_t>(std::ceil((start[i] + count[i]) / (stride[i] * 1.0))));
+        XBT_CDEBUG(dtlmod,"Dim %lu: stride = %lu, Start = %lu, r_start = %lu, Count = %lu, r_count = %lu",
+                  i, stride[i], start, r_start, r_count, r_next_start - r_start);
         reduced_start.push_back(r_start);
         reduced_count.push_back(r_next_start - r_start);
-        i++;
       }
       reduced_local_start_and_count.try_emplace(actor, std::make_pair(reduced_start, reduced_count));
     }
@@ -133,15 +134,18 @@ public:
     parameterization->set_reduced_local_start_and_count(reduced_local_start_and_count);
   }
 
-  size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const
+  size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const override
   {
     return per_variable_parameterizations_.at(var)->get_global_reduced_size();
   }
 
-  size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const
+  size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const override
   {
     return per_variable_parameterizations_.at(var)->get_local_reduced_size();
   }
+
+public:
+  DecimationReductionMethod(const std::string& name) : ReductionMethod(name) {}
 };
 ///\endcond
 } // namespace dtlmod
