@@ -50,7 +50,9 @@ public:
     }
     per_variable_parameterizations_.try_emplace(var, std::make_shared<ParameterizedCompression>(accuracy, compression_cost_per_element, decompression_cost_per_element));
   }
-
+  void reduce_variable(std::shared_ptr<Variable> var) override {}
+  size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const override { return 0; }
+  size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const override { return 0; }
 };
 /// \endcond
 } // namespace dtlmod
