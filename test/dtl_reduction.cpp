@@ -39,7 +39,7 @@ public:
     auto my_fs = sgfs::FileSystem::create("my_fs");
     sgfs::FileSystem::register_file_system(zone, my_fs);
     auto local_storage = sgfs::OneDiskStorage::create("local_storage", disk_);
-    my_fs->mount_partition("/host/scratch/", local_storage, "100MB");
+    my_fs->mount_partition("/host/scratch/", local_storage, "100GB");
 
     // Create the DTL
     dtlmod::DTL::create();
@@ -51,30 +51,35 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
   DO_TEST_WITH_FORK([this]() {
     this->setup_platform();
     host_->add_actor("TestActor", [this]() {
-      // TODO do something
       std::shared_ptr<dtlmod::ReductionMethod> decimator;      
       XBT_INFO("Connect to the DTL");
       auto dtl = dtlmod::DTL::connect();
       XBT_INFO("Create a stream");
-      auto stream = dtl->add_stream("Stream");
+      auto stream = dtl->add_stream("my-output");
       stream->set_transport_method(dtlmod::Transport::Method::File);
       stream->set_engine_type(dtlmod::Engine::Type::File);
+      stream->set_metadata_export();
       XBT_INFO("Create a 3D variable");
-      auto var = stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64, 64},sizeof(double));
+      auto var =
+          stream->define_variable("var3D", {640, 640, 640}, {0, 0, 0}, {640, 640, 640}, sizeof(double));
       XBT_INFO("Define a Decimation Reduction Method");
       ASSERT_NO_THROW(decimator = stream->define_reduction_method("decimation"));
       XBT_INFO("Assign the decimation method to 'var3D'");
       ASSERT_NO_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2,4"}}));
+      XBT_INFO("Check that the variable is marked as 'reduced'");
+      ASSERT_TRUE(var->is_reduced());
       XBT_INFO("Open the stream in Pulish mode");
-      auto engine = stream->open("zone:my_fs:/host/scratch/my-output", dtlmod::Stream::Mode::Publish);
+      auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
       XBT_INFO("Start a Transaction");
       engine->begin_transaction();
       XBT_INFO("Put Variable 'var' into the DTL");
-      ASSERT_NO_THROW(engine->put(var, var->get_local_size()));
+      ASSERT_NO_THROW(engine->put(var));
       XBT_INFO("End a Transaction");
+      engine->end_transaction();
       XBT_INFO("Close the engine");
       engine->close();
-
+      
       XBT_INFO("Disconnect the actor from the DTL");
       dtlmod::DTL::disconnect();
     });
