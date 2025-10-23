@@ -123,7 +123,7 @@ protected:
         size_t r_next_start =
             std::min(shape[i], static_cast<size_t>(std::ceil((start[i] + count[i]) / (stride[i] * 1.0))));
         XBT_CDEBUG(dtlmod,"Dim %lu: stride = %lu, Start = %lu, r_start = %lu, Count = %lu, r_count = %lu",
-                  i, stride[i], start, r_start, r_count, r_next_start - r_start);
+                  i, stride[i], start, r_start, count, r_next_start - r_start);
         reduced_start.push_back(r_start);
         reduced_count.push_back(r_next_start - r_start);
       }
