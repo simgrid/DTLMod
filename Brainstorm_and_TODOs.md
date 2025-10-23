@@ -34,9 +34,9 @@
   - For each of its dimensions, a Variable is defined by a *shape* (the total #elements) and two arrays of *local_start* (the offset for each actor owning a part of the data) and *local_count* (the number of elements owned by each actor) values. When we apply a decimation of stride *X* on a dimension, we have:
     - **reduced_shape** = ceil(shape / (1.0 * X ))
     - **reduced_local_start** = ceil(local_start / (1.0 * X )) and 0 if greater than (reduced_shape - 1)
-    - **reduced_local_count** = min(shape - 1, ceil((local_start - local_count) / 1.0 * X)) - ceil(local_start / (1.0 * X)) 
-  - The `get_global_reduced_size()` method will return the product of the element size by the `reduced_shape` of each dimension.
-  - The `get_local_reduced_size()` method will return the product of the `reduced_local_count` of each dimension.
+    - **reduced_local_count** = min(shape, ceil((local_start + local_count) / 1.0 * X)) - ceil(local_start / (1.0 * X)) 
+  - The `get_reduced_global_size()` method will return the product of the element size by the `reduced_shape` of each dimension.
+  - The `get_reduced_local_size()` method will return the product of the `reduced_local_count` of each dimension.
   - **Note:** these two functions may be for internal purposes only and not user-facing.
 
 - **Behavior depending on the engine type**
@@ -70,22 +70,27 @@
 
 
 ## Proposed API and behavior (WIP)
-  - [x] new `ReductionMethod` class
+  - [x] new `ReductionMethod` class: An abstract class from which decimation and compression will inherit
     - members:
       - [x] `std::string name_`
-    - methods:
+    - methods and behavior:
       - [x] `get_name` and `get_cname`
-    - behavior:
-      - An abstract class from which decimation and compression will inherit
+      - [x] `virtual void parameterize_for_variable(std::shared_ptr<Variable> var, std::map<std::string, std::string> parameters) = 0`: parse the parameters and creates the parameterized version of the `ReductionMethod`
+      - [x] `virtual void reduce_variable(std::shared_ptr<Variable> var) = 0`: compute `reduced_shape` and `reduced_local_start_and_count` for a variable and store them in the `ParameterizedDecimation`
+      - [x] `virtual size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const = 0`
+      - [x] `virtual size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const = 0`
 
   - [ ] new `DecimationReductionMethod` class
     - members:
       - [x] `std::map<std::shared_ptr<Variable>, ParameterizedDecimation> per_variable_parameterizations_`
-    - methods:
-      - [x] `void parse_parameters(std::shared_ptr<Variable> var, std::map<std::string, std::string> parameters)`
-    - behavior:
+    - methods and behavior:
       - The parameters used by the decimation method can be different for each variable. They must be stored in a map whose key is the Variable (assuming that the a `ReductionMethod` can only be applied once to a variable). The values in that map are A `ParameterizedDecimation` objects that contain the `stride`, `interpolation_method`, and `cost_per_element` to use for this variable.
       - The parameterization to use for a variable is set when calling `Variable::add_reduction_operation`
+
+   - [ ] new `ParameterizedDecimation` class
+      - members:
+      - methods and behavior:
+
 
   - [ ] new `CompressionReductionMethod` class
     - members:
@@ -100,12 +105,18 @@
     - members:
       - [x] `reduction_methods_`, a vector of `ReductionMethod` objects
     - methods:
-      - [x]`std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)` to create and store a new `ReductionMethod` object
+      - [x]`std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)` to create a new `ReductionMethod` object and store it in `reduction_methods_`
 
   - [ ] New member(s) and function(s) in `Variable` class
     - members:
+      - [x] `is_reduced_with_`: the shared pointer to the applied `ReductionMethod`, set by `set_reduction_operation`
     - methods:
       - [x] `void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod>, std::map<std::string, std::string> parameters)` that triggers the parameter parsing of the `ReductionMethod` passed in argument
+      - [x] `bool is_reduced() const`
+        - [ ] decide if public or protected
+      - [x] `const std::shared_ptr<ReductionMethod>& get_reduction_method() const`
+        - [ ] decide if public or protected
+
 
 ## TODOs
 - [ ] add tests in `test/dtl_reduction.cpp`
