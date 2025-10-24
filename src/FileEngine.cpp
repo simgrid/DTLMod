@@ -17,7 +17,7 @@
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/FileEngine.hpp"
 
-XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtl_file_engine, dtlmod, "DTL logging about file-based Engines");
+XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtl_file_engine, dtlmod_engine, "DTL logging about file-based Engines");
 
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION

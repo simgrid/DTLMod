@@ -10,8 +10,7 @@
 #include "dtlmod/StagingEngine.hpp"
 #include "dtlmod/Variable.hpp"
 
-XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
-XBT_LOG_NEW_SUBCATEGORY(dtl_stream, dtlmod, "DTL logging about Streams");
+XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtl_stream, dtlmod, "DTL logging about Streams");
 
 namespace dtlmod {
 

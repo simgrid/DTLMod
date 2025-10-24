@@ -13,8 +13,7 @@
 #include "dtlmod/DTL.hpp"
 #include "dtlmod/FileTransport.hpp"
 
-XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
-XBT_LOG_NEW_SUBCATEGORY(dtl_engine, dtlmod, "DTL logging about Engines");
+XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_engine, dtlmod, "DTL logging about Engines");
 
 namespace sg4 = simgrid::s4u;
 
