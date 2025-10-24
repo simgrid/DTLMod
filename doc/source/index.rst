@@ -33,3 +33,4 @@ effects of resource allocation strategies.
          Start your own project <New_project.rst>
       Designing your simulated in situ processing workflow <Workflow.rst>
          The DTLMod programming interface <app_API.rst>
+      Logging and Debugging <Logging.rst>
