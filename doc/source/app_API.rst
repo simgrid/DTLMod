@@ -25,6 +25,20 @@ DTL
 
 TBD
 
+Streams
+^^^^^^^
+.. |Concept_Stream| replace:: **Stream**
+.. _Concept_Stream:
+
+TBD
+
+Engines
+^^^^^^^
+.. |Concept_Engine| replace:: **Engine**
+.. _Concept_Engine:
+
+TBD
+
 Variables
 ^^^^^^^^^^
 .. |Concept_Variable| replace:: **Variable**
@@ -51,24 +65,90 @@ of the multidimensional array (:math:`G_x`, :math:`G_y`, and :math:`G_z`) and, f
 **3D-offset** (represented by a star in the figure) that indicates where the local array is positioned in the global
 array. Finally, the tuple stores the **size of the elements** in the array.
 
-
-Streams
-^^^^^^^
-.. |Concept_Stream| replace:: **Stream**
-.. _Concept_Stream:
-
-TBD
-
-Engines
-^^^^^^^
-.. |Concept_Engine| replace:: **Engine**
-.. _Concept_Engine:
-
-TBD
-
 Transactions
 ^^^^^^^^^^^^
 .. |Concept_Transaction| replace:: **Transaction**
 .. _Concept_Transaction:
+
+TBD
+
+
+API Reference
+*************
+
+.. _API_dtlmod_DTL:
+
+
+class DTL
+^^^^^^^^^
+
+A class that implements a Data Transport Layer abstraction.
+
+Creation
+---------
+
+.. tabs::
+
+   .. group-tab:: C++
+
+      .. code:: C++
+
+         #include <dtlmod/DTL.hpp>
+
+      .. doxygenfunction:: dtlmod::DTL::create()   
+      .. doxygenfunction:: dtlmod::DTL::create(const std::string& config_filename)
+
+   .. group-tab:: Python
+
+      .. code:: Python
+
+         import dtlmod
+
+      .. automethod:: dtlmod.DTL.create   
+
+Connection and Deconnection
+---------------------------
+.. tabs::
+
+   .. group-tab:: C++
+
+      .. doxygenfunction:: dtlmod::DTL::connect()
+      .. doxygenfunction:: dtlmod::DTL::disconnect()
+      .. doxygenfunction:: dtlmod::DTL::has_active_connections
+
+   .. group-tab:: Python
+
+      .. automethod:: dtlmod.DTL.connect
+      .. automethod:: dtlmod.DTL.disconnect
+      .. autoproperty:: dtlmod.DTL.has_active_connections
+
+Stream factory
+--------------
+.. tabs::
+
+   .. group-tab:: C++
+
+      .. doxygenfunction:: dtlmod::DTL::add_stream(const std::string& name)
+      .. doxygenfunction:: dtlmod::DTL::get_stream_by_name_or_null(const std::string& name) const
+      .. doxygenfunction:: dtlmod::DTL::get_all_streams
+
+   .. group-tab:: Python
+
+      .. automethod:: dtlmod.DTL.add_stream
+      .. automethod:: dtlmod.DTL.stream_by_name_or_null
+      .. autoproperty:: dtlmod.DTL.all_streams
+
+class Engine
+^^^^^^^^^^^^
+
+TBD
+
+class Stream
+^^^^^^^^^^^^
+
+TBD
+
+class Variable
+^^^^^^^^^^^^^^
 
 TBD
