@@ -33,8 +33,6 @@ using dtlmod::Stream;
 using dtlmod::Transport;
 using dtlmod::Variable;
 
-XBT_LOG_NEW_DEFAULT_CATEGORY(python, "python");
-
 namespace {
 
 std::string get_dtlmod_version()

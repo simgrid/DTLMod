@@ -7,7 +7,7 @@
 
 #include "dtlmod/Variable.hpp"
 
-XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
+XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_metadata, dtlmod, "DTL logging about Metadata");
 
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION

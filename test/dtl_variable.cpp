@@ -14,7 +14,7 @@
 #include "dtlmod/DTL.hpp"
 #include "dtlmod/DTLException.hpp"
 
-XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod_variable, "Logging category for this dtlmod test");
+XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod_test_variable, "Logging category for this dtlmod test");
 
 namespace sg4 = simgrid::s4u;
 

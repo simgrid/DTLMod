@@ -10,8 +10,7 @@
 #include "dtlmod/StagingEngine.hpp"
 #include "dtlmod/Variable.hpp"
 
-XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
-XBT_LOG_NEW_SUBCATEGORY(dtl_stream, dtlmod, "DTL logging about Streams");
+XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtl_stream, dtlmod, "DTL logging about Streams");
 
 namespace dtlmod {
 
@@ -153,6 +152,8 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
       }
     }
     access_mode_ = mode;
+    if (metadata_export_)
+      engine_->set_metadata_file_name();
   }
   dtl_->unlock();
   // Check if an exception has been raised and caugth while creating a FileEngine. If yes, throw it again.

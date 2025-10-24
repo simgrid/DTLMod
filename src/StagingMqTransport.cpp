@@ -8,7 +8,7 @@
 #include "dtlmod/StagingEngine.hpp"
 #include "dtlmod/Stream.hpp"
 
-XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
+XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod_staging_transport);
 
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
