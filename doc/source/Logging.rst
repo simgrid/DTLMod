@@ -113,16 +113,20 @@ Existing categories
 
 Here follows the list of all the logging categories existing in the implementation of DTLMod.
 
-TBD
+- dtlmod
 
-.. - dtlmod
+  - dtl
+  - dtlmod_stream
+  - dtlmod_engine
 
-..  - dtl
-  - dtl_stream
-  - dtl_engine
+   - dtlmod_file_engine
+   - dtlmod_staging_engine
+  
+  - dtlmod_transport
 
+   - dtlmod_file_transport
+   - dtlmod_staging_transport 
 
-.. src/FileEngine.cpp                    20 XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtl_file_engine, dtlmod, "DTL logging abou
-                                            t file-based Engines");
- 5 src/bindings/python/dtlmod_python.cpp 36 XBT_LOG_NEW_DEFAULT_CATEGORY(python, "python");
- 
+  - dtlmod_variable
+
+  - dtlmod_metadata
