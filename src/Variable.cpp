@@ -5,7 +5,7 @@
 
 #include "dtlmod/Variable.hpp"
 
-XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtl_variable, dtlmod, "DTL logging about Variables");
+XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_variable, dtlmod, "DTL logging about Variables");
 
 namespace dtlmod {
 ////////////////////////////////////////////
