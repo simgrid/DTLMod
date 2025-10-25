@@ -45,4 +45,4 @@ dist/
 dtlmod.egg-info/
 
 # doc
-source/_ext/__pycache__/
+doc/source/_ext/__pycache__/
