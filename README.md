@@ -5,7 +5,7 @@
 [![codecov](https://codecov.io/gh/simgrid/DTLMod/graph/badge.svg?token=6x9KmpEvpS)](https://codecov.io/gh/simgrid/DTLMod)
 [![CodeFactor](https://www.codefactor.io/repository/github/simgrid/DTLMod/badge)](https://www.codefactor.io/repository/github/simgrid/DTLMod)
 
-# <img src="path/to/logo.png" width="50" style="vertical-align: middle; margin-right:12px;"> DTLMod: a versatile simulated Data Transport Layer
+# <img src="doc/source/img/DTLMod_logo.png" width="60" style="vertical-align: middle; margin-right:12px;"> DTLMod: a versatile simulated Data Transport Layer
 
 ## Overview
 This project implements a versatile simulated data transport layer "module" on top of
