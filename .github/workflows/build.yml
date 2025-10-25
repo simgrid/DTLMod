@@ -111,12 +111,8 @@ jobs:
 
       - name: Install Doxygen and Sphinx
         run: |
+          sudo apt-get install -y python3-breathe python3-sphinx python3-sphinx-rtd-theme python3-sphinx-copybutton python3-sphinx-tabs
           sudo apt-get -y install doxygen
-          sudo apt-get -y install python3-sphinx
-          pip install sphinx_rtd_theme
-          pip install recommonmark
-          pip install breathe
-          pip install defusedxml
 
       - name: Build and Deploy Documentation
         env:
@@ -127,7 +123,6 @@ jobs:
           pwd
           cmake ..
           echo "Building documentation..."
-          apt install -y python3-breathe python3-sphinx python3-sphinx-rtd-theme python3-sphinx-copybutton python3-sphinx-tabs
           cd ../doc
           LC_ALL=C.UTF-8 ./Build.sh
           mkdir $HOME/gh-pages-to-deploy
