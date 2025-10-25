@@ -43,3 +43,6 @@ CMakeFiles/
 .eggs/
 dist/
 dtlmod.egg-info/
+
+# doc
+source/_ext/__pycache__/
