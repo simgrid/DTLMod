@@ -12,8 +12,8 @@ sys.path.append(os.path.abspath('_ext'))
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 
 if read_the_docs_build:
-    subprocess.call('pwd', shell=True) # should be in docs/source
-    subprocess.call('doxygen', shell=True)
+    subprocess.call('/usr/bin/pwd', shell=False) # should be in docs/source
+    subprocess.call('/usr/bin/doxygen', shell=False)
 
 # -- Project information -----------------------------------------------------
 
@@ -79,7 +79,6 @@ html_favicon = 'favicon.png'
 html_theme_options = {
     'navigation_depth': 4,
     'sticky_navigation': True,
-    'display_version': True,
     'includehidden': True,
 }
 

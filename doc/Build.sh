@@ -3,7 +3,7 @@
 set -e
 set -o pipefail
 
-if [ "x$1" != 'xdoxy' ] && [ -e build/xml ] ; then
+if [ "$1" != 'xdoxy' ] && [ -e build/xml ] ; then
   echo "Doxygen not rerun: 'doxy' was not provided as an argument"
 else
   set -x
