@@ -1,6 +1,6 @@
 .. Copyright 2025
 
-.. _DTLMod_doc:
+.. _DTLMod_API:
 
 The DTLMod programming interface
 ################################
@@ -38,8 +38,10 @@ Internally, a |Concept_DTL|_ is implemented as a server daemon process that answ
 **disconnection** requests from the simulated actors and maintains the set of active connections.
 
 .. |Concept_Stream| replace:: **Stream**
-.. |Concept_Streams| replace:: **Streams**
 .. _Concept_Stream:
+
+.. |Concept_Streams| replace:: **Streams**
+.. _Concept_Streams:
 
 Streams
 ^^^^^^^
