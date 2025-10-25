@@ -15,7 +15,7 @@
 #include "./test_util.hpp"
 #include "dtlmod/DTL.hpp"
 
-XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod_staging_engine, "Logging category for this dtlmod test");
+XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod_test_staging_engine, "Logging category for this dtlmod test");
 
 class DTLStagingEngineTest : public ::testing::Test {
 public:

@@ -1,0 +1,35 @@
+# What to read
+INPUT                 += ../../include/dtlmod/
+INPUT                 += ../../src/
+RECURSIVE              = YES
+
+# What to produce
+OUTPUT_DIRECTORY       = ../build/
+GENERATE_XML           = YES
+GENERATE_HTML          = NO
+GENERATE_LATEX         = NO
+
+FULL_PATH_NAMES        = NO # Don't leak the path on which it was built
+XML_PROGRAMLISTING     = NO # No program listings, please
+CREATE_SUBDIRS         = NO # Mandatory for exhale
+AUTOLINK_SUPPORT       = NO # Don't try to link words that correspond to documented classes to their corresponding doc
+INLINE_INHERITED_MEMB  = YES # Put the content of superclasses in subclasses
+
+# Allow for rst directives and advanced functions e.g. grid tables
+ALIASES                = "beginrst=\verbatim embed:rst:leading-asterisk"
+ALIASES               += "endrst=\endverbatim"
+
+# Enable preprocessing and related preprocessor necessities
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = NO
+SKIP_FUNCTION_MACROS   = NO
+
+QUIET=YES
+
+PREDEFINED             += \
+    __cplusplus \
+    DOXYGEN \
+    XBT_PUBLIC= \
+    XBT_PUBLIC_DATA=extern \
+    XBT_LOG_NEW_DEFAULT_SUBCATEGORY(cname,parent,desc)= 

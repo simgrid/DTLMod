@@ -111,26 +111,23 @@ jobs:
 
       - name: Install Doxygen and Sphinx
         run: |
+          sudo apt-get install -y python3-breathe python3-sphinx python3-sphinx-rtd-theme python3-sphinx-copybutton python3-sphinx-tabs
           sudo apt-get -y install doxygen
-          sudo apt-get -y install python3-sphinx
-          pip install sphinx_rtd_theme
-          pip install recommonmark
-          pip install breathe
-          pip install defusedxml
 
       - name: Build and Deploy Documentation
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
           #git clone https://github.com/simgrid/DTLMod.git
-          echo "Building documentation..."
           cd DTLMod/build
           pwd
           cmake ..
-          make doc
+          echo "Building documentation..."
+          cd ../doc
+          LC_ALL=C.UTF-8 ./Build.sh
           mkdir $HOME/gh-pages-to-deploy
-          cp -r ./docs/latest/* $HOME/gh-pages-to-deploy/
-          cd ../..
+          cp -r build/html/* $HOME/gh-pages-to-deploy/
+          cd ..
           echo "Updating gh-pages branch..."
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"

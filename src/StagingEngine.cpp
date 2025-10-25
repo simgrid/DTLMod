@@ -16,7 +16,7 @@
 #include "dtlmod/StagingMboxTransport.hpp"
 #include "dtlmod/StagingMqTransport.hpp"
 
-XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
+XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_staging_engine, dtlmod_engine, "DTL logging about staging Engines");
 
 namespace dtlmod {
 

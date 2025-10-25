@@ -10,7 +10,7 @@
 #include "dtlmod/StagingTransport.hpp"
 #include "dtlmod/Stream.hpp"
 
-XBT_LOG_EXTERNAL_DEFAULT_CATEGORY(dtlmod);
+XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_staging_transport, dtlmod_transport, "DTL logging about staging-based Transport");
 
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION

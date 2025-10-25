@@ -11,6 +11,10 @@
 This project implements a versatile simulated data transport layer "module" on top of
 [SimGrid](https://simgrid.frama.io/simgrid/), to be used in any SimGrid-based simulator.
 
+## Documentation
+
+The concepts and API of DTLMod API are documented on [this page](https://simgrid.github.io/DTLMod/).
+
 ## Dependencies and installation
 
 The only required dependencies are on [SimGrid](https://simgrid.frama.io/simgrid/) and its
