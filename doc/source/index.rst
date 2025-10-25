@@ -34,5 +34,6 @@ effects of resource allocation strategies.
       Designing your simulated in situ processing workflow <Workflow.rst>
          The DTLMod programming interface <app_API.rst>
          Simulated actors <app_Actors.rst>
+         Composing simulated actors and    running the simulation <app_Main.rst>
       Describing your simulated platform <Platform.rst>
       Logging and Debugging <Logging.rst>
