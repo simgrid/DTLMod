@@ -229,9 +229,6 @@ add_custom_target(copy_python_tests
 )
 add_dependencies(unit_tests copy_python_tests)
 
-# Documentation
-#include(${CMAKE_HOME_DIRECTORY}/conf/cmake/Documentation.cmake)
-
 if(pybind11_FOUND)
   message("        Compile Python bindings .....: ${enable_python}")
   message("          module ....................: ${PYTHON_MODULE_PREFIX}dtlmod${PYTHON_MODULE_EXTENSION}")
