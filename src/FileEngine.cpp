@@ -90,11 +90,9 @@ void FileEngine::begin_pub_transaction()
     // Wait for the completion of the Publish activities from the previous transaction
     XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
               file_pub_transaction_[self].size());
-    file_pub_transaction_[self].wait_all();
+    while (file_pub_transaction_[self].size() > 0)
+      pub_activities_completed_->wait(std::unique_lock(*pub_mutex_));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
-    file_pub_transaction_[self].clear();
-    pub_activities_completed_->notify_all();
-    // Clear the vector of things to write
     transport->clear_to_write_in_transaction(self);
   }
 }
@@ -114,14 +112,21 @@ void FileEngine::end_pub_transaction()
   auto to_write = transport->get_to_write_in_transaction_by_actor(self);
 
   // Start the write activities for that transaction
-  for (const auto& [file, size] : to_write)
-    file_pub_transaction_[self].push(file->write_async(size));
+  for (const auto& [file, size] : to_write) {
+    auto write = file->write_async(size, true);
+    write->on_this_completion_cb([this, self, write](sg4::Io const&) {
+      pub_activities_completed_->notify_all();
+      file_pub_transaction_[self].erase(write);
+    });
+    file_pub_transaction_[self].push(write);
+  }
   XBT_DEBUG("Start the %d publish activities for the transaction", file_pub_transaction_[self].size());
 
   if (is_last_publisher()) {
     // Mark this transaction as over
     pub_transaction_in_progress_ = false;
     // A new pub transaction has been completed, notify subscribers
+    XBT_DEBUG("Notify subscribers that transaction %u is over", completed_pub_transaction_id_);
     completed_pub_transaction_id_++;
     pub_transaction_completed_->notify_all();
   }
@@ -136,9 +141,8 @@ void FileEngine::pub_close()
 
   XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
             file_pub_transaction_[self].size());
-  file_pub_transaction_[self].wait_all();
-  file_pub_transaction_[self].clear();
-  // Clear the vector of things to write
+  while (file_pub_transaction_[self].size() > 0)
+    pub_activities_completed_->wait(std::unique_lock(*pub_mutex_));
   transport->clear_to_write_in_transaction(self);
 
   rm_publisher(self);
@@ -146,9 +150,6 @@ void FileEngine::pub_close()
   // Synchronize Publishers on engine closing
   if (is_last_publisher()) {
     XBT_DEBUG("[%s] last publish transaction is over", get_cname());
-    // We may have subscribers waiting for a transaction to be over. Notify them
-    pub_activities_completed_->notify_all();
-
     XBT_DEBUG("All publishers have called the Engine::close() function");
     close_stream();
     XBT_DEBUG("Closing opened files");
@@ -187,9 +188,8 @@ void FileEngine::end_sub_transaction()
   // The files subscribers need to read may not have been fully written. Wait to be notified completion of the publish
   // activities
   if (current_sub_transaction_id_ == current_pub_transaction_id_ && get_num_publishers() > 0) {
-    std::unique_lock lock(*sub_mutex_);
     XBT_DEBUG("Wait for the completion of publish activities from the current transaction");
-    pub_activities_completed_->wait(lock);
+    pub_activities_completed_->wait(std::unique_lock(*sub_mutex_));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the subscribe activities.");
   }
 
