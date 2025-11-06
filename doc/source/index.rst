@@ -37,3 +37,21 @@ effects of resource allocation strategies.
          Composing simulated actors and    running the simulation <app_Main.rst>
       Describing your simulated platform <Platform.rst>
       Logging and Debugging <Logging.rst>
+
+.. toctree::
+   :hidden:
+   :maxdepth: 2
+   :caption: DTLMod's Internals:
+
+      Connection manager <Connection_manager.rst>
+..      Design goals <Design_goals.rst>
+..      Contributor's documentation <Contributors_Documentation.rst>
+
+.. Cheat Sheet on the sublevels
+..
+..   # with overline, for parts
+..   * with overline, for chapters
+..   =, for sections
+..   -, for subsections
+..   ^, for subsubsections
+..   ", for paragraphs

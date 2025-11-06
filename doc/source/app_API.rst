@@ -18,10 +18,11 @@ The DTLMod programming interface
 Main Concepts
 *************
 
-DTL
-^^^
 .. |Concept_DTL| replace:: **DTL**
 .. _Concept_DTL:
+
+DTL
+^^^
 
 A |Concept_DTL|_ is created by calling :cpp:func:`DTL::create() <dtlmod::DTL::create()>` at the beginning of the
 :cpp:func:`main()` function of your simulator. This function can take as an optional argument a JSON configuration
