@@ -38,8 +38,12 @@ void Engine::begin_transaction()
 void Engine::put(std::shared_ptr<Variable> var) const
 {
   if (var->is_reduced()) {
-    XBT_INFO("Put of a reduced version of %s (initial size = %lu, reduced size = %lu)", var->get_cname(),
-             var->get_local_size(), var->get_reduction_method()->get_reduced_variable_local_size(var));
+    // Perform a Exec activity before putting the variable into the DTL to account for the time needed to reduce it.
+    sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(var));
+    XBT_DEBUG("Variable %s has been reduced!", var->get_cname());
+    // Now put the reduced version of the variable into the DTL, i.e., using its reduced local size.
+    XBT_DEBUG("Put this reduced version of %s (initial size = %lu, reduced size = %lu)", var->get_cname(),
+              var->get_local_size(), var->get_reduction_method()->get_reduced_variable_local_size(var));
     transport_->put(var, var->get_reduction_method()->get_reduced_variable_local_size(var));
   } else
     transport_->put(var, var->get_local_size());

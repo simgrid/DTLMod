@@ -32,8 +32,8 @@ public:
   void setup_platform()
   {
     auto* zone = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_empty("zone");
-    host_      = zone->add_host("host", "1Gf");
-    disk_      = host_->add_disk("disk", "5.5GBps", "2.1GBps");
+    host_      = zone->add_host("host", "6Gf");
+    disk_      = host_->add_disk("disk", "560MBps", "510MBps");
     zone->seal();
 
     auto my_fs = sgfs::FileSystem::create("my_fs");
@@ -49,6 +49,7 @@ public:
 TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
 {
   DO_TEST_WITH_FORK([this]() {
+    xbt_log_control_set("dtlmod_engine.thresh:debug");
     this->setup_platform();
     host_->add_actor("TestActor", [this]() {
       std::shared_ptr<dtlmod::ReductionMethod> decimator;      
@@ -64,16 +65,24 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
           stream->define_variable("var3D", {640, 640, 640}, {0, 0, 0}, {640, 640, 640}, sizeof(double));
       XBT_INFO("Define a Decimation Reduction Method");
       ASSERT_NO_THROW(decimator = stream->define_reduction_method("decimation"));
-      XBT_INFO("Assign the decimation method to 'var3D'");
-      ASSERT_NO_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2,4"}}));
-      XBT_INFO("Check that the variable is marked as 'reduced'");
-      ASSERT_TRUE(var->is_reduced());
       XBT_INFO("Open the stream in Pulish mode");
       auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
       XBT_INFO("Start a Transaction");
       engine->begin_transaction();
       XBT_INFO("Put Variable 'var' into the DTL");
+      ASSERT_NO_THROW(engine->put(var));
+      XBT_INFO("End a Transaction");
+      engine->end_transaction();
+      XBT_INFO("Sleep until t = 6s");
+      sg4::this_actor::sleep_until(6);
+      XBT_INFO("Assign the decimation method to 'var3D'");
+      ASSERT_NO_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2,4"}}));
+      XBT_INFO("Check that the variable is marked as 'reduced'");
+      ASSERT_TRUE(var->is_reduced());
+      XBT_INFO("Start a Transaction");
+      engine->begin_transaction();
+      XBT_INFO("Put reduced Variable 'var' into the DTL");
       ASSERT_NO_THROW(engine->put(var));
       XBT_INFO("End a Transaction");
       engine->end_transaction();

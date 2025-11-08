@@ -115,7 +115,8 @@ void FileEngine::end_pub_transaction()
   XBT_DEBUG("Start the %d publish activities for the transaction", file_pub_transaction_[self].size());
   for (const auto& [file, size] : to_write) {
     auto write = file->write_async(size, true);
-    write->on_this_completion_cb([this, self, write](sg4::Io const&) {
+    write->on_this_completion_cb([this, self, write, size](sg4::Io const&) {
+      XBT_DEBUG("%llu bytes have been written for Actor %s", size, self->get_cname());
       pub_activities_completed_->notify_all();
       file_pub_transaction_[self].erase(write);
     });

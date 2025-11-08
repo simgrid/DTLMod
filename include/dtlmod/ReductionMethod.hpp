@@ -35,6 +35,8 @@ public:
   virtual const std::vector<size_t>& get_reduced_variable_shape(std::shared_ptr<Variable> var) const = 0;
   virtual const std::pair<std::vector<size_t>, std::vector<size_t>>&
   get_reduced_start_and_count_for(std::shared_ptr<Variable> var, simgrid::s4u::ActorPtr publisher) const = 0;
+  virtual double get_flop_amount_to_reduce_variable(std::shared_ptr<Variable> var) const                 = 0;
+
   /// @brief Helper function to print out the name of the ReductionMethod.
   /// @return The corresponding string
   [[nodiscard]] const std::string& get_name() const { return name_; }

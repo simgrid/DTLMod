@@ -66,6 +66,7 @@ public:
     throw std::runtime_error("not implemented");
     // return;// std::make_pair(std::vector<size_t>(), std::vector<size_t>());
   }
+  [[nodiscard]] double get_flop_amount_to_reduce_variable(std::shared_ptr<Variable> var) const override { return 0.0; }
 };
 /// \endcond
 } // namespace dtlmod

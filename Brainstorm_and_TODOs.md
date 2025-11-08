@@ -89,6 +89,12 @@
 
    - [ ] new `ParameterizedDecimation` class
       - members:
+        - [x] `std::vector<size_t> stride_`
+        - [x] `std::string interpolation_method_` (default to empty string)
+        - [x] `double cost_per_element_`
+        - [x] `std::vector<size_t> reduced_shape_`
+        - [x] `std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>> reduced_local_start_and_count_`
+        - [x] `size_t element_size_`
       - methods and behavior:
 
 

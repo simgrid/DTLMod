@@ -48,13 +48,15 @@ DECLARE_DTLMOD_EXCEPTION(UnknownOpenModeException, "Unknown open mode. Should be
 
 DECLARE_DTLMOD_EXCEPTION(UnknownVariableException, "Unknown Variable");
 DECLARE_DTLMOD_EXCEPTION(MultipleVariableDefinitionException, "Multiple Variable Definition");
-DECLARE_DTLMOD_EXCEPTION(InconsistentVariableDefinitionException,
-                         "Insconsistent Variable Definition. The 'shape', 'start', and 'count' vectors must "
-                         "have the same size");
+DECLARE_DTLMOD_EXCEPTION(InconsistentVariableDefinitionException, "Insconsistent Variable Definition");
 DECLARE_DTLMOD_EXCEPTION(IncorrectPathDefinitionException, "Fullpath must be structured as follows: "
                                                            "netzone_name:file_system_name:/path/to/file_name");
 
 DECLARE_DTLMOD_EXCEPTION(GetWhenNoTransactionException, "Impossible to get. No transaction exists for variable");
+
+DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationStrideException, "Insconsistent Decimation Stride definition");
+DECLARE_DTLMOD_EXCEPTION(UnknownDecimationOptionException, "Unknown Decimation option");
+DECLARE_DTLMOD_EXCEPTION(UnknownDecimationInterpolationException, "Unknown Decimation interpolation method");
 
 } // namespace dtlmod
 
