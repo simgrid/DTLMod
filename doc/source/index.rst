@@ -44,8 +44,9 @@ effects of resource allocation strategies.
    :caption: DTLMod's Internals:
 
       Connection manager <Connection_manager.rst>
-..      Design goals <Design_goals.rst>
-..      Contributor's documentation <Contributors_Documentation.rst>
+      Engines <Engines.rst>
+         Inside the File engine <Inside_File_engine.rst>
+         Inside the Staging engine <Inside_Staging_engine.rst>
 
 .. Cheat Sheet on the sublevels
 ..

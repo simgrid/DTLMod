@@ -39,13 +39,15 @@ Internally, a |Concept_DTL|_ is implemented as a server daemon process that answ
 **disconnection** requests from the simulated actors and maintains the set of active connections.
 
 .. |Concept_Stream| replace:: **Stream**
-.. _Concept_Stream:
 
 .. |Concept_Streams| replace:: **Streams**
+
 .. _Concept_Streams:
 
-Streams
-^^^^^^^
+.. _Concept_Stream:
+
+Stream
+^^^^^^
 
 The |Concept_Stream|_ abstraction represents a connection between a simulated actor and the DTL, through which data
 transport operations occur, and acts as a |Concept_Variable|_ factory. The publishers **define** the variables a
@@ -58,8 +60,8 @@ specific |Concept_Engine|_ to actually handle data transport.
 .. |Concept_Engine| replace:: **Engine**
 .. _Concept_Engine:
 
-Engines
-^^^^^^^
+Engine
+^^^^^^
 The |Concept_Engine|_ abstraction is the base interface through which the |Concept_DTL|_ interacts with the simulated
 communication or I/O subsystems in charge of the simulation of data movement or storage. DTLMod exposes two types of
 engines: **file-based** engines, that write and read data to and from storage and **staging** engines that stream data
@@ -74,8 +76,8 @@ analysis component to another. The type of |Concept_Engine|_ to use can be speci
 .. |Concept_Transport| replace:: **Transport**
 .. _Concept_Transport:
 
-Transport methods
-^^^^^^^^^^^^^^^^^
+Transport method
+^^^^^^^^^^^^^^^^
 
 An engine is then associated to a specific |Concept_Transport|_ **method** that further specifies how data is written
 to and read from a file system or streamed from one workflow component to another. This separation between
@@ -134,8 +136,8 @@ necessary. The exact redistribution pattern is automatically determined by DTLMo
 .. |Concept_Variable| replace:: **Variable**
 .. _Concept_Variable:
 
-Variables
-^^^^^^^^^^
+Variable
+^^^^^^^^
 
 At the core of the DTLMod is the data transported from publishers to subscribers. Many in situ processing workflows
 involve parallel MPI codes as data producers. These codes manipulate **multidimensional arrays** distributed over
@@ -161,8 +163,8 @@ array. Finally, the tuple stores the **size of the elements** in the array.
 .. |Concept_Transaction| replace:: **Transaction**
 .. _Concept_Transaction:
 
-Transactions
-^^^^^^^^^^^^
+Transaction
+^^^^^^^^^^^
 
 Simulated actors can publish, or subscribe to, one or more |Concept_Variable|_ variables within a
 |Concept_Transaction|_. This logical construct delimits the interactions between an actor and the |Concept_DTL|_ and
