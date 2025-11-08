@@ -66,7 +66,7 @@ DTL::DTL(const std::string& filename)
   }
 }
 
-void DTL::internal_connect(sg4::Actor* actor)
+void DTL::connection_manager_connect(sg4::Actor* actor)
 {
   if (active_connections_.find(actor) == active_connections_.end()) {
     active_connections_.insert(actor);
@@ -76,7 +76,7 @@ void DTL::internal_connect(sg4::Actor* actor)
     XBT_WARN("%s is already connected to the DTL. Check your code. ", actor->get_cname());
 }
 
-void DTL::internal_disconnect(sg4::Actor* actor)
+void DTL::connection_manager_disconnect(sg4::Actor* actor)
 {
   if (active_connections_.find(actor) == active_connections_.end()) {
     XBT_WARN("%s is not connected to the DTL. Check your code. ", actor->get_cname());
@@ -86,23 +86,23 @@ void DTL::internal_disconnect(sg4::Actor* actor)
   }
 }
 
-__attribute__((noreturn)) void DTL::internal_server_init(std::shared_ptr<DTL> dtl)
+__attribute__((noreturn)) void DTL::connection_manager_init(std::shared_ptr<DTL> dtl)
 {
-  XBT_DEBUG("Server is running. waiting for connections");
-  auto connect_mq = sg4::MessageQueue::by_name("dtlmod::internal_server_connect");
-  auto handler_mq = sg4::MessageQueue::by_name("dtlmod::internal_server_handle");
+  XBT_DEBUG("Connection_manager is running. waiting for connections");
+  auto connect_mq = sg4::MessageQueue::by_name("dtlmod::connection_manager_connect");
+  auto handler_mq = sg4::MessageQueue::by_name("dtlmod::connection_manager_handle");
   do {
-    // Wait for a connection/disconnection message on connect_mbox
+    // Wait for a connection/disconnection message on connect_mq
     bool* connect = nullptr;
     auto mess     = connect_mq->get_async(&connect);
     mess->wait();
     auto* sender = mess->get_sender();
     if (*connect) { // Connection
-      dtl->internal_connect(sender);
+      dtl->connection_manager_connect(sender);
       // Return a handler on the DTL to the newly connected actor
       handler_mq->put_init(&dtl)->detach();
     } else { // Disconnection
-      dtl->internal_disconnect(sender);
+      dtl->connection_manager_disconnect(sender);
       handler_mq->put_init(new bool(true))->detach();
       if (!dtl->has_active_connections())
         XBT_WARN("The DTL has no active connection");
@@ -116,11 +116,11 @@ __attribute__((noreturn)) void DTL::internal_server_init(std::shared_ptr<DTL> dt
 
 void DTL::create(const std::string& filename)
 {
-  XBT_DEBUG("Creating the DTL server"); // as a daemon running on the first actor in the platform
+  XBT_DEBUG("Creating the DTL connection manager"); // as a daemon running on the first actor in the platform
   sg4::Engine::get_instance()
       ->get_all_hosts()
       .front()
-      ->add_actor("dtlmod::internal_server", DTL::internal_server_init, std::make_shared<DTL>(filename))
+      ->add_actor("dtlmod::connection_manager", DTL::connection_manager_init, std::make_shared<DTL>(filename))
       ->daemonize();
 }
 
@@ -131,15 +131,15 @@ void DTL::create()
 
 std::shared_ptr<DTL> DTL::connect()
 {
-  sg4::MessageQueue::by_name("dtlmod::internal_server_connect")->put(new bool(true));
-  const auto* handle = sg4::MessageQueue::by_name("dtlmod::internal_server_handle")->get<std::shared_ptr<DTL>>();
+  sg4::MessageQueue::by_name("dtlmod::connection_manager_connect")->put(new bool(true));
+  const auto* handle = sg4::MessageQueue::by_name("dtlmod::connection_manager_handle")->get<std::shared_ptr<DTL>>();
   return *handle;
 }
 
 void DTL::disconnect()
 {
-  sg4::MessageQueue::by_name("dtlmod::internal_server_connect")->put(new bool(false));
-  sg4::MessageQueue::by_name("dtlmod::internal_server_handle")->get_unique<bool>();
+  sg4::MessageQueue::by_name("dtlmod::connection_manager_connect")->put(new bool(false));
+  sg4::MessageQueue::by_name("dtlmod::connection_manager_handle")->get_unique<bool>();
 }
 
 std::shared_ptr<Stream> DTL::add_stream(const std::string& name)
