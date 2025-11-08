@@ -112,6 +112,7 @@ void FileEngine::end_pub_transaction()
   auto to_write = transport->get_to_write_in_transaction_by_actor(self);
 
   // Start the write activities for that transaction
+  XBT_DEBUG("Start the %d publish activities for the transaction", file_pub_transaction_[self].size());
   for (const auto& [file, size] : to_write) {
     auto write = file->write_async(size, true);
     write->on_this_completion_cb([this, self, write](sg4::Io const&) {
@@ -120,7 +121,6 @@ void FileEngine::end_pub_transaction()
     });
     file_pub_transaction_[self].push(write);
   }
-  XBT_DEBUG("Start the %d publish activities for the transaction", file_pub_transaction_[self].size());
 
   if (is_last_publisher()) {
     // Mark this transaction as over
