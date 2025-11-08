@@ -4,6 +4,7 @@
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
 #include "dtlmod/Variable.hpp"
+#include <numeric>
 
 XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_variable, dtlmod, "DTL logging about Variables");
 
@@ -16,10 +17,7 @@ namespace dtlmod {
 /// vector by the element size.
 size_t Variable::get_global_size() const
 {
-  size_t total_size = element_size_;
-  for (const auto& s : shape_)
-    total_size *= s;
-  return total_size;
+  return std::accumulate(shape_.begin(), shape_.end(), element_size_, std::multiplies<>{});
 }
 
 /// The local size of a Variable corresponds to the product of the number of elements in each dimension of the count
@@ -27,10 +25,8 @@ size_t Variable::get_global_size() const
 /// the number of transactions.
 size_t Variable::get_local_size() const
 {
-  size_t total_size = element_size_;
-  auto issuer       = sg4::Actor::self();
-  for (const auto& c : local_start_and_count_.at(issuer).second)
-    total_size *= c;
+  auto start_and_count = local_start_and_count_.at(sg4::Actor::self()).second;
+  auto total_size = std::accumulate(start_and_count.begin(), start_and_count.end(), element_size_, std::multiplies<>{});
   if (transaction_start_ >= 0)
     total_size *= transaction_count_;
   return total_size;
