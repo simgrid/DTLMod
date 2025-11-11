@@ -17,7 +17,7 @@ if read_the_docs_build:
 
 # -- Project information -----------------------------------------------------
 
-version = u'0.1.0'
+version = u'0.2.0'
 project = u'DTLMod'
 copyright = u'2022-2025, The SWAT Team'
 author = u'The SWAT Team'
@@ -101,6 +101,3 @@ html_theme_options = {
 # Setup the breath extension
 breathe_projects = {'dtlmod': '../build/xml'}
 breathe_default_project = "dtlmod"
-
-version = '0.1'
-release = '0.1'

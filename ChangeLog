@@ -1,18 +1,21 @@
 ----------------------------------------------------------------------------
 
-DTLMod (0.2) unreleased. Target: fall 2025
+DTLMod (0.2) November 11, 2025
 
   - New comprehensive documentation
   - Full python bindings
   - Improved code coverage
   - Reduced technical debt
+  - Fixed deadlocks in File engine
+  - Update to SimGrid 4.1 and FSMod 0.4
   - API:
     - Make metadata export configurable at stream level.
     - Have a simpler version of Engine::put() that automatically uses the
       local size of the Variable.
+
 ----------------------------------------------------------------------------
 
-DTLMod (0.1) July 4. 2025
+DTLMod (0.1) July 4, 2025
 
 First Release
 
