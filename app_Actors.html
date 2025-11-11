@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Simulated actors &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Composing simulated actors and running the simulation" href="app_Main.html" />
+    <link rel="prev" title="The DTLMod programming interface" href="app_API.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">      Simulated actors</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#pure-s4u-actors">Pure S4U actors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#data-publisher">Data publisher</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-subscriber">Data subscriber</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#mixing-mpi-and-s4u">Mixing MPI and S4U</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Simulated actors</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/app_Actors.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="simulated-actors">
+<span id="dtlmod-actors"></span><h1>Simulated actors<a class="headerlink" href="#simulated-actors" title="Link to this heading"></a></h1>
+<p>The simulated actors that for your in situ processing workflow and interact with the DTL can be programmed at different
+level of complexity. This allows you to quickly develop prototypes just focusing on the workflow structure and the data
+flow between its components and then complexify each individual workflow component to increase the realism of your
+simulator.</p>
+<section id="pure-s4u-actors">
+<h2>Pure S4U actors<a class="headerlink" href="#pure-s4u-actors" title="Link to this heading"></a></h2>
+<p>The simplest way to program a simulated actor acting as a component of your in situ processing workflow is to rely
+solely on the <cite>S4U interface of Simgrid &lt;https://simgrid.org/doc/latest/app_s4u.html&gt;</cite>. The following code examples
+show you how to program simple data publisher (distributed over mutiple ranks) and subscriber (single rank).</p>
+<section id="data-publisher">
+<h3>Data publisher<a class="headerlink" href="#data-publisher" title="Link to this heading"></a></h3>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">distributed_publisher</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Connect from the DTL</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">dtl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DTL</span><span class="o">::</span><span class="n">connect</span><span class="p">()</span>
+<span class="w">  </span><span class="c1">// Add a ``Data&#39;&#39; stream  using a ``File&#39;&#39; engine</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dtl</span><span class="o">-&gt;</span><span class="n">add_stream</span><span class="p">(</span><span class="s">&quot;Data&quot;</span><span class="p">)</span>
+<span class="w">              </span><span class="o">-&gt;</span><span class="n">set_engine_type</span><span class="p">(</span><span class="s">&quot;File&quot;</span><span class="p">)</span>
+<span class="w">              </span><span class="o">-&gt;</span><span class="n">set_transport_method</span><span class="p">(</span><span class="s">&quot;File&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Define a 2D array of int distributed over multiple ranks</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">define_variable</span><span class="p">(</span><span class="s">&quot;V&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">size</span><span class="o">*</span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="o">*</span><span class="n">rank</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">l_size</span><span class="p">,</span><span class="w"> </span><span class="n">l_size</span><span class="p">},</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+
+<span class="w">  </span><span class="c1">// Open the stream in ``Publish&#39;&#39; mode</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">open</span><span class="p">(</span><span class="s">&quot;cluster:file_system:/working_dir/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Stream</span><span class="o">::</span><span class="n">Mode</span><span class="o">::</span><span class="n">Publish</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Compute 1e3 floating point operations per element</span>
+<span class="w">    </span><span class="n">sg4</span><span class="o">::</span><span class="n">this_actor</span><span class="o">::</span><span class="n">execute</span><span class="p">(</span><span class="n">V</span><span class="o">-&gt;</span><span class="n">get_local_size</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e3</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Then publish ``V&#39;&#39; to the DTL</span>
+
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">begin_transaction</span><span class="p">();</span>
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">put</span><span class="p">(</span><span class="n">V</span><span class="p">);</span>
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">end_transaction</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// Close the engine</span>
+<span class="w">  </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">close</span><span class="p">();</span>
+<span class="w">  </span><span class="c1">// Disconnect from the DTL</span>
+<span class="w">  </span><span class="n">DTL</span><span class="o">::</span><span class="n">disconnect</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+<section id="data-subscriber">
+<h3>Data subscriber<a class="headerlink" href="#data-subscriber" title="Link to this heading"></a></h3>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">subscriber</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Connect from the DTL</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">dtl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DTL</span><span class="o">::</span><span class="n">connect</span><span class="p">()</span>
+
+<span class="w">  </span><span class="c1">// Add a stream</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dtl</span><span class="o">-&gt;</span><span class="n">add_stream</span><span class="p">(</span><span class="s">&quot;Data&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Obtain metadata for variable ``V&#39;&#39;</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">inquire_variable</span><span class="p">(</span><span class="s">&quot;V&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Open the stream in ``Subscribe&#39;&#39; mode</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">open</span><span class="p">(</span><span class="s">&quot;cluster:file_system:/working_dir/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Stream</span><span class="o">::</span><span class="n">Mode</span><span class="o">::</span><span class="n">Subscribe</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Get the latest transaction for variable ``V&#39;&#39;</span>
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">begin_transaction</span><span class="p">();</span>
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">get</span><span class="p">(</span><span class="n">V</span><span class="p">);</span>
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">end_transaction</span><span class="p">();</span>
+<span class="w">    </span><span class="c1">// Compute 1e3 floating point operations per element</span>
+<span class="w">    </span><span class="n">sg4</span><span class="o">::</span><span class="n">this_actor</span><span class="o">::</span><span class="n">execute</span><span class="p">(</span><span class="n">V</span><span class="o">-&gt;</span><span class="n">get_local_size</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e3</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// Close the engine</span>
+<span class="w">  </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">close</span><span class="p">();</span>
+<span class="w">  </span><span class="c1">// Disconnect from the DTL</span>
+<span class="w">  </span><span class="n">DTL</span><span class="o">::</span><span class="n">disconnect</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="mixing-mpi-and-s4u">
+<h2>Mixing MPI and S4U<a class="headerlink" href="#mixing-mpi-and-s4u" title="Link to this heading"></a></h2>
+<p>For instance, you can replace your <code class="docutils literal notranslate"><span class="pre">distributed_publisher()</span></code> actor by the following <code class="docutils literal notranslate"><span class="pre">MPI_publisher</span></code> whose core is
+the <code class="docutils literal notranslate"><span class="pre">for</span></code> loop in which each actor computes a billion floating point operations, performs an all-to-all MPI
+collective communication, performs more computation, and finally initiates a transaction with the DTL to publish its
+share of the variable.</p>
+<p>This example also illustrates how SMPI features can be used to reduce the memory footprint of the simulated execution.
+Here, actors allocate and free a single buffer shared across all actors instead of allocating a distinct buffer each.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">MPI_publisher</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">MPI_Init</span><span class="p">();</span>
+<span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">nranks</span><span class="p">,</span><span class="w"> </span><span class="n">rank</span><span class="p">;</span>
+<span class="w">  </span><span class="n">MPI_Comm_size</span><span class="p">(</span><span class="n">MPI_COMM_WORLD</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">nranks</span><span class="p">);</span>
+<span class="w">  </span><span class="n">MPI_Comm_rank</span><span class="p">(</span><span class="n">MPI_COMM_WORLD</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">rank</span><span class="p">);</span>
+
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">size</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">stod</span><span class="p">(</span><span class="n">argv</span><span class="p">[</span><span class="mi">1</span><span class="p">]);</span>
+<span class="w">  </span><span class="kt">double</span><span class="w"> </span><span class="n">l_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">sqrt</span><span class="p">(</span><span class="n">nranks</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Connect to the DTL</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">dtl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DTL</span><span class="o">::</span><span class="n">connect</span><span class="p">();</span>
+
+<span class="w">  </span><span class="c1">// Add a ``Data&#39;&#39; stream  using a ``File&#39;&#39; engine</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dtl</span><span class="o">-&gt;</span><span class="n">add_stream</span><span class="p">(</span><span class="s">&quot;Data&quot;</span><span class="p">)</span>
+<span class="w">              </span><span class="o">-&gt;</span><span class="n">set_engine_type</span><span class="p">(</span><span class="s">&quot;File&quot;</span><span class="p">)</span>
+<span class="w">              </span><span class="o">-&gt;</span><span class="n">set_transport_method</span><span class="p">(</span><span class="s">&quot;File&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Define a 2D array of int</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">v</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">define_variable</span><span class="p">(</span><span class="s">&quot;V&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">size</span><span class="o">*</span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="o">*</span><span class="n">rank</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">l_size</span><span class="p">,</span><span class="w"> </span><span class="n">l_size</span><span class="p">},</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+
+<span class="w">  </span><span class="c1">// Open the stream in ``Publish&#39;&#39; mode</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">open</span><span class="p">(</span><span class="s">&quot;cluster:file_system:/working_dir/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Stream</span><span class="o">::</span><span class="n">Mode</span><span class="o">::</span><span class="n">Publish</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Allocate a shared data buffer for MPI</span>
+<span class="w">  </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">SMPI_SHARED_MALLOC</span><span class="p">(</span><span class="n">size</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">size</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">100</span><span class="p">;</span><span class="w"> </span><span class="n">it</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Compute a GFLOP</span>
+<span class="w">    </span><span class="n">sg4</span><span class="o">::</span><span class="n">this_actor</span><span class="o">::</span><span class="n">execute</span><span class="p">(</span><span class="mf">1e9</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// Perform an all-to-all collective communication</span>
+<span class="w">    </span><span class="n">MPI_Alltoall</span><span class="p">(</span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_CHAR</span><span class="p">,</span><span class="w"> </span><span class="n">data</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_CHAR</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_COMM_WORLD</span><span class="p">);</span>
+<span class="w">    </span><span class="c1">// More computation</span>
+<span class="w">    </span><span class="n">sg4</span><span class="o">::</span><span class="n">this_actor</span><span class="o">::</span><span class="n">execute</span><span class="p">(</span><span class="mf">500e8</span><span class="p">);</span>
+
+<span class="w">    </span><span class="c1">// publish data to the DTL</span>
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">begin_transaction</span><span class="p">();</span>
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">put</span><span class="p">(</span><span class="n">v</span><span class="p">);</span>
+<span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">end_transaction</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">close</span><span class="p">();</span>
+<span class="w">  </span><span class="n">DTL</span><span class="o">::</span><span class="n">disconnect</span><span class="p">();</span>
+<span class="w">  </span><span class="n">SMPI_SHARED_FREE</span><span class="p">(</span><span class="n">data</span><span class="p">);</span>
+<span class="w">  </span><span class="n">MPI_Finalize</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="app_API.html" class="btn btn-neutral float-left" title="The DTLMod programming interface" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="app_Main.html" class="btn btn-neutral float-right" title="Composing simulated actors and running the simulation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

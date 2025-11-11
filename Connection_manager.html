@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Connection Manager &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Engines" href="Engines.html" />
+    <link rel="prev" title="Logging and Debugging" href="Logging.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Connection Manager</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Connection_manager.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="connection-manager">
+<span id="id1"></span><h1>Connection Manager<a class="headerlink" href="#connection-manager" title="Link to this heading"></a></h1>
+<p>To use a data transport layer in your simulator, the first thing you have to do it to call <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code> in
+the <code class="docutils literal notranslate"><span class="pre">main</span></code> function of your code. This will trigger the creation of the <strong>DTLMod connection manager</strong> and an instance
+of a <a class="reference internal" href="app_API.html#concept-dtl"><span class="std std-ref">DTL</span></a> object.</p>
+<p>The connection manager is a <strong>daemon</strong> SimGrid actor (i.e., an simulated process running in the background and
+automatically killed when the simulation ends) that runs on the first host declared in your platform description. This
+daemon actor takes the newly created <a class="reference internal" href="app_API.html#concept-dtl"><span class="std std-ref">DTL</span></a> object as argument.</p>
+<p>Once started, the connection manager creates two SimGrid message queues (i.e., a rendez-vous point between actors
+thanks to which actors can exchange information without inducing any simulated cost): one to receive <strong>connection</strong> or
+<strong>disconnection</strong> requests and the other to send back a handler (i.e., a shared pointer) on the <a class="reference internal" href="app_API.html#concept-dtl"><span class="std std-ref">DTL</span></a> object in
+answer to a connection request.</p>
+<p>Then, the connection manager enters an infinite loop in which it waits for connection and disconnection requests on the
+first message queue. If it gets a <strong>connection request</strong>, meaning that an actor in your simulator called
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::connect()</span></code>, the connection manager checks if this actor is already connected. If it is, it emits a
+warning message advising you to check your code logic. Otherwise, it adds the calling actor to a list of <strong>active
+connections</strong>, put the shared pointer on the <a class="reference internal" href="app_API.html#concept-dtl"><span class="std std-ref">DTL</span></a> object in its second
+message queue, and proceeds with waiting for the next request.</p>
+<p>Conversely, if it gets a <strong>disconnection request</strong>, meaning that an actor in your simulator called
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::disconnect()</span></code>, the connection manager checks whether this actor was still connected. If it was not, it
+advises you to check your code logic. Otherwise, the connection manager removes the actor from the list of the active
+connections, puts an acknowlegment to the disconnecting actor in the second message queue, and waits for the next
+request.</p>
+<p>Note that if during the execution of your simulator all your actors disconnect themselves from the DTL you will receive
+a harmless message warning you that there is <strong>no active connection</strong> at the moment. However, the connection manager
+remains active in the background and ready to process subsequent connection requests.</p>
+<p>If you want to ignore this message you can either add <code class="docutils literal notranslate"><span class="pre">--log=dtlmod.t:critical</span></code> to the command line or call
+<code class="docutils literal notranslate"><span class="pre">xbt_log_control_set(&quot;dtlmod.t:critical&quot;)</span></code> in your code (see <a class="reference internal" href="Logging.html#logging"><span class="std std-ref">Logging and Debugging</span></a> for more details).</p>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Logging.html" class="btn btn-neutral float-left" title="Logging and Debugging" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Engines.html" class="btn btn-neutral float-right" title="Engines" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

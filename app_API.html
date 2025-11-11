@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The DTLMod programming interface &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/tabs.js?v=3030b3cb"></script>
+        <script src="_static/showfile.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Simulated actors" href="app_Actors.html" />
+    <link rel="prev" title="Designing your simulated in situ processing workflow" href="Workflow.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">      The DTLMod programming interface</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#main-concepts">Main Concepts</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#dtl">DTL</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#stream">Stream</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#engine">Engine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transport-method">Transport method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#variable">Variable</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#transaction">Transaction</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#class-dtl">class DTL</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#creation">Creation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#connection-and-deconnection">Connection and Deconnection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#stream-factory">Stream factory</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#class-stream">class Stream</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#configuration">Configuration</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#properties">Properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#engine-factory">Engine factory</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#variable-factory">Variable factory</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#class-engine">class Engine</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id1">Properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#transactions">Transactions</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#class-variable">class Variable</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#id2">Properties</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#selection">Selection</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">The DTLMod programming interface</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/app_API.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="the-dtlmod-programming-interface">
+<span id="dtlmod-api"></span><h1>The DTLMod programming interface<a class="headerlink" href="#the-dtlmod-programming-interface" title="Link to this heading"></a></h1>
+<a class="reference internal image-reference" href="_images/DTL-overview.png"><img alt="_images/DTL-overview.png" class="align-center" src="_images/DTL-overview.png" style="width: 80%;" /></a>
+<br><br><section id="main-concepts">
+<span id="dtlmod-main-concepts"></span><h2>Main Concepts<a class="headerlink" href="#main-concepts" title="Link to this heading"></a></h2>
+<section id="dtl">
+<span id="concept-dtl"></span><h3>DTL<a class="headerlink" href="#dtl" title="Link to this heading"></a></h3>
+<p>A <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> is created by calling <a class="reference internal" href="#_CPPv4N6dtlmod3DTL6createEv" title="dtlmod::DTL::create"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code></a> at the beginning of the
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">main()</span></code> function of your simulator. This function can take as an optional argument a JSON configuration
+file that describes the different <a class="reference internal" href="#concept-streams"><strong>Streams</strong></a> to be created during the simulation each with a <strong>name</strong>,
+<a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> type, and <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> method.</p>
+<p>A common in situ processing scenario is that some analyses or visualization are only needed when certain conditions
+are met. In such cases, a new process is spawned, subscribes to some variables, and analyzes or visualizes data.
+DTLMod has been designed to enable the development of simulators in which actors can connect to or disconnect from the
+<a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> at any time. A <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> thus remains active from its creation until the end of the simulation when
+it is automatically destroyed.</p>
+<p>Internally, a <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> is implemented as a server daemon process that answers <strong>connection</strong> and
+<strong>disconnection</strong> requests from the simulated actors and maintains the set of active connections.</p>
+</section>
+<section id="stream">
+<span id="concept-stream"></span><span id="concept-streams"></span><h3>Stream<a class="headerlink" href="#stream" title="Link to this heading"></a></h3>
+<p>The <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a> abstraction represents a connection between a simulated actor and the DTL, through which data
+transport operations occur, and acts as a <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> factory. The publishers <strong>define</strong> the variables a
+<a class="reference internal" href="#concept-stream"><strong>Stream</strong></a> has to transport. Each publisher provides <strong>global and local information</strong> about the variable
+(see <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> abstraction) On the subscribers side, actors first have to <strong>inquire</strong>
+about a variable (i.e., to know its shape and size) before being able to retrieve it from the DTL. Actors can also
+obtain a list of the names of the variables associated to a stream. Finally, opening a <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>  creates a
+specific <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> to actually handle data transport.</p>
+</section>
+<section id="engine">
+<span id="concept-engine"></span><h3>Engine<a class="headerlink" href="#engine" title="Link to this heading"></a></h3>
+<p>The <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> abstraction is the base interface through which the <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> interacts with the simulated
+communication or I/O subsystems in charge of the simulation of data movement or storage. DTLMod exposes two types of
+engines: <strong>file-based</strong> engines, that write and read data to and from storage and <strong>staging</strong> engines that stream data
+from the memory of publishers to that of subscribers.</p>
+<p>An <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> are attached to a <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>. A simulated actor can thus adapt the type of
+<a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> to the purpose of each individual <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>. For instance, one will create a stream with a
+file-based engine to store application checkpoints and another stream with a staging engine to transfer data from one
+analysis component to another. The type of <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> to use can be specified either at the creation of a
+<a class="reference internal" href="#concept-stream"><strong>Stream</strong></a> or in an external configuration file passed as argument when creating the <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a>.</p>
+</section>
+<section id="transport-method">
+<span id="concept-transport"></span><h3>Transport method<a class="headerlink" href="#transport-method" title="Link to this heading"></a></h3>
+<p>An engine is then associated to a specific <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> <strong>method</strong> that further specifies how data is written
+to and read from a file system or streamed from one workflow component to another. This separation between
+<a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> and <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> method allows you to switch between multiple implementations of the same
+service without having to modify the code of your in situ workflow simulator: Changing of transport method simply
+amounts to modifying a configuration parameter of the <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>.</p>
+<p>For file-based engines, the default transport method consists in having each publisher simulate the writing, for each
+<a class="reference internal" href="#concept-transaction"><strong>Transaction</strong></a>, of its own share of a <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> in a distinct simulated file located on a specified
+simulated storage space.</p>
+<p>When a subscriber requests a (selection of a) <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> with a different access pattern, DTLMod first
+computes which files contain the different pieces of the requested variable and then simulates the corresponding read
+operations of these files, wherever they are virtually stored. The simulation of these I/O operations is delegated to
+the <a class="reference external" href="https://github.com/simgrid/file-system-module">file system module of SimGrid</a> that exposes high-level
+abstractions for the simulation of file-system operations on local and remote storage.</p>
+<p>To create a <strong>file-based</strong> <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a>, you must specify where to store the simulated files. This is done by
+passing as argument to the <a class="reference internal" href="#_CPPv4N6dtlmod6Stream4openERKNSt6stringE4Mode" title="dtlmod::Stream::open"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::open()</span></code></a> method a string which contains the
+location and name of the targeted file system and a path to a specific directory. This information can also be stored
+in a separate configuration file, which means that you can test different scenarios (e.g., using a local or remote file
+system) without having to modify the code of their simulator.</p>
+<p>The location of the file system has a direct impact on the simulation of I/Os by SimGrid’s file system module. If the
+DTL accesses a remote file system, a write (resp. read) operation implies the simulation of a network communication
+before (resp. after) the simulation of the corresponding I/O operation on a storage device.</p>
+<p>DTLMod exposes two <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> methods for staging engines. The first method simulates both <strong>memory copy</strong>
+and <strong>network transfer</strong> while ensuring the respect of flow dependencies. Whether a data copy or transfer is simulated
+depends on the respective mapping of the publisher and subscriber on computing resources. If both run on the same node,
+they virtually share a memory space, and DTLMod simulates a deep memory copy—as an intra-communication whose
+performance can be configured in description of the simulated platform. Otherwise, it simulates a network
+communication.</p>
+<p>To implement this, DTLMod leverages <a class="reference external" href="https://simgrid.org/doc/latest/app_s4u.html#mailboxes">SimGrid’s **mailbox** abstraction</a> which acts as a rendez-vous point between actors. Only when
+two actors meet on such a rendez-vous point, the simulation of a memory copy or data transfer starts.</p>
+<p>The second transport method provides you with a <strong>“what if an ideal transport existed?”</strong> baseline for your performance
+evaluation studies, e.g., all the data exchanges made through the DTL take zero time. This method leverages another
+abstraction exposed by SimGrid to simulate inter-process communications: <strong>Message queues</strong> have the same semantic and
+purpose as <strong>mailboxes</strong>, ensuring the respect of control and flow dependencies, but do not induce any simulated time.</p>
+<p>When streaming data, a <span class="math notranslate nohighlight">\(M \times N\)</span> data redistribution among <em>M</em> publishers and <em>N</em> subscribers may be
+necessary. The exact redistribution pattern is automatically determined by DTLMod in three steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>When a publisher <strong>puts</strong> a variable into a stream, it asynchronously waits for data requests (using
+zero-simulated-cost message queues) from any subscriber that opened that stream;</p></li>
+<li><p>When a subscriber <strong>gets</strong> (a subset of) this variable from the stream, it computes which publishers own pieces
+of its local view of the variable and send them each a request to put the corresponding pieces, defined by offsets
+and element counts, in dedicated mailboxes (resp. message queues);</p></li>
+<li><p>When publishers end their transaction, they asynchronously put the requested pieces in these mailboxes (resp.
+message queues). DTLMod then simulates the corresponding data exchanges, and may possibly force actors to wait for
+their completion when a new transaction starts.</p></li>
+</ol>
+</div></blockquote>
+</section>
+<section id="variable">
+<span id="concept-variable"></span><h3>Variable<a class="headerlink" href="#variable" title="Link to this heading"></a></h3>
+<p>At the core of the DTLMod is the data transported from publishers to subscribers. Many in situ processing workflows
+involve parallel MPI codes as data producers. These codes manipulate <strong>multidimensional arrays</strong> distributed over
+multiple ranks. DTLMod adopts this data structure as the basis of its <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> abstraction.</p>
+<p>The figure below illustrates shows how to define a 3-dimensional array, distributed to eight MPI ranks organized in
+a <span class="math notranslate nohighlight">\(2 \times 2 \times 2\)</span> grid, as a <strong>self-descriptive tuple</strong>.</p>
+<a class="reference internal image-reference" href="_images/3D-variable.png"><img alt="_images/3D-variable.png" class="align-center" src="_images/3D-variable.png" style="width: 60%;" /></a>
+<br><br><p>This tuple stores the <strong>name</strong> of the variable (that is unique to a given <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>), the <strong>global dimensions</strong>
+of the multidimensional array (<span class="math notranslate nohighlight">\(G_x\)</span>, <span class="math notranslate nohighlight">\(G_y\)</span>, and <span class="math notranslate nohighlight">\(G_z\)</span>) and, for each rank, the <strong>local part</strong>
+(<span class="math notranslate nohighlight">\(L_x\)</span>, <span class="math notranslate nohighlight">\(L_y\)</span>, and <span class="math notranslate nohighlight">\(L_z\)</span>) owned by that rank after decomposition and distribution, and a
+<strong>3D-offset</strong> (represented by a star in the figure) that indicates where the local array is positioned in the global
+array. Finally, the tuple stores the <strong>size of the elements</strong> in the array.</p>
+</section>
+<section id="transaction">
+<span id="concept-transaction"></span><h3>Transaction<a class="headerlink" href="#transaction" title="Link to this heading"></a></h3>
+<p>Simulated actors can publish, or subscribe to, one or more <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> variables within a
+<a class="reference internal" href="#concept-transaction"><strong>Transaction</strong></a>. This logical construct delimits the interactions between an actor and the <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> and
+enables the synchronization between publishers and subscribers.</p>
+<p>When a simulated actor starts a new <a class="reference internal" href="#concept-transaction"><strong>Transaction</strong></a>  on a <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>, DTLMod makes it wait for the
+completion of any in-flight data transport activity from the previous transaction on that stream.</p>
+<p>Actors that subscribe to a <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> can also, before beginning a new transaction, <strong>select</strong> a specific
+subset of the multidimensional array this <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> represents (e.g.,  to focus on a smaller region of
+interest or adapt the decomposition and distribution of the variable to subsequent data processing). The figure
+below illustrates such a selection, made on the subscriber side. Four actors subscribe to the 3D variable defined the
+previous section and select blocks of 2D slices, along the Z-dimension.</p>
+<a class="reference internal image-reference" href="_images/Var-selection.png"><img alt="_images/Var-selection.png" class="align-center" src="_images/Var-selection.png" style="width: 60%;" /></a>
+<br><br><p>During its execution, a simulated actor can perform several transactions to model the periodic production of data, its
+transport, and analysis to monitor the progress of an iterative computation. For any <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a>, DTLMod keeps
+as metadata which actor(s) published it and in which transaction(s). This allows subscriber(s) to select specific
+transaction(s) when retrieving data from the <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a>.</p>
+</section>
+</section>
+<hr class="docutils" />
+<section id="api-reference">
+<h2>API Reference<a class="headerlink" href="#api-reference" title="Link to this heading"></a></h2>
+<section id="class-dtl">
+<span id="api-dtlmod-dtl"></span><h3>class DTL<a class="headerlink" href="#class-dtl" title="Link to this heading"></a></h3>
+<p>A class that implements a Data Transport Layer abstraction.</p>
+<section id="creation">
+<h4>Creation<a class="headerlink" href="#creation" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-0-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-0-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-0-Qysr" class="sphinx-tabs-panel group-tab" id="panel-0-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;dtlmod/DTL.hpp&gt;</span>
+</pre></div>
+</div>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL6createEv">
+<span id="_CPPv3N6dtlmod3DTL6createEv"></span><span id="_CPPv2N6dtlmod3DTL6createEv"></span><span id="dtlmod::DTL::create"></span><span class="target" id="classdtlmod_1_1DTL_1aba309f8a8899bd2617d7b4b00711b8d5"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL6createEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Create the Data Transport Layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL6createERKNSt6stringE">
+<span id="_CPPv3N6dtlmod3DTL6createERKNSt6stringE"></span><span id="_CPPv2N6dtlmod3DTL6createERKNSt6stringE"></span><span id="dtlmod::DTL::create__ssCR"></span><span class="target" id="classdtlmod_1_1DTL_1a5d5b2ea7751fc37fa179dc474f5c5426"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">filename</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL6createERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Create the Data Transport Layer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>filename</strong> – a JSON configuration file that provide stream parameters. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-0-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-0-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dtlmod</span>
+</pre></div>
+</div>
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.DTL.create">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dtlmod.DTL.create" title="Link to this definition"></a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li><p>create() -&gt; None</p></li>
+</ol>
+<p>Create the DTL (no return)</p>
+<ol class="arabic simple" start="2">
+<li><p>create(filename: str) -&gt; None</p></li>
+</ol>
+<p>Create the DTL (no return)</p>
+</dd></dl>
+
+</div></div>
+</section>
+<section id="connection-and-deconnection">
+<h4>Connection and Deconnection<a class="headerlink" href="#connection-and-deconnection" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-1-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-1-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-1-Qysr" class="sphinx-tabs-panel group-tab" id="panel-1-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL7connectEv">
+<span id="_CPPv3N6dtlmod3DTL7connectEv"></span><span id="_CPPv2N6dtlmod3DTL7connectEv"></span><span id="dtlmod::DTL::connect"></span><span class="target" id="classdtlmod_1_1DTL_1a70560413dfed4fd2979ad8a132eebd43"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">connect</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL7connectEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Connect an Actor to the Data Transport Layer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A handler on the DTL object. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL10disconnectEv">
+<span id="_CPPv3N6dtlmod3DTL10disconnectEv"></span><span id="_CPPv2N6dtlmod3DTL10disconnectEv"></span><span id="dtlmod::DTL::disconnect"></span><span class="target" id="classdtlmod_1_1DTL_1a4a12ce8211f857b32e93a4ade6af5843"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">disconnect</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL10disconnectEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Disconnect an Actor from the Data Transport Layer. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL22has_active_connectionsEv">
+<span id="_CPPv3NK6dtlmod3DTL22has_active_connectionsEv"></span><span id="_CPPv2NK6dtlmod3DTL22has_active_connectionsEv"></span><span id="dtlmod::DTL::has_active_connectionsC"></span><span class="target" id="classdtlmod_1_1DTL_1a1c8d3a57270a333e50d51c7daa25b3b6"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">has_active_connections</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL22has_active_connectionsEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to check whether some simulated actors are currently connected to the DTL. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A boolean value. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-1-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.DTL.connect">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">connect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod.DTL</span></span></span><a class="headerlink" href="#dtlmod.DTL.connect" title="Link to this definition"></a></dt>
+<dd><p>Connect an Actor to the DTL</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.DTL.disconnect">
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">disconnect</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dtlmod.DTL.disconnect" title="Link to this definition"></a></dt>
+<dd><p>Disconnect an Actor from the DTL</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.DTL.has_active_connections">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">has_active_connections</span></span><a class="headerlink" href="#dtlmod.DTL.has_active_connections" title="Link to this definition"></a></dt>
+<dd><p>Check whether some simulated actors are currently connected to the DTL (read-only)</p>
+</dd></dl>
+
+</div></div>
+</section>
+<section id="stream-factory">
+<h4>Stream factory<a class="headerlink" href="#stream-factory" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-2-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-2-Qysr" class="sphinx-tabs-panel group-tab" id="panel-2-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL10add_streamERKNSt6stringE">
+<span id="_CPPv3N6dtlmod3DTL10add_streamERKNSt6stringE"></span><span id="_CPPv2N6dtlmod3DTL10add_streamERKNSt6stringE"></span><span id="dtlmod::DTL::add_stream__ssCR"></span><span class="target" id="classdtlmod_1_1DTL_1a542388ff495a999688310b08a6ac1c3a"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">add_stream</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL10add_streamERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Add a data stream to the Data Transport Layer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – The name of the Stream to add to the DTL. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handler on the newly created Stream object. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL26get_stream_by_name_or_nullERKNSt6stringE">
+<span id="_CPPv3NK6dtlmod3DTL26get_stream_by_name_or_nullERKNSt6stringE"></span><span id="_CPPv2NK6dtlmod3DTL26get_stream_by_name_or_nullERKNSt6stringE"></span><span id="dtlmod::DTL::get_stream_by_name_or_null__ssCRC"></span><span class="target" id="classdtlmod_1_1DTL_1a64ba730e02c987e10171f532a60b4422"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_stream_by_name_or_null</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL26get_stream_by_name_or_nullERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Retrieve a data stream from the Data Transport Layer by its name. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – The name of the Stream to retrieve. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A handler on the Stream object or nullptr if it doesn’t exist. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL15get_all_streamsEv">
+<span id="_CPPv3NK6dtlmod3DTL15get_all_streamsEv"></span><span id="_CPPv2NK6dtlmod3DTL15get_all_streamsEv"></span><span id="dtlmod::DTL::get_all_streamsC"></span><span class="target" id="classdtlmod_1_1DTL_1ac43f484685892cf7b85e13426ff35b53"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">unordered_map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_all_streams</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL15get_all_streamsEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Retrieve all streams declared in the Data Transport Layer. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a map of handlers on Stream objects with their names as keys. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-2-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-2-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.DTL.add_stream">
+<span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">add_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.DTL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod::Stream</span></span></span><a class="headerlink" href="#dtlmod.DTL.add_stream" title="Link to this definition"></a></dt>
+<dd><p>Add a data stream to the DTL</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.DTL.stream_by_name_or_null">
+<span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">stream_by_name_or_null</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.DTL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod::Stream</span></span></span><a class="headerlink" href="#dtlmod.DTL.stream_by_name_or_null" title="Link to this definition"></a></dt>
+<dd><p>Retrieve a data stream from the DTL by its name  (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.DTL.all_streams">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">all_streams</span></span><a class="headerlink" href="#dtlmod.DTL.all_streams" title="Link to this definition"></a></dt>
+<dd><p>Retrieve all streams declared in the DTL (read-only)</p>
+</dd></dl>
+
+</div></div>
+</section>
+</section>
+<section id="class-stream">
+<span id="api-dtlmod-stream"></span><h3>class Stream<a class="headerlink" href="#class-stream" title="Link to this heading"></a></h3>
+<section id="configuration">
+<h4>Configuration<a class="headerlink" href="#configuration" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-3-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-3-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-3-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-3-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-3-Qysr" class="sphinx-tabs-panel group-tab" id="panel-3-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream15set_engine_typeERKN6Engine4TypeE">
+<span id="_CPPv3N6dtlmod6Stream15set_engine_typeERKN6Engine4TypeE"></span><span id="_CPPv2N6dtlmod6Stream15set_engine_typeERKN6Engine4TypeE"></span><span id="dtlmod::Stream::set_engine_type__Engine::TypeCR"></span><span class="target" id="classdtlmod_1_1Stream_1af913c813e1cc4671bec7548907743ef2"></span><span class="n"><span class="pre">Stream</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_engine_type</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Type</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">engine_type</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream15set_engine_typeERKN6Engine4TypeE" title="Link to this definition"></a><br /></dt>
+<dd><p>Stream configuration function: set the Engine type to create. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>engine_type</strong> – The type of Engine to create when opening the Stream. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calling Stream (enable method chaining). </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream20set_transport_methodERKN9Transport6MethodE">
+<span id="_CPPv3N6dtlmod6Stream20set_transport_methodERKN9Transport6MethodE"></span><span id="_CPPv2N6dtlmod6Stream20set_transport_methodERKN9Transport6MethodE"></span><span id="dtlmod::Stream::set_transport_method__Transport::MethodCR"></span><span class="target" id="classdtlmod_1_1Stream_1a224691f02ee72f70f68d0808a278f0e6"></span><span class="n"><span class="pre">Stream</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_transport_method</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">Transport</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Method</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">transport_method</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream20set_transport_methodERKN9Transport6MethodE" title="Link to this definition"></a><br /></dt>
+<dd><p>Stream configuration function: set the Transport Method to use. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transport_method</strong> – the Transport methode to use when opening the Stream. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calling Stream (enable method chaining). </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream19set_metadata_exportEv">
+<span id="_CPPv3N6dtlmod6Stream19set_metadata_exportEv"></span><span id="_CPPv2N6dtlmod6Stream19set_metadata_exportEv"></span><span id="dtlmod::Stream::set_metadata_export"></span><span class="target" id="classdtlmod_1_1Stream_1a0866461912f7fe75fa5f97b251ce0498"></span><span class="n"><span class="pre">Stream</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_metadata_export</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream19set_metadata_exportEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Stream configuration function: specify that metadata must be exported. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The calling Stream (enable method chaining). </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream21unset_metadata_exportEv">
+<span id="_CPPv3N6dtlmod6Stream21unset_metadata_exportEv"></span><span id="_CPPv2N6dtlmod6Stream21unset_metadata_exportEv"></span><span id="dtlmod::Stream::unset_metadata_export"></span><span class="target" id="classdtlmod_1_1Stream_1acedcbb6e7798170e3e3255b9fa7ec031"></span><span class="n"><span class="pre">Stream</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">unset_metadata_export</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream21unset_metadata_exportEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Stream configuration function: specify that metadata must not be exported. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The calling Stream (enable method chaining). </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-3-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-3-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Stream.set_engine_type">
+<span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">set_engine_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self:</span> <span class="pre">dtlmod.Stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">type:</span> <span class="pre">dtlmod::Engine::Type</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod.Stream</span></span></span><a class="headerlink" href="#dtlmod.Stream.set_engine_type" title="Link to this definition"></a></dt>
+<dd><p>Set the engine type associated to this Stream</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Stream.set_transport_method">
+<span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">set_transport_method</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self:</span> <span class="pre">dtlmod.Stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method:</span> <span class="pre">dtlmod::Transport::Method</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod.Stream</span></span></span><a class="headerlink" href="#dtlmod.Stream.set_transport_method" title="Link to this definition"></a></dt>
+<dd><p>Set the transport method associated to this Stream</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Stream.set_metadata_export">
+<span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">set_metadata_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Stream</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod.Stream</span></span></span><a class="headerlink" href="#dtlmod.Stream.set_metadata_export" title="Link to this definition"></a></dt>
+<dd><p>Specify that metadata must be exported for that stream</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Stream.unset_metadata_export">
+<span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">unset_metadata_export</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Stream</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod.Stream</span></span></span><a class="headerlink" href="#dtlmod.Stream.unset_metadata_export" title="Link to this definition"></a></dt>
+<dd><p>Specify that metadata must not be exported for that stream</p>
+</dd></dl>
+
+</div></div>
+</section>
+<section id="properties">
+<h4>Properties<a class="headerlink" href="#properties" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-4-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-4-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-4-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-4-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-4-Qysr" class="sphinx-tabs-panel group-tab" id="panel-4-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream19get_engine_type_strEv">
+<span id="_CPPv3NK6dtlmod6Stream19get_engine_type_strEv"></span><span id="_CPPv2NK6dtlmod6Stream19get_engine_type_strEv"></span><span id="dtlmod::Stream::get_engine_type_strC"></span><span class="target" id="classdtlmod_1_1Stream_1a4f7925646e7f9a210206e43258cf121e"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_engine_type_str</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream19get_engine_type_strEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to print out the Engine::Type of the Stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The corresponding C-string </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream24get_transport_method_strEv">
+<span id="_CPPv3NK6dtlmod6Stream24get_transport_method_strEv"></span><span id="_CPPv2NK6dtlmod6Stream24get_transport_method_strEv"></span><span id="dtlmod::Stream::get_transport_method_strC"></span><span class="target" id="classdtlmod_1_1Stream_1afc17b9a03be68251ceadb2b8c0647c7e"></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_transport_method_str</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream24get_transport_method_strEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to print out the Transport::Method of the Stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The corresponding C-string </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream19get_access_mode_strEv">
+<span id="_CPPv3NK6dtlmod6Stream19get_access_mode_strEv"></span><span id="_CPPv2NK6dtlmod6Stream19get_access_mode_strEv"></span><span id="dtlmod::Stream::get_access_mode_strC"></span><span class="target" id="classdtlmod_1_1Stream_1ab3b15aa6e08f24533a45108b39adb8b7"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_access_mode_str</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream19get_access_mode_strEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to print out the access Mode of the Stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The corresponding C-string </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream20does_export_metadataEv">
+<span id="_CPPv3NK6dtlmod6Stream20does_export_metadataEv"></span><span id="_CPPv2NK6dtlmod6Stream20does_export_metadataEv"></span><span id="dtlmod::Stream::does_export_metadataC"></span><span class="target" id="classdtlmod_1_1Stream_1a4cbdd13db27f3164801f97b52e2f6344"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">does_export_metadata</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream20does_export_metadataEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to know if the Stream does export metadata or not. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a boolean indicating if the Stream does export metadata or not </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-4-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-4-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Stream.engine_type">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">engine_type</span></span><a class="headerlink" href="#dtlmod.Stream.engine_type" title="Link to this definition"></a></dt>
+<dd><p>Print out the engine type of this Stream (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Stream.transport_method">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">transport_method</span></span><a class="headerlink" href="#dtlmod.Stream.transport_method" title="Link to this definition"></a></dt>
+<dd><p>Print out the transport method of this Stream (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Stream.access_mode">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">access_mode</span></span><a class="headerlink" href="#dtlmod.Stream.access_mode" title="Link to this definition"></a></dt>
+<dd><p>Print out the access mode of this Stream (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Stream.metadata_export">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">metadata_export</span></span><a class="headerlink" href="#dtlmod.Stream.metadata_export" title="Link to this definition"></a></dt>
+<dd><p>Does the stream export metadata (read only)</p>
+</dd></dl>
+
+</div></div>
+</section>
+<section id="engine-factory">
+<h4>Engine factory<a class="headerlink" href="#engine-factory" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-5-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-5-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-5-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-5-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-5-Qysr" class="sphinx-tabs-panel group-tab" id="panel-5-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream4openERKNSt6stringE4Mode">
+<span id="_CPPv3N6dtlmod6Stream4openERKNSt6stringE4Mode"></span><span id="_CPPv2N6dtlmod6Stream4openERKNSt6stringE4Mode"></span><span id="dtlmod::Stream::open__ssCR.Mode"></span><span class="target" id="classdtlmod_1_1Stream_1a1acdc23c23e2cf92dc2552247828f39a"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">open</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="n"><span class="pre">Mode</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">mode</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream4openERKNSt6stringE4Mode" title="Link to this definition"></a><br /></dt>
+<dd><p>Open a Stream and create an Engine. </p>
+<p>
+When multiple actors open the same Stream, only the first one to call this function is in charge of creating an Engine object for that Stream. The Engine creation is thus in a critical section. Each actor calling the open() function is considered as a subscriber to the created Engine.</p>
+<p>Both Engine::Type and Transport::Method have to be specified before opening a Stream.</p>
+<p>For the FileEngine engine type, name corresponds to a fullpath to where to write data. This fullpath is structured as follows: netzone_name:file_system_name:/path/to/file_name. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – name of the Engine created when opening the Stream. </p></li>
+<li><p><strong>mode</strong> – either Stream::Mode::Publish or Stream::Mode::Subscribe. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A shared pointer on the corresponding Engine.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream18get_num_publishersEv">
+<span id="_CPPv3NK6dtlmod6Stream18get_num_publishersEv"></span><span id="_CPPv2NK6dtlmod6Stream18get_num_publishersEv"></span><span id="dtlmod::Stream::get_num_publishersC"></span><span class="target" id="classdtlmod_1_1Stream_1a6f3c343accac18171624d907f057b330"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_num_publishers</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream18get_num_publishersEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to obtain the number of actors connected to Stream in Mode::Publish. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of publishers for that Stream. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream19get_num_subscribersEv">
+<span id="_CPPv3NK6dtlmod6Stream19get_num_subscribersEv"></span><span id="_CPPv2NK6dtlmod6Stream19get_num_subscribersEv"></span><span id="dtlmod::Stream::get_num_subscribersC"></span><span class="target" id="classdtlmod_1_1Stream_1aec03a3649bd20ee0e3bf5e8c0e23aeb9"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_num_subscribers</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream19get_num_subscribersEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to obtain the number of actors connected to Stream in Mode::Subscribe. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The number of subscribers for that Stream. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-5-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-5-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Stream.open">
+<span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">open</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self:</span> <span class="pre">dtlmod.Stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name:</span> <span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode:</span> <span class="pre">dtlmod::Stream::Mode</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod::Engine</span></span></span><a class="headerlink" href="#dtlmod.Stream.open" title="Link to this definition"></a></dt>
+<dd><p>Open a Stream and create an Engine</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Stream.num_publishers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">num_publishers</span></span><a class="headerlink" href="#dtlmod.Stream.num_publishers" title="Link to this definition"></a></dt>
+<dd><p>The number of actors connected to this Stream in Mode::Publish (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Stream.num_subscribers">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">num_subscribers</span></span><a class="headerlink" href="#dtlmod.Stream.num_subscribers" title="Link to this definition"></a></dt>
+<dd><p>The number of actors connected to this Stream in Mode::Subscribe (read-only)</p>
+</dd></dl>
+
+</div></div>
+</section>
+<section id="variable-factory">
+<h4>Variable factory<a class="headerlink" href="#variable-factory" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-6-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-6-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-6-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-6-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-6-Qysr" class="sphinx-tabs-panel group-tab" id="panel-6-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream15define_variableERKNSt6stringE6size_t">
+<span id="_CPPv3N6dtlmod6Stream15define_variableERKNSt6stringE6size_t"></span><span id="_CPPv2N6dtlmod6Stream15define_variableERKNSt6stringE6size_t"></span><span id="dtlmod::Stream::define_variable__ssCR.s"></span><span class="target" id="classdtlmod_1_1Stream_1ac20c71f4a2a0a23285a74b0b65fbff66"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">define_variable</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">element_size</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream15define_variableERKNSt6stringE6size_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Define a scalar Variable for this Stream. </p>
+<p>
+This function creates a new scalar Variable and the corresponding entry in the internal directory of the Stream that stores all the known variables. This definition does not refer to the data carried by the Variable but provides information about its shape (here a scalar) and element type. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the new Variable. </p></li>
+<li><p><strong>element_size</strong> – The size of the elements in the Variable. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A shared pointer on the newly created Variable.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream15define_variableERKNSt6stringERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE6size_t">
+<span id="_CPPv3N6dtlmod6Stream15define_variableERKNSt6stringERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE6size_t"></span><span id="_CPPv2N6dtlmod6Stream15define_variableERKNSt6stringERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE6size_t"></span><span id="dtlmod::Stream::define_variable__ssCR.std::vector:s:CR.std::vector:s:CR.std::vector:s:CR.s"></span><span class="target" id="classdtlmod_1_1Stream_1afa4ed87c8073fb413fe9854c764a03ee"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">define_variable</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">shape</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">start</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">count</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">element_size</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream15define_variableERKNSt6stringERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE6size_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Define a Variable for this Stream. </p>
+<p>
+This function creates a new Variable and the corresponding entry in the internal directory of the Stream that stores all the known variables. This definition does not refer to the data carried by the Variable but provides information about its shape (here a multi-dimensional array) and element type. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the new variable. </p></li>
+<li><p><strong>shape</strong> – A vector that specifies the total number of element in each dimension. </p></li>
+<li><p><strong>start</strong> – A vector that specifies the offset at which the calling Actor start to own data in each dimension. </p></li>
+<li><p><strong>count</strong> – A vector that specifies how many elements the calling Actor owns in each dimension. </p></li>
+<li><p><strong>element_size</strong> – The size of the elements in the Variable. </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A shared pointer on the newly created Variable</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream16inquire_variableERKNSt6stringE">
+<span id="_CPPv3NK6dtlmod6Stream16inquire_variableERKNSt6stringE"></span><span id="_CPPv2NK6dtlmod6Stream16inquire_variableERKNSt6stringE"></span><span id="dtlmod::Stream::inquire_variable__ssCRC"></span><span class="target" id="classdtlmod_1_1Stream_1a2e2f36ba38198b0f06fbc88a6d080a2b"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">inquire_variable</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream16inquire_variableERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Retrieve a Variable information by name. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – The name of desired Variable. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>Either a shared pointer on the Variable object if known, nullptr otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream15remove_variableERKNSt6stringE">
+<span id="_CPPv3N6dtlmod6Stream15remove_variableERKNSt6stringE"></span><span id="_CPPv2N6dtlmod6Stream15remove_variableERKNSt6stringE"></span><span id="dtlmod::Stream::remove_variable__ssCR"></span><span class="target" id="classdtlmod_1_1Stream_1af65b7da9036dd5e057abb96bbc2f97fb"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">remove_variable</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream15remove_variableERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Remove a Variable of the list of variables known by the Stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – The name of the variable to remove. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A boolean indicating if the Variable has been successfully removed or not. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream17get_all_variablesEv">
+<span id="_CPPv3NK6dtlmod6Stream17get_all_variablesEv"></span><span id="_CPPv2NK6dtlmod6Stream17get_all_variablesEv"></span><span id="dtlmod::Stream::get_all_variablesC"></span><span class="target" id="classdtlmod_1_1Stream_1a13f8e378457183a0c94fd3be919f98d9"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_all_variables</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream17get_all_variablesEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Retrieve the list of Variables defined on this stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the list of Variable names </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-6-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-6-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Stream.define_variable">
+<span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">define_variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dtlmod.Stream.define_variable" title="Link to this definition"></a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li><p>define_variable(self: dtlmod.Stream, name: str, element_size: int) -&gt; dtlmod::Variable</p></li>
+</ol>
+<p>Define a scalar variable for this Stream</p>
+<ol class="arabic simple" start="2">
+<li><p>define_variable(self: dtlmod.Stream, name: str, shape: List[int], start: List[int], count: List[int], element_size: int) -&gt; dtlmod::Variable</p></li>
+</ol>
+<p>Define a variable for this Stream</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Stream.inquire_variable">
+<span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">inquire_variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod::Variable</span></span></span><a class="headerlink" href="#dtlmod.Stream.inquire_variable" title="Link to this definition"></a></dt>
+<dd><p>Retrieve a Variable information by name</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Stream.remove_variable">
+<span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">remove_variable</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Stream</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="headerlink" href="#dtlmod.Stream.remove_variable" title="Link to this definition"></a></dt>
+<dd><p>Remove a Variable from this Stream</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Stream.all_variables">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Stream.</span></span><span class="sig-name descname"><span class="pre">all_variables</span></span><a class="headerlink" href="#dtlmod.Stream.all_variables" title="Link to this definition"></a></dt>
+<dd><p>Retrieve the list of Variables by names</p>
+</dd></dl>
+
+</div></div>
+</section>
+</section>
+<section id="class-engine">
+<span id="api-dtlmod-engine"></span><h3>class Engine<a class="headerlink" href="#class-engine" title="Link to this heading"></a></h3>
+<section id="id1">
+<h4>Properties<a class="headerlink" href="#id1" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-7-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-7-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-7-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-7-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-7-Qysr" class="sphinx-tabs-panel group-tab" id="panel-7-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Engine8get_nameEv">
+<span id="_CPPv3NK6dtlmod6Engine8get_nameEv"></span><span id="_CPPv2NK6dtlmod6Engine8get_nameEv"></span><span id="dtlmod::Engine::get_nameC"></span><span class="target" id="classdtlmod_1_1Engine_1a58f1123ce4844412bd5f480c60f3da64"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_name</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Engine8get_nameEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to print out the name of the Engine. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the corresponding string </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Engine9get_cnameEv">
+<span id="_CPPv3NK6dtlmod6Engine9get_cnameEv"></span><span id="_CPPv2NK6dtlmod6Engine9get_cnameEv"></span><span id="dtlmod::Engine::get_cnameC"></span><span class="target" id="classdtlmod_1_1Engine_1a23ff0fbbf96ffa148ca501ab33e06dbc"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_cname</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Engine9get_cnameEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to print out the name of the Engine. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the corresponding C-string </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Engine23get_current_transactionEv">
+<span id="_CPPv3NK6dtlmod6Engine23get_current_transactionEv"></span><span id="_CPPv2NK6dtlmod6Engine23get_current_transactionEv"></span><span id="dtlmod::Engine::get_current_transactionC"></span><span class="target" id="classdtlmod_1_1Engine_1a6b2b693a3e37b19a40a32625020b8b95"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_current_transaction</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Engine23get_current_transactionEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Get the id of the current transaction (on the Publish side). </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The id of the ongoing transaction. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Engine22get_metadata_file_nameEv">
+<span id="_CPPv3NK6dtlmod6Engine22get_metadata_file_nameEv"></span><span id="_CPPv2NK6dtlmod6Engine22get_metadata_file_nameEv"></span><span id="dtlmod::Engine::get_metadata_file_nameC"></span><span class="target" id="classdtlmod_1_1Engine_1a7580736e8246d4f076351f9af91fc077"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_metadata_file_name</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Engine22get_metadata_file_nameEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Get the name of the file in which the engine stored metadata. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The name of the file. </p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-7-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-7-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Engine.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Engine.</span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#dtlmod.Engine.name" title="Link to this definition"></a></dt>
+<dd><p>The name of the Engine (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Engine.current_transaction">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Engine.</span></span><span class="sig-name descname"><span class="pre">current_transaction</span></span><a class="headerlink" href="#dtlmod.Engine.current_transaction" title="Link to this definition"></a></dt>
+<dd><p>The id of the current transaction on this Engine (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Engine.metadata_file_name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Engine.</span></span><span class="sig-name descname"><span class="pre">metadata_file_name</span></span><a class="headerlink" href="#dtlmod.Engine.metadata_file_name" title="Link to this definition"></a></dt>
+<dd><p>The name of the file in which the engine stored metadata (read-only)</p>
+</dd></dl>
+
+</div></div>
+</section>
+<section id="transactions">
+<h4>Transactions<a class="headerlink" href="#transactions" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-8-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-8-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-8-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-8-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-8-Qysr" class="sphinx-tabs-panel group-tab" id="panel-8-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Engine17begin_transactionEv">
+<span id="_CPPv3N6dtlmod6Engine17begin_transactionEv"></span><span id="_CPPv2N6dtlmod6Engine17begin_transactionEv"></span><span id="dtlmod::Engine::begin_transaction"></span><span class="target" id="classdtlmod_1_1Engine_1aa1a277ccd8e262dd9f77ba400df6c5ec"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">begin_transaction</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Engine17begin_transactionEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Start a transaction on an Engine. </p>
+<p>All put and get operations must take place within a transaction (in a sense close to that used for databases). When multiple actors have opened the same Stream and thus subscribed to the same Engine, only one of them has to do the following when a transaction begins, this function is a no-op for the other subscribers:<ol class="loweralpha simple">
+<li><p>if no transaction is currently in progress, start one, exit otherwise</p></li>
+<li><p>if this is the first transaction for that Engine, create a synchronization barrier among all the subscribers.</p></li>
+<li><p>Otherwise, wait for the completion of the simulated activities started by the previous transaction. </p></li>
+</ol>
+</p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Engine3putENSt10shared_ptrI8VariableEE">
+<span id="_CPPv3NK6dtlmod6Engine3putENSt10shared_ptrI8VariableEE"></span><span id="_CPPv2NK6dtlmod6Engine3putENSt10shared_ptrI8VariableEE"></span><span id="dtlmod::Engine::put__std::shared_ptr:Variable:C"></span><span class="target" id="classdtlmod_1_1Engine_1a0894c5185697f07574c0ad53e07a4989"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">put</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">var</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Engine3putENSt10shared_ptrI8VariableEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Put a Variable in the DTL using a specific Engine. </p>
+<p>The actual data transport is delegated to the Transport method associated to the Engine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>var</strong> – The variable to put in the DTL </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Engine3putENSt10shared_ptrI8VariableEE6size_t">
+<span id="_CPPv3NK6dtlmod6Engine3putENSt10shared_ptrI8VariableEE6size_t"></span><span id="_CPPv2NK6dtlmod6Engine3putENSt10shared_ptrI8VariableEE6size_t"></span><span id="dtlmod::Engine::put__std::shared_ptr:Variable:.sC"></span><span class="target" id="classdtlmod_1_1Engine_1aa10e4a0f18a5725b0e080ea5dba7137a"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">put</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">var</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">simulated_size_in_bytes</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Engine3putENSt10shared_ptrI8VariableEE6size_t" title="Link to this definition"></a><br /></dt>
+<dd><p>Put a Variable in the DTL using a specific Engine. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>var</strong> – The variable to put in the DTL </p></li>
+<li><p><strong>simulated_size_in_bytes</strong> – The simulated size of the Variable (can be different of actual size) </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Engine3getENSt10shared_ptrI8VariableEE">
+<span id="_CPPv3NK6dtlmod6Engine3getENSt10shared_ptrI8VariableEE"></span><span id="_CPPv2NK6dtlmod6Engine3getENSt10shared_ptrI8VariableEE"></span><span id="dtlmod::Engine::get__std::shared_ptr:Variable:C"></span><span class="target" id="classdtlmod_1_1Engine_1a9d01ce005a8fffaff43703f7d15e13e6"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">var</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Engine3getENSt10shared_ptrI8VariableEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Get a Variable from the DTL. </p>
+<p>The actual data transport is delegated to the Transport method associated to the Engine.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>var</strong> – The Variable to get in the DTL (Have to do an Inquire first). </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Engine15end_transactionEv">
+<span id="_CPPv3N6dtlmod6Engine15end_transactionEv"></span><span id="_CPPv2N6dtlmod6Engine15end_transactionEv"></span><span id="dtlmod::Engine::end_transaction"></span><span class="target" id="classdtlmod_1_1Engine_1a13d464cd7c821ad6684fbe6a5e6e5f29"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">end_transaction</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Engine15end_transactionEv" title="Link to this definition"></a><br /></dt>
+<dd><p>End a transaction on an Engine. </p>
+<p>This function first synchronizes all the subscribers thanks to the internal barrier. When the last subscriber enters the barrier, all the simulated activities registered for the current transaction are started.</p>
+<p>Then it marks the transaction as done. </p>
+</dd></dl>
+
+</div><div aria-labelledby="tab-8-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-8-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Engine.begin_transaction">
+<span class="sig-prename descclassname"><span class="pre">Engine.</span></span><span class="sig-name descname"><span class="pre">begin_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Engine</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dtlmod.Engine.begin_transaction" title="Link to this definition"></a></dt>
+<dd><p>Begin a transaction on this Engine</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Engine.put">
+<span class="sig-prename descclassname"><span class="pre">Engine.</span></span><span class="sig-name descname"><span class="pre">put</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dtlmod.Engine.put" title="Link to this definition"></a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li><p>put(self: dtlmod.Engine, var: dtlmod.Variable) -&gt; None</p></li>
+</ol>
+<p>Put a Variable in the DTL using this Engine</p>
+<ol class="arabic simple" start="2">
+<li><p>put(self: dtlmod.Engine, var: dtlmod.Variable, simulated_size_in_bytes: int) -&gt; None</p></li>
+</ol>
+<p>Put a Variable in the DTL using this Engine</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Engine.get">
+<span class="sig-prename descclassname"><span class="pre">Engine.</span></span><span class="sig-name descname"><span class="pre">get</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Engine</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">var</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Variable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dtlmod.Engine.get" title="Link to this definition"></a></dt>
+<dd><p>Get a Variable from the DTL using this Engine</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Engine.end_transaction">
+<span class="sig-prename descclassname"><span class="pre">Engine.</span></span><span class="sig-name descname"><span class="pre">end_transaction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Engine</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dtlmod.Engine.end_transaction" title="Link to this definition"></a></dt>
+<dd><p>End a transaction on this Engine</p>
+</dd></dl>
+
+</div></div>
+</section>
+</section>
+<section id="class-variable">
+<span id="api-dtlmod-variable"></span><h3>class Variable<a class="headerlink" href="#class-variable" title="Link to this heading"></a></h3>
+<section id="id2">
+<h4>Properties<a class="headerlink" href="#id2" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-9-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-9-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-9-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-9-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-9-Qysr" class="sphinx-tabs-panel group-tab" id="panel-9-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod8Variable8get_nameEv">
+<span id="_CPPv3NK6dtlmod8Variable8get_nameEv"></span><span id="_CPPv2NK6dtlmod8Variable8get_nameEv"></span><span id="dtlmod::Variable::get_nameC"></span><span class="target" id="classdtlmod_1_1Variable_1a5595def00ef1650152b22442911003aa"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_name</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod8Variable8get_nameEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to print out the name of the Variable. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The corresponding string. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod8Variable9get_cnameEv">
+<span id="_CPPv3NK6dtlmod8Variable9get_cnameEv"></span><span id="_CPPv2NK6dtlmod8Variable9get_cnameEv"></span><span id="dtlmod::Variable::get_cnameC"></span><span class="target" id="classdtlmod_1_1Variable_1a62a359009937fd308009ec2fa17a8dce"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_cname</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod8Variable9get_cnameEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to print out the name of the Variable. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The corresponding C-string. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod8Variable9get_shapeEv">
+<span id="_CPPv3NK6dtlmod8Variable9get_shapeEv"></span><span id="_CPPv2NK6dtlmod8Variable9get_shapeEv"></span><span id="dtlmod::Variable::get_shapeC"></span><span class="target" id="classdtlmod_1_1Variable_1a00e603f208cb9df272078c0a2aef34ec"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_shape</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod8Variable9get_shapeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Get the shape of the Variable. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A vector of the respective size in each dimension of the Variable. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod8Variable16get_element_sizeEv">
+<span id="_CPPv3NK6dtlmod8Variable16get_element_sizeEv"></span><span id="_CPPv2NK6dtlmod8Variable16get_element_sizeEv"></span><span id="dtlmod::Variable::get_element_sizeC"></span><span class="target" id="classdtlmod_1_1Variable_1a73346adae7d45aad3b45c1c7f1dbae17"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_element_size</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod8Variable16get_element_sizeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Get the size of the elements stored in the Variable. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The elements’ size. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod8Variable15get_global_sizeEv">
+<span id="_CPPv3NK6dtlmod8Variable15get_global_sizeEv"></span><span id="_CPPv2NK6dtlmod8Variable15get_global_sizeEv"></span><span id="dtlmod::Variable::get_global_sizeC"></span><span class="target" id="classdtlmod_1_1Variable_1ac17311b8f663ed290e9dc5bf44a32c43"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_global_size</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod8Variable15get_global_sizeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Get the global size of the Variable. </p>
+<p>
+The global size of a Variable corresponds to the product of the number of elements in each dimension of the shape vector by the element size. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The computed size.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod8Variable14get_local_sizeEv">
+<span id="_CPPv3NK6dtlmod8Variable14get_local_sizeEv"></span><span id="_CPPv2NK6dtlmod8Variable14get_local_sizeEv"></span><span id="dtlmod::Variable::get_local_sizeC"></span><span class="target" id="classdtlmod_1_1Variable_1a0af82169d336123b80d81e2505f08124"></span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_local_size</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod8Variable14get_local_sizeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Get the local size object. </p>
+<p>
+The local size of a Variable corresponds to the product of the number of elements in each dimension of the count vector by the element size. If variable was published to the DTL over multiple transactions, multiply the size by the number of transactions. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The computed size.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-9-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-9-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Variable.name">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Variable.</span></span><span class="sig-name descname"><span class="pre">name</span></span><a class="headerlink" href="#dtlmod.Variable.name" title="Link to this definition"></a></dt>
+<dd><p>The name of the Variable (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Variable.shape">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Variable.</span></span><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#dtlmod.Variable.shape" title="Link to this definition"></a></dt>
+<dd><p>The shape of the Variable (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Variable.element_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Variable.</span></span><span class="sig-name descname"><span class="pre">element_size</span></span><a class="headerlink" href="#dtlmod.Variable.element_size" title="Link to this definition"></a></dt>
+<dd><p>The element size of the Variable (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Variable.global_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Variable.</span></span><span class="sig-name descname"><span class="pre">global_size</span></span><a class="headerlink" href="#dtlmod.Variable.global_size" title="Link to this definition"></a></dt>
+<dd><p>The global size of the Variable (read-only)</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="dtlmod.Variable.local_size">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">Variable.</span></span><span class="sig-name descname"><span class="pre">local_size</span></span><a class="headerlink" href="#dtlmod.Variable.local_size" title="Link to this definition"></a></dt>
+<dd><p>The local size of the Variable for the current actor (read-only)</p>
+</dd></dl>
+
+</div></div>
+</section>
+<section id="selection">
+<h4>Selection<a class="headerlink" href="#selection" title="Link to this heading"></a></h4>
+<div class="sphinx-tabs docutils container">
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-10-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-10-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-10-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-10-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-10-Qysr" class="sphinx-tabs-panel group-tab" id="panel-10-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod8Variable13set_selectionERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE">
+<span id="_CPPv3N6dtlmod8Variable13set_selectionERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE"></span><span id="_CPPv2N6dtlmod8Variable13set_selectionERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE"></span><span id="dtlmod::Variable::set_selection__std::vector:s:CR.std::vector:s:CR"></span><span class="target" id="classdtlmod_1_1Variable_1afc0565abfc9b3f0a7a757b2ab2f8f2f2"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_selection</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">start</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">count</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod8Variable13set_selectionERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE" title="Link to this definition"></a><br /></dt>
+<dd><p>Allow a subscriber to select what subset of a variable it would like to get. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>start</strong> – a vector of starting positions in each dimension of the Variable. </p></li>
+<li><p><strong>count</strong> – a vector of number of elements to get in each dimension. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod8Variable25set_transaction_selectionEj">
+<span id="_CPPv3N6dtlmod8Variable25set_transaction_selectionEj"></span><span id="_CPPv2N6dtlmod8Variable25set_transaction_selectionEj"></span><span id="dtlmod::Variable::set_transaction_selection__unsigned-i"></span><span class="target" id="classdtlmod_1_1Variable_1a4e8f1758fe51dbb6f0b4becedafdd6c0"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_transaction_selection</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">transaction_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod8Variable25set_transaction_selectionEj" title="Link to this definition"></a><br /></dt>
+<dd><p>Allow a subscriber to select what transaction it would like to get. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transaction_id</strong> – the id of the transaction to get. </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod8Variable25set_transaction_selectionEjj">
+<span id="_CPPv3N6dtlmod8Variable25set_transaction_selectionEjj"></span><span id="_CPPv2N6dtlmod8Variable25set_transaction_selectionEjj"></span><span id="dtlmod::Variable::set_transaction_selection__unsigned-i.unsigned-i"></span><span class="target" id="classdtlmod_1_1Variable_1a4c5c9bb6bfbff9b96ede77e396730b40"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_transaction_selection</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">begin</span></span>, <span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">count</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod8Variable25set_transaction_selectionEjj" title="Link to this definition"></a><br /></dt>
+<dd><p>Allow a subscriber to select what transactions it would like to get. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>begin</strong> – the id at which the range of transactions to get begins. </p></li>
+<li><p><strong>count</strong> – the number of transactions in the range. </p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</div><div aria-labelledby="tab-10-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-10-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Variable.set_selection">
+<span class="sig-prename descclassname"><span class="pre">Variable.</span></span><span class="sig-name descname"><span class="pre">set_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.Variable</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">start</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">count</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dtlmod.Variable.set_selection" title="Link to this definition"></a></dt>
+<dd><p>Set the selection of elements to consider for this Variable</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.Variable.set_transaction_selection">
+<span class="sig-prename descclassname"><span class="pre">Variable.</span></span><span class="sig-name descname"><span class="pre">set_transaction_selection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dtlmod.Variable.set_transaction_selection" title="Link to this definition"></a></dt>
+<dd><p>Overloaded function.</p>
+<ol class="arabic simple">
+<li><p>set_transaction_selection(self: dtlmod.Variable, transaction_id: int) -&gt; None</p></li>
+</ol>
+<p>Set the selection of transactions to consider for this Variable</p>
+<ol class="arabic simple" start="2">
+<li><p>set_transaction_selection(self: dtlmod.Variable, begin: int, count: int) -&gt; None</p></li>
+</ol>
+<p>Set the selection of transactions to consider for this Variable</p>
+</dd></dl>
+
+</div></div>
+</section>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Workflow.html" class="btn btn-neutral float-left" title="Designing your simulated in situ processing workflow" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="app_Actors.html" class="btn btn-neutral float-right" title="Simulated actors" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

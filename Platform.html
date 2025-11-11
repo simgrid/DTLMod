@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Describing your simulated platform &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Logging and Debugging" href="Logging.html" />
+    <link rel="prev" title="Composing simulated actors and running the simulation" href="app_Main.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">   Describing your simulated platform</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#describing-resources">Describing Resources</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#netzones">NetZones</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hosts">Hosts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#disks">Disks</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#links">Links</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#storage-and-file-system">Storage and file system</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#full-example">Full example</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Describing your simulated platform</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Platform.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="describing-your-simulated-platform">
+<span id="platform"></span><h1>Describing your simulated platform<a class="headerlink" href="#describing-your-simulated-platform" title="Link to this heading"></a></h1>
+<p>DTLMod relies on <a class="reference external" href="https://simgrid.org/doc/latest/Platform_cpp.html">SimGrid’s C++ programmatic platform description interface</a> to allow you to describe the computing and storage resources onto
+which simulate the execution of your in situ processing workflow.</p>
+<p>To describe a platform in C++, the recommanded approach is to create a separate C++ file, compiled as a shared library,
+in which you will overload the definition of the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">simgrid::s4u::Engine::load_platform()</span></code> function. This way you
+can decouple the definition of your platform from the code of your simulation. The generated shared library can then be
+passed as a command line argument of your simulator binary.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">load_platform</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">simgrid</span><span class="o">::</span><span class="n">s4u</span><span class="o">::</span><span class="n">Engine</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">load_platform</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">simgrid</span><span class="o">::</span><span class="n">s4u</span><span class="o">::</span><span class="n">Engine</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">    </span><span class="c1">// Here goes your platform description</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<section id="describing-resources">
+<h2>Describing Resources<a class="headerlink" href="#describing-resources" title="Link to this heading"></a></h2>
+<section id="netzones">
+<h3>NetZones<a class="headerlink" href="#netzones" title="Link to this heading"></a></h3>
+<p>A <strong>netzone</strong> is a network container, in charge of routing information between computing resources (i.e., hosts) and to
+the nearby netzones. In SimGrid, there is a hierarchy of netzones, with a unique <strong>root</strong> zone that you can retrieve
+with <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">simgrid::s4u::Engine::get_netzone_root()</span></code>.</p>
+<p>To add a new netzone to the hierarchy, you must decide of the routing method you want to apply (e.g., <strong>empty</strong>,
+<strong>full</strong>, <strong>star</strong>, <strong>Floyd</strong>, <strong>Dijkstra</strong>, <strong>fatTree</strong>, <strong>torus</strong>, <strong>dragonfly</strong>). For instance, to create a
+compute cluster with a single crossbar switch, you can use the <strong>star</strong> routing method:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">get_netzone_root</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">add_netzone_star</span><span class="p">(</span><span class="s">&quot;cluster&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+<p>Hereafter, we explain how to add resources to your platform. The different resources, such as <strong>hosts</strong>, <strong>disks</strong>, or
+<strong>network links</strong>, follow the same idiom: <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">add()-&gt;set()-&gt;set()</span></code>.</p>
+</section>
+<section id="hosts">
+<h3>Hosts<a class="headerlink" href="#hosts" title="Link to this heading"></a></h3>
+<p>A host models some physical resource with <strong>computing</strong> and <strong>networking</strong> capabilities on which simulated <strong>actors</strong>
+execute. They are minimally defined by a <strong>unique name</strong> and <strong>processing speed</strong> (expressed as a number of floating
+point operations per second). You can also further <a class="reference external" href="https://simgrid.org/doc/latest/app_s4u.html#modifying-characteristics">configure your hosts</a>.</p>
+<p>Hosts can be added to a netzone as follows:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">4</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">hostname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">&quot;node-&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+<span class="w">  </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">host</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="n">cluster</span><span class="o">-&gt;</span><span class="n">add_host</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gf&quot;</span><span class="p">);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>Here we define four hosts named <code class="docutils literal notranslate"><span class="pre">node-0</span></code>, <code class="docutils literal notranslate"><span class="pre">node-1</span></code>, <code class="docutils literal notranslate"><span class="pre">node-2</span></code>, and <code class="docutils literal notranslate"><span class="pre">node-3</span></code> each being able to process a
+gigaflop per second.</p>
+</section>
+<section id="disks">
+<h3>Disks<a class="headerlink" href="#disks" title="Link to this heading"></a></h3>
+<p>A disk models some physical with <strong>I/O</strong> capabilities. They are minimally defined by a <strong>unique name</strong>, a
+<strong>read bandwidth</strong> and a <strong>write bandwidth</strong> (both expressed in bytes per seconds). By default, SimGrid does not keep track of the actual data being
+written but only computes the time taken by the corresponding data movement. The simulation of file systems is handled
+by <a class="reference external" href="https://github.com/simgrid/file-system-module">FSMod</a> (see <a class="reference internal" href="#platform-storage"><span class="std std-ref">Storage and file system</span></a>).</p>
+<p>Disks can be added to a host as follows:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">nvme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">host</span><span class="o">-&gt;</span><span class="n">add_disk</span><span class="p">(</span><span class="s">&quot;node-0_nvme&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;560MBps&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;510MBps&quot;</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="links">
+<h3>Links<a class="headerlink" href="#links" title="Link to this heading"></a></h3>
+<p>A link represents the network facilities between hosts. They are minimally defined by a <strong>name</strong> and a <strong>bandwidth</strong>
+(expressed in bytes per second). You can further configure a link with a <strong>latency</strong> and a <strong>sharing policy</strong>. These
+can be combined into <strong>routes</strong> to model the interconnection network within and between zones.</p>
+<p>For instance to connect each of the hosts of our four host cluster, we add the following code</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">backbone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="s">&quot;backbone&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;10Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1ms&quot;</span><span class="p">);</span>
+<span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">link_up</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_LinkUP&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;2ms&quot;</span><span class="p">);</span>
+<span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">link_down</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_LinkDOWN&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;2ms&quot;</span><span class="p">);</span>
+<span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">loopback</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_loopback&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1.75ms&quot;</span><span class="p">)</span>
+<span class="w">                              </span><span class="o">-&gt;</span><span class="n">set_sharing_policy</span><span class="p">(</span><span class="n">sg4</span><span class="o">::</span><span class="n">Link</span><span class="o">::</span><span class="n">SharingPolicy</span><span class="o">::</span><span class="n">FATPIPE</span><span class="p">);</span>
+
+<span class="n">cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">link_up</span><span class="p">),</span><span class="w"> </span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">backbone</span><span class="p">)},</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="n">cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">backbone</span><span class="p">),</span><span class="w"> </span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">link_down</span><span class="p">)},</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="n">cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">loopback</span><span class="p">});</span>
+</pre></div>
+</div>
+</section>
+</section>
+<section id="storage-and-file-system">
+<span id="platform-storage"></span><h2>Storage and file system<a class="headerlink" href="#storage-and-file-system" title="Link to this heading"></a></h2>
+<p>DTLMod relies on the on FSMod’s C++ programmatic description interface to allow you to describe storage components
+and file systems. For instance, to describe a <strong>one disk storage</strong> on the disk attached to host, start a <strong>file
+system</strong> on that storage and <strong>mount a partition</strong>, you have to add the following code:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">local_nvme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">simgrid</span><span class="o">::</span><span class="n">fsmod</span><span class="o">::</span><span class="n">OneDiskStorage</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_local_nvme&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">nvme</span><span class="p">);</span>
+<span class="k">auto</span><span class="w"> </span><span class="n">local_fs</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">sgfs</span><span class="o">::</span><span class="n">FileSystem</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;local_fs&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100000000</span><span class="p">);</span>
+<span class="n">local_fs</span><span class="o">-&gt;</span><span class="n">mount_partition</span><span class="p">(</span><span class="s">&quot;/scratch/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">local_nvme</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1TB&quot;</span><span class="p">);</span>
+
+<span class="c1">// Register the file system to the NetZone it is in</span>
+<span class="n">simgrid</span><span class="o">::</span><span class="n">fsmod</span><span class="o">::</span><span class="n">FileSystem</span><span class="o">::</span><span class="n">register_file_system</span><span class="p">(</span><span class="n">cluster</span><span class="p">,</span><span class="w"> </span><span class="n">local_fs</span><span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="full-example">
+<h2>Full example<a class="headerlink" href="#full-example" title="Link to this heading"></a></h2>
+<p>The best way to build your C++ platform is to start from some examples. Each of the tests in our test suite begins with
+the definition of a small platform (of different complexity depending on the test).</p>
+<p>Here, we present a complete example that corresponds to the platform used in the research paper introducing DTLMod.</p>
+<a class="reference internal image-reference" href="_images/platform.png"><img alt="_images/platform.png" class="align-center" src="_images/platform.png" style="width: 50%;" /></a>
+<br><br><p>This simulated platform composed of two homogeneous clusters. The first cluster comprises 256 96-core nodes while the
+second cluster has 128 48-core nodes. Each core of these clusters can respectively process <span class="math notranslate nohighlight">\(11 \times 10^9\)</span> and
+<span class="math notranslate nohighlight">\(6 \times 10^9\)</span> floating point operations per second. These clusters have the same internal network topology:
+Nodes are connected through 1 Gb/s private network links to a 10 Gb/s crossbar switch.  The two clusters are
+interconnected through a single 20 Gb/s network link.</p>
+<p>Each node of the first cluster has a scratch space of 1 TB on a SSD disk whose read and write bandwidths are 560 MB/s
+and 510 MB/s respectively. Both clusters share access to a 100 TB file system whose read and write bandwidths are
+180 MB/s and 160 MB/s respectively. The first cluster is connected to this remote file system through a 20 Gb/s network
+link, while the second cluster has a slower connection at 10 Gb/s.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/* Copyright (c) 2023. The SWAT Team. All rights reserved.          */</span>
+
+<span class="cm">/* This program is free software; you can redistribute it and/or modify it</span>
+<span class="cm"> * under the terms of the license (GNU LGPL) which comes with this package. */</span>
+
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fsmod/FileSystem.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fsmod/FileSystemException.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fsmod/JBODStorage.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;fsmod/OneDiskStorage.hpp&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;simgrid/s4u.hpp&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">sg4</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="nn">simgrid</span><span class="o">::</span><span class="nn">s4u</span><span class="p">;</span>
+<span class="k">namespace</span><span class="w"> </span><span class="nn">sgfs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">simgrid</span><span class="o">::</span><span class="nn">fsmod</span><span class="p">;</span>
+
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">load_platform</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">sg4</span><span class="o">::</span><span class="n">Engine</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">);</span>
+<span class="kt">void</span><span class="w"> </span><span class="nf">load_platform</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">sg4</span><span class="o">::</span><span class="n">Engine</span><span class="o">&amp;</span><span class="w"> </span><span class="n">e</span><span class="p">)</span>
+<span class="p">{</span>
+<span class="w">  </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">datacenter</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">get_netzone_root</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">add_netzone_full</span><span class="p">(</span><span class="s">&quot;datacenter&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">pfs</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_netzone_empty</span><span class="p">(</span><span class="s">&quot;pfs&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">pfs_server</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pfs</span><span class="o">-&gt;</span><span class="n">add_host</span><span class="p">(</span><span class="s">&quot;pfs_server&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gf&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">pfs_disk</span><span class="w">    </span><span class="o">=</span><span class="w"> </span><span class="n">pfs_server</span><span class="o">-&gt;</span><span class="n">add_disk</span><span class="p">(</span><span class="s">&quot;pfs_disk&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;180MBps&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;160MBps&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">pfs_storage</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sgfs</span><span class="o">::</span><span class="n">JBODStorage</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;pfs_storage&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">pfs_disk</span><span class="p">});</span>
+<span class="w">  </span><span class="n">pfs</span><span class="o">-&gt;</span><span class="n">seal</span><span class="p">();</span>
+
+<span class="w">  </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">pub_cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_netzone_star</span><span class="p">(</span><span class="s">&quot;pub_cluster&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="cm">/* create the backbone link */</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">pub_backbone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="s">&quot;pub_backbone&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;10Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1ms&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">sgfs</span><span class="o">::</span><span class="n">OneDiskStorage</span><span class="o">&gt;&gt;</span><span class="w"> </span><span class="n">local_nvmes</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">256</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">hostname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">&quot;node-&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;.pub&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">host</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_host</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;11Gf&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_core_count</span><span class="p">(</span><span class="mi">96</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">nvme</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="n">host</span><span class="o">-&gt;</span><span class="n">add_disk</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_nvme&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;560MBps&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;510MBps&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">local_nvmes</span><span class="p">.</span><span class="n">push_back</span><span class="p">(</span><span class="n">sgfs</span><span class="o">::</span><span class="n">OneDiskStorage</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_local_nvme&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">nvme</span><span class="p">));</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">link_up</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_LinkUP&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;2ms&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">link_down</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_LinkDOWN&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;2ms&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">loopback</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_loopback&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1.75ms&quot;</span><span class="p">)</span>
+<span class="w">                                      </span><span class="o">-&gt;</span><span class="n">set_sharing_policy</span><span class="p">(</span><span class="n">sg4</span><span class="o">::</span><span class="n">Link</span><span class="o">::</span><span class="n">SharingPolicy</span><span class="o">::</span><span class="n">FATPIPE</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">link_up</span><span class="p">),</span><span class="w"> </span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">pub_backbone</span><span class="p">)},</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">pub_backbone</span><span class="p">),</span><span class="w"> </span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">link_down</span><span class="p">)},</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">loopback</span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">set_gateway</span><span class="p">(</span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">add_router</span><span class="p">(</span><span class="s">&quot;pub_router&quot;</span><span class="p">));</span>
+<span class="w">  </span><span class="n">pub_cluster</span><span class="o">-&gt;</span><span class="n">seal</span><span class="p">();</span>
+
+<span class="w">  </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">sub_cluster</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_netzone_star</span><span class="p">(</span><span class="s">&quot;sub_cluster&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="cm">/* create the backbone link */</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">sub_backbone</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="s">&quot;sub_backbone&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;10Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1ms&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">128</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">hostname</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">&quot;node-&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;.sub&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">host</span><span class="w">           </span><span class="o">=</span><span class="w"> </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_host</span><span class="p">(</span><span class="n">hostname</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;6Gf&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_core_count</span><span class="p">(</span><span class="mi">48</span><span class="p">);</span>
+
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">link_up</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_LinkUP&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;2ms&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">link_down</span><span class="w">      </span><span class="o">=</span><span class="w"> </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_LinkDOWN&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;2ms&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">loopback</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_loopback&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1.75ms&quot;</span><span class="p">)</span>
+<span class="w">                                       </span><span class="o">-&gt;</span><span class="n">set_sharing_policy</span><span class="p">(</span><span class="n">sg4</span><span class="o">::</span><span class="n">Link</span><span class="o">::</span><span class="n">SharingPolicy</span><span class="o">::</span><span class="n">FATPIPE</span><span class="p">);</span>
+
+<span class="w">    </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">link_up</span><span class="p">),</span><span class="w"> </span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">sub_backbone</span><span class="p">)},</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="k">nullptr</span><span class="p">,</span><span class="w"> </span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">sub_backbone</span><span class="p">),</span><span class="w"> </span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">link_down</span><span class="p">)},</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="n">host</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">loopback</span><span class="p">});</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">set_gateway</span><span class="p">(</span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">add_router</span><span class="p">(</span><span class="s">&quot;sub_router&quot;</span><span class="p">));</span>
+<span class="w">  </span><span class="n">sub_cluster</span><span class="o">-&gt;</span><span class="n">seal</span><span class="p">();</span>
+
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">inter_cluster_link</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="s">&quot;inter-cluster&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;20Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1ms&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">pub_pfs_link</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="s">&quot;pub-pfs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;20Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1ms&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">sub_pfs_link</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_link</span><span class="p">(</span><span class="s">&quot;sub-pfs&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;10Gbps&quot;</span><span class="p">)</span><span class="o">-&gt;</span><span class="n">set_latency</span><span class="p">(</span><span class="s">&quot;1ms&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">pub_cluster</span><span class="p">,</span><span class="w"> </span><span class="n">sub_cluster</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">inter_cluster_link</span><span class="p">)});</span>
+<span class="w">  </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">pub_cluster</span><span class="p">,</span><span class="w"> </span><span class="n">pfs</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">pub_pfs_link</span><span class="p">)});</span>
+<span class="w">  </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">add_route</span><span class="p">(</span><span class="n">sub_cluster</span><span class="p">,</span><span class="w"> </span><span class="n">pfs</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">sg4</span><span class="o">::</span><span class="n">LinkInRoute</span><span class="p">(</span><span class="n">sub_pfs_link</span><span class="p">)});</span>
+
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">remote_fs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sgfs</span><span class="o">::</span><span class="n">FileSystem</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;remote_fs&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100000000</span><span class="p">);</span>
+<span class="w">  </span><span class="n">remote_fs</span><span class="o">-&gt;</span><span class="n">mount_partition</span><span class="p">(</span><span class="s">&quot;/pfs/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">pfs_storage</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;100TB&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="n">sgfs</span><span class="o">::</span><span class="n">FileSystem</span><span class="o">::</span><span class="n">register_file_system</span><span class="p">(</span><span class="n">pfs</span><span class="p">,</span><span class="w"> </span><span class="n">remote_fs</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">local_fs</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">sgfs</span><span class="o">::</span><span class="n">FileSystem</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;local_fs&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100000000</span><span class="p">);</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">256</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">partition_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="s">&quot;/node-&quot;</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">to_string</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;.pub/scratch/&quot;</span><span class="p">;</span>
+<span class="w">    </span><span class="n">local_fs</span><span class="o">-&gt;</span><span class="n">mount_partition</span><span class="p">(</span><span class="n">partition_name</span><span class="p">,</span><span class="w"> </span><span class="n">local_nvmes</span><span class="p">.</span><span class="n">at</span><span class="p">(</span><span class="n">i</span><span class="p">),</span><span class="w"> </span><span class="s">&quot;1TB&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">sgfs</span><span class="o">::</span><span class="n">FileSystem</span><span class="o">::</span><span class="n">register_file_system</span><span class="p">(</span><span class="n">pub_cluster</span><span class="p">,</span><span class="w"> </span><span class="n">local_fs</span><span class="p">);</span>
+
+<span class="w">  </span><span class="n">datacenter</span><span class="o">-&gt;</span><span class="n">seal</span><span class="p">();</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="app_Main.html" class="btn btn-neutral float-left" title="Composing simulated actors and running the simulation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Logging.html" class="btn btn-neutral float-right" title="Logging and Debugging" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installing DTLMod &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Start a new project" href="New_project.html" />
+    <link rel="prev" title="Introduction" href="Introduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">      Installing DTLMod</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#installing-from-source">Installing from source</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#getting-the-dependencies">Getting the dependencies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#getting-the-source">Getting the source</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#testing-your-build">Testing your build</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#python-specific-instructions">Python-specific instructions</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installing DTLMod</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Installing_DTLMod.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installing-dtlmod">
+<span id="install"></span><h1>Installing DTLMod<a class="headerlink" href="#installing-dtlmod" title="Link to this heading"></a></h1>
+<section id="installing-from-source">
+<span id="install-src"></span><h2>Installing from source<a class="headerlink" href="#installing-from-source" title="Link to this heading"></a></h2>
+<section id="getting-the-dependencies">
+<span id="install-src-deps"></span><h3>Getting the dependencies<a class="headerlink" href="#getting-the-dependencies" title="Link to this heading"></a></h3>
+<dl class="simple">
+<dt>C++ compiler</dt><dd><p>Install a version recent enough to support the C++17 standard.</p>
+</dd>
+<dt>Python 3</dt><dd><p>DTLMod should build without Python which is only needed by the regression tests of the python API.</p>
+</dd>
+<dt>cmake</dt><dd><p>The minimal recommended version is v3.12</p>
+</dd>
+<dt>boost mandatory components (at least v1.48)</dt><dd><ul class="simple">
+<li><p>On Debian / Ubuntu: <code class="docutils literal notranslate"><span class="pre">apt</span> <span class="pre">install</span> <span class="pre">libboost-dev</span></code></p></li>
+<li><p>On CentOS / Fedora: <code class="docutils literal notranslate"><span class="pre">dnf</span> <span class="pre">install</span> <span class="pre">boost-devel</span></code></p></li>
+<li><p>On macOS with homebrew: <code class="docutils literal notranslate"><span class="pre">brew</span> <span class="pre">install</span> <span class="pre">boost</span></code></p></li>
+</ul>
+</dd>
+<dt>python bindings (optional):</dt><dd><ul class="simple">
+<li><p>On Debian / Ubuntu: <code class="docutils literal notranslate"><span class="pre">apt</span> <span class="pre">install</span> <span class="pre">pybind11-dev</span> <span class="pre">python3-dev</span></code></p></li>
+</ul>
+</dd>
+<dt>JSON:</dt><dd><ul class="simple">
+<li><p>On Debian / Ubuntu: <code class="docutils literal notranslate"><span class="pre">apt</span> <span class="pre">install</span> <span class="pre">nlohmann-json3-dev</span></code></p></li>
+</ul>
+</dd>
+</dl>
+</section>
+<section id="getting-the-source">
+<h3>Getting the source<a class="headerlink" href="#getting-the-source" title="Link to this heading"></a></h3>
+<p>You can find the latest <strong>stable release</strong> on  <a class="reference external" href="https://github.com/simgrid/DTLMod/releases">Github</a>, and compile it as follows.</p>
+<p>We recommend an <strong>out-of-source</strong> build where all the files produced during the compilation are placed in a separate
+directory. Cleaning the building tree then becomes as easy as removing this directory, and you can have several such
+directories to test different parameter sets or compiling toolchains.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>tar<span class="w"> </span>xf<span class="w"> </span>v0.X.tar.gz<span class="w"> </span><span class="c1"># where X is the minor version number of the release</span>
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>DTLMod-*
+<span class="gp">$ </span>mkdir<span class="w"> </span>build
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>build
+<span class="gp">$ </span>cmake<span class="w"> </span>..
+<span class="gp">$ </span>make
+<span class="gp">$ </span>sudo<span class="w"> </span>make<span class="w"> </span>install
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>..
+</pre></div>
+</div>
+<p>To benefit of the latest developments, get the current git version and recompile it as with stable archives.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/simgrid/DTLMod.git
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>DTLMod
+<span class="gp">$ </span>mkdir<span class="w"> </span>build
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>build
+<span class="gp">$ </span>cmake<span class="w"> </span>..
+<span class="gp">$ </span>make
+<span class="gp">$ </span>sudo<span class="w"> </span>make<span class="w"> </span>install
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>..
+</pre></div>
+</div>
+</section>
+<section id="testing-your-build">
+<h3>Testing your build<a class="headerlink" href="#testing-your-build" title="Link to this heading"></a></h3>
+<p>Once everything is built, you may want to test the result. DTLMod comes with an extensive test suite which requires to
+install <code class="docutils literal notranslate"><span class="pre">googletest</span></code> first. These tests are not built by default. You first have to build them with
+<code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">unit_tests</span></code>. You can then run them with <code class="docutils literal notranslate"><span class="pre">./unit_tests</span></code>. Additionally, the Python API can also be tested as
+follows:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>test/python
+<span class="gp">$ </span>python<span class="w"> </span>unit_tests_python.pymkdir<span class="w"> </span>build
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>-
+</pre></div>
+</div>
+<p>We run both test suites on every commit as part of a <strong>github action</strong> and the results can be found
+<a class="reference external" href="https://github.com/simgrid/DTLMod/actions">there</a>.</p>
+</section>
+<section id="python-specific-instructions">
+<h3>Python-specific instructions<a class="headerlink" href="#python-specific-instructions" title="Link to this heading"></a></h3>
+<p>Once you have the Python development headers installed as well as a recent version of <a class="reference external" href="https://pybind11.readthedocs.io/en/stable/">pybind11</a>
+(version at least 2.4), recompiling the Python bindings from the source amounts to:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span><span class="nb">cd</span><span class="w"> </span>DTLMod-source-tree
+<span class="gp">$ </span>python<span class="w"> </span>setup.py<span class="w"> </span>build<span class="w"> </span>install
+</pre></div>
+</div>
+<p>You may have to tell Python where to find the libraries (DTLMod, FSMod, and SimGrid), e.g., if you installed them in a
+non-standard directory, as follows:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nv">PYTHONPATH</span><span class="o">=</span><span class="s2">&quot;/usr/local/lib/python3.13/dist-packages&quot;</span><span class="w"> </span><span class="nv">LD_LIBRARY_PATH</span><span class="o">=</span><span class="s2">&quot;/usr/local/lib&quot;</span><span class="w"> </span>python<span class="w"> </span>your_script.py
+</pre></div>
+</div>
+<p>You can add those variables to your bash profile to not specify it each time by adding these lines to your <code class="docutils literal notranslate"><span class="pre">~/.profile</span></code>:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">export PYTHONPATH=&quot;$PYTHONPATH:/usr/local/lib/python3.13/dist-packages&quot;</span>
+<span class="go">export LD_LIBRARY_PATH=&quot;$LD_LIBRARY_PATH:/usr/local/lib&quot;</span>
+</pre></div>
+</div>
+</section>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Introduction.html" class="btn btn-neutral float-left" title="Introduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="New_project.html" class="btn btn-neutral float-right" title="Start a new project" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

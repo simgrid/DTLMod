@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inside the File engine &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Inside the Staging engine" href="Inside_Staging_engine.html" />
+    <link rel="prev" title="Engines" href="Engines.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">      Inside the File engine</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#on-the-publisher-side">On the publisher side</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#on-the-subscriber-side">On the subscriber side</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Inside the File engine</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Inside_File_engine.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="inside-the-file-engine">
+<span id="inside-file-engine"></span><h1>Inside the File engine<a class="headerlink" href="#inside-the-file-engine" title="Link to this heading"></a></h1>
+<p>One of the important characteristics of the <strong>File engine</strong> is that publishers and subscribers can interact with the
+DTL in a completely <strong>desynchronized</strong> way. Publishers can write down Variables into files, close the engine, and even
+disconnect themselves from the DTL before subscribers start to read the Variable from these files. However, when
+subscribers aim to retrieve Variables from the DTL while the publishers are exporting them, they must wait for the data
+to be fully written on storage (or more precisely for the simulation of the corresponding I/O operations to be over)
+before being able to read it. These two situations implies the implementation of additional checks related to which
+actors (i.e., publishers and/or subscribers) are currently using the File engine and of internal synchronization
+mechanisms.</p>
+<section id="on-the-publisher-side">
+<h2>On the publisher side<a class="headerlink" href="#on-the-publisher-side" title="Link to this heading"></a></h2>
+<p>The first publisher to call to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">begin_transaction()</span></code> marks that a new <a class="reference internal" href="app_API.html#concept-transaction"><span class="std std-ref">Transaction</span></a> is in progress
+and increments an internal transaction counter. Then, from the second transaction using that File engine only, the
+publishers check whether the previous transaction is over. To this end, the publishers are blocked on a <strong>condition
+variable</strong>, until all the <strong>write activities</strong> from that transaction are completed. Once the publishers are unblocked,
+they proceed with the current transaction, i.e., handling the calls to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">put()</span></code> made in the simulator’s code.</p>
+<p>These calls to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">put()</span></code> are delegated by the <a class="reference internal" href="app_API.html#concept-engine"><span class="std std-ref">Engine</span></a> to the selected <a class="reference internal" href="app_API.html#concept-transport"><span class="std std-ref">Transport method</span></a>. For
+each call to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">put()</span></code>, a publisher simply determines, based on the part of the <a class="reference internal" href="app_API.html#concept-variable"><span class="std std-ref">Variable</span></a> it
+locally owns and the <strong>selection</strong> made by the user, how many bytes it has to write and in which file (determined by
+the name of the <a class="reference internal" href="app_API.html#concept-stream"><span class="std std-ref">Stream</span></a>) to write them. With the <strong>default File transport method</strong>, each publisher
+creates and writes to a file called <code class="docutils literal notranslate"><span class="pre">data.i</span></code>, where <code class="docutils literal notranslate"><span class="pre">i</span></code> is the unique index of the publisher.</p>
+<p>The most important call is thus that to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code> where the I/O activities are created and started.
+In this function, each publisher goes over all the write operation it registered during the different calls to the
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">put()</span></code> functions made in this transaction, and creates the corresponding simulated I/O activities by calling
+the <code class="docutils literal notranslate"><span class="pre">File::write_async()</span></code> function of the
+<a class="reference external" href="https://github.com/simgrid/file-system-module">FSMod file system module</a>. These calls are made in <strong>detached</strong> mode,
+meaning that the publisher starts an <strong>asynchronous write</strong>, can forget about it, and proceeds with the next Variable.
+DTLMod also leverages the <strong>signal/callback</strong> mechanism provided by SimGrid to attach a callback triggered on the
+completion of a given asynchronous write activity. This callback does two things: 1) Notify all the actors waiting for
+the completion of that activity that it is now completed; and 2) Remove this activity from the list of <strong>pending
+activities</strong> maintained by the publisher that created it.</p>
+<p>The last action performed in <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code> is only done by the <strong>last publisher</strong> to call the function.
+This actor marks the <a class="reference internal" href="app_API.html#concept-transaction"><span class="std std-ref">Transaction</span></a> as over, increments an internal counter of completed transactions, and
+most importantly, notifies subscribers to that Stream that this transaction is complete. Note that the fact that a
+transaction is complete and the subscribers are notified does not mean that the corresponding I/O actictivites (i.e.,
+writing into files) are complete and that the subscribers can start reading the files to get Variables. However, it
+means that the publishers have all the publishers have determined what and where to write and that the subscribers are
+allowed to use this information to create their I/O activities (i.e., reading from files) as explained in the
+<a class="reference internal" href="#file-sub-side"><span class="std std-ref">On the subscriber side</span></a> section.</p>
+<p>To determine which publisher is the last to call the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code> function, DTLMod relies on a
+synchronization barrier for all the publishers using this Engine. This barrier is created in the very first to
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code>.</p>
+<p>The last operation performed on the publisher side of a File Engine is to <strong>close</strong> the engine by calling the
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">close()</span></code> function. The publishers first have to wait for the completion of the I/O activities strated by the
+last transaction performed on this engine, i.e., they are blocked on a condition variable and wait to be notified of
+the respective completion of these activities. Then the last publisher to call the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">close()</span></code> function actually
+closes the Engine, as well as all the opened files on the simulated file system. Finally, if the
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">set_metadata_export()</span></code> function has been called for the <a class="reference internal" href="app_API.html#concept-stream"><span class="std std-ref">Stream</span></a> that created the Engine, this
+publisher export a summary of all the I/O operations performed during the lifetime of the Engine.</p>
+</section>
+<section id="on-the-subscriber-side">
+<span id="file-sub-side"></span><h2>On the subscriber side<a class="headerlink" href="#on-the-subscriber-side" title="Link to this heading"></a></h2>
+<p>As publishers do, subscribers, when they enter <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">begin_transaction()</span></code>, first mark that a new
+<a class="reference internal" href="app_API.html#concept-transaction"><span class="std std-ref">Transaction</span></a> is in progress and increments an internal transaction counter. Then, if publishers are
+currently connected to the same <a class="reference internal" href="app_API.html#concept-stream"><span class="std std-ref">Stream</span></a>, subscribers may have to wait for all the publishers to have
+stored metadata for the matching transaction to ensure that they can determine what and from which file(s) to read
+data. This wait is implemented with a condition variable for which notifications are sent by publishers in
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code>.</p>
+<p>The calls to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">get()</span></code> made in a transaction are delegated by the <a class="reference internal" href="app_API.html#concept-engine"><span class="std std-ref">Engine</span></a> to the selected
+<a class="reference internal" href="app_API.html#concept-transport"><span class="std std-ref">Transport method</span></a>. For each call to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">get()</span></code>, a subscriber determines which files contain blocks of the
+requested (selection of) the variable it needs to read and opens the corresponding simulated files.</p>
+<p>To complete a transaction, subscribers have to wait for the file(s) they need to read to be fully written. The
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code> function thus start by waiting on a condition variable until subscribers are notified of
+the completion of the corresponding I/O activities. Then, subscribers can perform their read operations in a blocking
+fashion as Variables must be available right after the end of the transaction, and close the opened files.</p>
+<p>Finally, the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">close()</span></code> function on the subscriber side simply amounts to have the last subscriber calling the
+function. As for publishers, subscribers use an internal synchronization barrier to determine which subscriber is the
+last to call the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">close()</span></code> function.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Engines.html" class="btn btn-neutral float-left" title="Engines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Inside_Staging_engine.html" class="btn btn-neutral float-right" title="Inside the Staging engine" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

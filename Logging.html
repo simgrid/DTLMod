@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Logging and Debugging &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Connection Manager" href="Connection_manager.html" />
+    <link rel="prev" title="Describing your simulated platform" href="Platform.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">   Logging and Debugging</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#declaring-categories">Declaring categories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#logging-messages">Logging messages</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#activating-logging-categories">Activating logging categories</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#existing-categories">Existing categories</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Logging and Debugging</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Logging.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="logging-and-debugging">
+<span id="logging"></span><h1>Logging and Debugging<a class="headerlink" href="#logging-and-debugging" title="Link to this heading"></a></h1>
+<p>DTLMod relies on the logging mechanisms provided by SimGrid to allow you to configure at runtime which messages to
+display or omit. Each message produced in the code of DTLMod, and the simulators using it, is given a <strong>category</strong>
+(denoting its topic) and a <strong>priority</strong>. Then at runtime, each category is given a <strong>threshold</strong> (only messages of
+priority higher than that threshold are displayed), a <strong>layout</strong> (deciding how the messages in this category are
+formatted), and an <strong>appender</strong> (deciding what to do with the message: either print on stderr or to a file).</p>
+<p>For a complete description of SimGrid’ logging mechanisms, look at <a class="reference external" href="https://simgrid.org/doc/latest/The_XBT_toolbox.html#logging-api">this page</a>. In this section, we just present the main
+functions that you can use to instrument your DTLMod-based simulator and the different logging categories exposed by
+DTLMod for debugging purposes.</p>
+<section id="declaring-categories">
+<h2>Declaring categories<a class="headerlink" href="#declaring-categories" title="Link to this heading"></a></h2>
+<p>Typically, you can define a category for each module of your simulator implementation in order to independently control
+the logging for each module. Refer to the <a class="reference internal" href="#logging-categories"><span class="std std-ref">Existing categories</span></a> section for a list of all existing categories in
+DTLMod.</p>
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_LOG_NEW_CATEGORY">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_LOG_NEW_CATEGORY</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">category</span></span>, <span class="n"><span class="pre">description</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_LOG_NEW_CATEGORY" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a new category that is not within any existing categories. <code class="docutils literal notranslate"><span class="pre">category</span></code> must be a valid and unique identifier
+(such as <code class="docutils literal notranslate"><span class="pre">mycat</span></code>) and <code class="docutils literal notranslate"><span class="pre">description</span></code> must be a string, between quotes.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_LOG_NEW_SUBCATEGORY">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_LOG_NEW_SUBCATEGORY</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">category</span></span>, <span class="n"><span class="pre">parent_category</span></span>, <span class="n"><span class="pre">description</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_LOG_NEW_SUBCATEGORY" title="Link to this definition"></a><br /></dt>
+<dd><p>Creates a new category under the provided <code class="docutils literal notranslate"><span class="pre">parent_category</span></code>.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_LOG_NEW_DEFAULT_CATEGORY">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_LOG_NEW_DEFAULT_CATEGORY</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">category</span></span>, <span class="n"><span class="pre">description</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_LOG_NEW_DEFAULT_CATEGORY" title="Link to this definition"></a><br /></dt>
+<dd><p>Similar to <a class="reference internal" href="#c.XBT_LOG_NEW_CATEGORY" title="XBT_LOG_NEW_CATEGORY"><code class="xref c c-macro docutils literal notranslate"><span class="pre">XBT_LOG_NEW_CATEGORY</span></code></a>, and the created category is the default one in the current source file.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_LOG_NEW_DEFAULT_SUBCATEGORY">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_LOG_NEW_DEFAULT_SUBCATEGORY</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">category</span></span>, <span class="n"><span class="pre">parent_category</span></span>, <span class="n"><span class="pre">description</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_LOG_NEW_DEFAULT_SUBCATEGORY" title="Link to this definition"></a><br /></dt>
+<dd><p>Similar to <a class="reference internal" href="#c.XBT_LOG_NEW_SUBCATEGORY" title="XBT_LOG_NEW_SUBCATEGORY"><code class="xref c c-macro docutils literal notranslate"><span class="pre">XBT_LOG_NEW_SUBCATEGORY</span></code></a>, and the created category is the default one in the current source file.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_LOG_EXTERNAL_CATEGORY">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_LOG_EXTERNAL_CATEGORY</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">category</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_LOG_EXTERNAL_CATEGORY" title="Link to this definition"></a><br /></dt>
+<dd><p>Make an external category (i.e., a category declared in another source file) visible from this source file.
+In each source file, at most one category can be the default one.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_LOG_EXTERNAL_DEFAULT_CATEGORY">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_LOG_EXTERNAL_DEFAULT_CATEGORY</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">category</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_LOG_EXTERNAL_DEFAULT_CATEGORY" title="Link to this definition"></a><br /></dt>
+<dd><p>Use an external category as default category in this source file.</p>
+</dd></dl>
+
+</section>
+<section id="logging-messages">
+<h2>Logging messages<a class="headerlink" href="#logging-messages" title="Link to this heading"></a></h2>
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_CRITICAL">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_CRITICAL</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">format_string</span></span>, <span class="n"><span class="pre">parameters...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_CRITICAL" title="Link to this definition"></a><br /></dt>
+<dd><p>Report a fatal error to the default category.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_ERROR">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_ERROR</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">format_string</span></span>, <span class="n"><span class="pre">parameters...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_ERROR" title="Link to this definition"></a><br /></dt>
+<dd><p>Report an error to the default category.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_WARN">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_WARN</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">format_string</span></span>, <span class="n"><span class="pre">parameters...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_WARN" title="Link to this definition"></a><br /></dt>
+<dd><p>Report a warning or an important information to the default category.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_INFO">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_INFO</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">format_string</span></span>, <span class="n"><span class="pre">parameters...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_INFO" title="Link to this definition"></a><br /></dt>
+<dd><p>Report an information of regular importance to the default category.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_VERB">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_VERB</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">format_string</span></span>, <span class="n"><span class="pre">parameters...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_VERB" title="Link to this definition"></a><br /></dt>
+<dd><p>Report a verbose information to the default category.</p>
+</dd></dl>
+
+<dl class="c macro">
+<dt class="sig sig-object c" id="c.XBT_DEBUG">
+<span class="sig-name descname"><span class="n"><span class="pre">XBT_DEBUG</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">format_string</span></span>, <span class="n"><span class="pre">parameters...</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.XBT_DEBUG" title="Link to this definition"></a><br /></dt>
+<dd><p>Report a debug-only information to the default category.</p>
+</dd></dl>
+
+<p>For each of the logging macros, the first parameter must be a printf-like format string, and the subsequent parameters
+must match this format.</p>
+</section>
+<section id="activating-logging-categories">
+<h2>Activating logging categories<a class="headerlink" href="#activating-logging-categories" title="Link to this heading"></a></h2>
+<p>There are two ways to activate a specific logging category: on command line and within the code of your simulator.</p>
+<p>On command line, you have to append a <code class="docutils literal notranslate"><span class="pre">--log=</span></code> flag to the call to your simulator. The value associated to this flag
+is composed of three part: the <strong>logging category</strong>, followed by <code class="docutils literal notranslate"><span class="pre">.threshold:</span></code> (or anything subset between <code class="docutils literal notranslate"><span class="pre">.t:</span></code>
+and <code class="docutils literal notranslate"><span class="pre">.threshol:</span></code> to save time), and the desired <strong>priority</strong>.</p>
+<p>You can also specify which format to apply to a category. For instance, <cite>–log=mycat.fmt:%m</cite> reduces the output to the
+user-message only, removing any decoration such as the date or the actor pid. For more details on format configuration,
+we refer you to the
+<a class="reference external" href="https://simgrid.org/doc/latest/Configuring_SimGrid.html#format-configuration">SimGrid documentation</a>.</p>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">--log=no_loc</span></code> hides the source locations (file names and line numbers) from where the logs are produced.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>./my_simulator<span class="w"> </span>--log<span class="o">=</span>mycat.threshold:debug<span class="w"> </span>--log<span class="o">=</span>mycat.fmt:%m<span class="w"> </span>--no-loc
+</pre></div>
+</div>
+<p>To configure and activate a logging category from your simulator code, use the following function (declared in
+<cite>xbt/log.h</cite>).</p>
+<dl class="c function">
+<dt class="sig sig-object c" id="c.xbt_log_control_set">
+<span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">xbt_log_control_set</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="w"> </span><span class="p"><span class="pre">*</span></span><span class="n"><span class="pre">setting</span></span><span class="sig-paren">)</span><a class="headerlink" href="#c.xbt_log_control_set" title="Link to this definition"></a><br /></dt>
+<dd><p>Sets the provided <code class="docutils literal notranslate"><span class="pre">setting</span></code> as if it was passed in a <code class="docutils literal notranslate"><span class="pre">--log</span></code> command-line parameter.</p>
+</dd></dl>
+
+</section>
+<section id="existing-categories">
+<span id="logging-categories"></span><h2>Existing categories<a class="headerlink" href="#existing-categories" title="Link to this heading"></a></h2>
+<p>Here follows the list of all the logging categories existing in the implementation of DTLMod.</p>
+<ul>
+<li><p>dtlmod</p>
+<ul class="simple">
+<li><p>dtl</p></li>
+<li><p>dtlmod_stream</p></li>
+<li><p>dtlmod_engine</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>dtlmod_file_engine</p></li>
+<li><p>dtlmod_staging_engine</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>dtlmod_transport</p></li>
+</ul>
+<blockquote>
+<div><ul class="simple">
+<li><p>dtlmod_file_transport</p></li>
+<li><p>dtlmod_staging_transport</p></li>
+</ul>
+</div></blockquote>
+<ul class="simple">
+<li><p>dtlmod_variable</p></li>
+<li><p>dtlmod_metadata</p></li>
+</ul>
+</li>
+</ul>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Platform.html" class="btn btn-neutral float-left" title="Describing your simulated platform" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Connection_manager.html" class="btn btn-neutral float-right" title="Connection Manager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

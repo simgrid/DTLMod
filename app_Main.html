@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Composing simulated actors and running the simulation &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Describing your simulated platform" href="Platform.html" />
+    <link rel="prev" title="Simulated actors" href="app_Actors.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Composing simulated actors and running the simulation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/app_Main.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="composing-simulated-actors-and-running-the-simulation">
+<span id="dtlmod-main"></span><h1>Composing simulated actors and running the simulation<a class="headerlink" href="#composing-simulated-actors-and-running-the-simulation" title="Link to this heading"></a></h1>
+<p>The code below shows how to create and run a simulation-analysis in situ processing workflow using DTLMod to exchange
+data between the <code class="docutils literal notranslate"><span class="pre">MPI_publisher</span></code> and the <code class="docutils literal notranslate"><span class="pre">subscriber</span></code> that runs on a single core.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="kt">char</span><span class="o">**</span><span class="w"> </span><span class="n">argv</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">sg4</span><span class="o">::</span><span class="n">Engine</span><span class="w"> </span><span class="n">e</span><span class="p">(</span><span class="o">&amp;</span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+<span class="w">  </span><span class="n">e</span><span class="p">.</span><span class="n">load_platform</span><span class="p">(</span><span class="s">&quot;./platform.so&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">sub_host</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">get_host_by_name</span><span class="p">(</span><span class="s">&quot;node-0&quot;</span><span class="p">);</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">pub_hosts</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">e</span><span class="p">.</span><span class="n">get_hosts_from_MPI_hostfile</span><span class="p">(</span><span class="s">&quot;./hostfile&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Create the data transport layer</span>
+<span class="w">  </span><span class="n">DTL</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;./DTL_config_file.json&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Start a simulated MPI code instance run by multiple actors</span>
+<span class="w">  </span><span class="n">SMPI_app_instance_start</span><span class="p">(</span><span class="s">&quot;MPI_publisher&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">MPI_publisher</span><span class="p">,</span><span class="w"> </span><span class="n">pub_hosts</span><span class="p">,</span><span class="w"> </span><span class="n">argc</span><span class="p">,</span><span class="w"> </span><span class="n">argv</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Create a single in situ analysis actor</span>
+<span class="w">  </span><span class="n">e</span><span class="p">.</span><span class="n">add_actor</span><span class="p">(</span><span class="s">&quot;subscriber&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">sub_host</span><span class="p">,</span><span class="w"> </span><span class="n">subscriber</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// Run the simulation</span>
+<span class="w">  </span><span class="n">e</span><span class="p">.</span><span class="n">run</span><span class="p">();</span>
+
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This code first creates the SimGrid engine in charge of the execution of the simulation and loads a shared library that
+describes the simulated platform. Then, it assigns roles to hosts (i.e., simulated compute nodes) in that platform. The
+subscriber component is executed on <code class="docutils literal notranslate"><span class="pre">node-0</span></code> while where the MPI ranks will run is defined in a regular MPI hostfile.</p>
+<p>The DTL is created by calling <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code> (line~9). An instance of the MPI publisher and the subscriber
+actor are then created before running the simulation.</p>
+<p>In situ processing workflows involving more than two components can be simulated using the same principles:</p>
+<ol class="arabic simple">
+<li><p>each component is either an MPI code or a simulated actor;</p></li>
+<li><p>each component creates one or more streams to publish and/or subscribe to data;</p></li>
+<li><p>the streams create the flow dependencies between components and form the workflow.</p></li>
+</ol>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="app_Actors.html" class="btn btn-neutral float-left" title="Simulated actors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Platform.html" class="btn btn-neutral float-right" title="Describing your simulated platform" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2025, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
