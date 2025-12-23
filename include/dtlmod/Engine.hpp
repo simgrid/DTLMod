@@ -78,7 +78,7 @@ public:
   virtual void sub_close()                 = 0;
 
   std::string metadata_file_;
-  void export_metadata_to_file();
+  void export_metadata_to_file() const;
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION

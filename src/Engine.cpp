@@ -85,7 +85,7 @@ void Engine::add_subscriber(sg4::ActorPtr actor)
   subscribers_.insert(actor);
 }
 
-void Engine::export_metadata_to_file()
+void Engine::export_metadata_to_file() const
 {
   std::ofstream metadata_export(metadata_file_, std::ofstream::out);
   for (const auto& [name, v] : stream_->get_all_variables_internal())
