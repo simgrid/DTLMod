@@ -7,11 +7,11 @@ if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
 
-project(dtlmod VERSION 0.1 DESCRIPTION "Data Transport Layer Module")
+project(dtlmod VERSION 0.2 DESCRIPTION "Data Transport Layer Module")
 
 include(GNUInstallDirs)
 find_package(Boost 1.48)
-find_package(SimGrid 4.0.1 REQUIRED)
+find_package(SimGrid 4.1 REQUIRED)
 find_package(FSMod 0.3.1 REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
@@ -28,7 +28,7 @@ set(CMAKE_CXX_FLAGS "-O3 -funroll-loops -fno-strict-aliasing -flto=auto")
 
 # build the version number
 set(DTLMOD_VERSION_MAJOR "0")
-set(DTLMOD_VERSION_MINOR "1")
+set(DTLMOD_VERSION_MINOR "2")
 set(DTLMOD_VERSION_PATCH "0")
 set(DTLMOD_VERSION_EXTRA "dev")
 
@@ -176,7 +176,7 @@ set (CONFIG_FILES
 add_library(dtlmod SHARED ${SOURCE_FILES})
 
 set_target_properties(dtlmod PROPERTIES
-  SOVERSION 0.1
+  SOVERSION 0.2
   LINKER_LANGUAGE CXX
   PUBLIC_HEADER "${HEADER_FILES}")
 

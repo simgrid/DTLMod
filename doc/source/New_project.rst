@@ -25,8 +25,8 @@ simulator from a given set of source files.
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -funroll-loops -fno-strict-aliasing -flto=auto")
 
     set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
-    find_package(SimGrid 4.0.1 REQUIRED)
-    find_package(FSMod 0.3.1 REQUIRED)
+    find_package(SimGrid 4.1 REQUIRED)
+    find_package(FSMod 0.4 REQUIRED)
     find_package(DTLMod REQUIRED)
  
     include_directories(

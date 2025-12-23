@@ -17,7 +17,7 @@ jobs:
     env:
       BUILD_WRAPPER_OUT_DIR: bw-outputs
     steps:
-      - uses: actions/checkout@master
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Install prereqs
@@ -80,8 +80,9 @@ jobs:
           lcov --remove coverage.info '*/test/*' '*/include/*'
           bash <(curl -s https://codecov.io/bash) -f coverage.info -t ${CODECOV_TOKEN}
 
-      - name: Install sonar-scanner and build-wrapper
-        uses: SonarSource/sonarcloud-github-c-cpp@v2
+
+      - name: Install Build Wrapper
+        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v7
       - name: Run build-wrapper
         run: |
           mkdir build
@@ -101,14 +102,18 @@ jobs:
         run: |
           gcovr -e test -e examples --sonarqube -u -o coverage.xml --exclude-throw-branches \
                 --gcov-ignore-parse-errors --exclude-unreachable-branches
-      - name: Run sonar-scanner
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        run: |
-          sonar-scanner --define sonar.cfamily.compile-commands="${{ env.BUILD_WRAPPER_OUT_DIR }}/compile_commands.json" \
-                        --define sonar.coverageReportPaths=coverage.xml
 
+      - name: Sonar Scan
+        uses: SonarSource/sonarqube-scan-action@v7
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        with:
+          args: >
+            -Dsonar.projectKey=simgrid_dtlmod
+            -Dsonar.organization=simgrid
+            -Dsonar.cfamily.build-wrapper-output=${{ env.BUILD_WRAPPER_OUT_DIR }}
+            -Dsonar.coverageReportPaths=coverage.xml
+ 
       - name: Install Doxygen and Sphinx
         run: |
           sudo apt-get install -y python3-breathe python3-sphinx python3-sphinx-rtd-theme python3-sphinx-copybutton python3-sphinx-tabs

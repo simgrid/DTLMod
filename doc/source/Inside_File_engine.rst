@@ -66,4 +66,22 @@ publisher export a summary of all the I/O operations performed during the lifeti
 On the subscriber side
 ----------------------
 
-TBD
+As publishers do, subscribers, when they enter :cpp:func:`begin_transaction`, first mark that a new
+:ref:`Concept_Transaction` is in progress and increments an internal transaction counter. Then, if publishers are
+currently connected to the same :ref:`Concept_Stream`, subscribers may have to wait for all the publishers to have
+stored metadata for the matching transaction to ensure that they can determine what and from which file(s) to read
+data. This wait is implemented with a condition variable for which notifications are sent by publishers in
+:cpp:func:`end_transaction`.
+
+The calls to :cpp:func:`get` made in a transaction are delegated by the :ref:`Concept_Engine` to the selected
+:ref:`Concept_Transport`. For each call to :cpp:func:`get`, a subscriber determines which files contain blocks of the
+requested (selection of) the variable it needs to read and opens the corresponding simulated files.
+
+To complete a transaction, subscribers have to wait for the file(s) they need to read to be fully written. The
+:cpp:func:`end_transaction` function thus start by waiting on a condition variable until subscribers are notified of
+the completion of the corresponding I/O activities. Then, subscribers can perform their read operations in a blocking
+fashion as Variables must be available right after the end of the transaction, and close the opened files.
+
+Finally, the :cpp:func:`close` function on the subscriber side simply amounts to have the last subscriber calling the
+function. As for publishers, subscribers use an internal synchronization barrier to determine which subscriber is the
+last to call the :cpp:func:`close` function.
