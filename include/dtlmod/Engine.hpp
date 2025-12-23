@@ -82,7 +82,6 @@ public:
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  Stream* get_stream() const { return stream_; }
   void close_stream();
 
   virtual void create_transport(const Transport::Method& transport_method) = 0;
@@ -92,7 +91,6 @@ protected:
 
   void add_publisher(sg4::ActorPtr actor);
   void rm_publisher(sg4::ActorPtr actor) { publishers_.erase(actor); }
-  void add_publish_activity(sg4::ActivityPtr a) { pub_transaction_.push(a); }
   [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const { return publishers_; }
   [[nodiscard]] size_t get_num_publishers() const { return publishers_.size(); }
   [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const { return publishers_.find(actor) != publishers_.end(); }
@@ -100,7 +98,6 @@ protected:
   [[nodiscard]] int is_last_publisher() const { return (pub_barrier_ && pub_barrier_->wait()); }
 
   void add_subscriber(sg4::ActorPtr actor);
-  void add_subscribe_activity(sg4::ActivityPtr a) { sub_transaction_.push(a); }
   void rm_subscriber(sg4::ActorPtr actor) { subscribers_.erase(actor); }
   [[nodiscard]] size_t get_num_subscribers() const { return subscribers_.size(); }
   [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const { return subscribers_.find(actor) != subscribers_.end(); }
