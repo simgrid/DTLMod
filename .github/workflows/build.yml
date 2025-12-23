@@ -113,7 +113,6 @@ jobs:
             -Dsonar.organization=simgrid
             -Dsonar.cfamily.build-wrapper-output=${{ env.BUILD_WRAPPER_OUT_DIR }}
             -Dsonar.coverageReportPaths=coverage.xml
-            -Dsonar.sources=.
  
       - name: Install Doxygen and Sphinx
         run: |
