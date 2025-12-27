@@ -1,3 +1,8 @@
+/* Copyright (c) 2022-2026. The SWAT Team. All rights reserved.          */
+
+/* This program is free software; you can redistribute it and/or modify it
+ * under the terms of the license (GNU LGPL) which comes with this package. */
+
 #ifndef DTLMOD_DTLMOD_HPP
 #define DTLMOD_DTLMOD_HPP
 
