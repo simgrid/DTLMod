@@ -1,4 +1,4 @@
-.. Copyright 2025
+.. Copyright 2025-2026
 .. DTLMod documentation master file
 
 .. _index:
