@@ -1,4 +1,4 @@
-.. Copyright 2025
+.. Copyright 2025-2026
 
 .. _DTLMod_API:
 
@@ -105,14 +105,17 @@ The location of the file system has a direct impact on the simulation of I/Os by
 DTL accesses a remote file system, a write (resp. read) operation implies the simulation of a network communication
 before (resp. after) the simulation of the corresponding I/O operation on a storage device.
 
+More details on what happens under the hood when using a File Engine are given in the 
+:ref:`Inside_file_engine` section of the documentation.
+
 DTLMod exposes two |Concept_Transport|_ methods for staging engines. The first method simulates both **memory copy**
 and **network transfer** while ensuring the respect of flow dependencies. Whether a data copy or transfer is simulated
 depends on the respective mapping of the publisher and subscriber on computing resources. If both run on the same node,
-they virtually share a memory space, and DTLMod simulates a deep memory copy---as an intra-communication whose
-performance can be configured in description of the simulated platform. Otherwise, it simulates a network
+they virtually share a memory space, and DTLMod simulates a deep memory copy---as an intra-node communication whose
+performance can be configured in the description of the simulated platform. Otherwise, it simulates a network
 communication.
 
-To implement this, DTLMod leverages `SimGrid's **mailbox** abstraction
+To implement this, DTLMod leverages `SimGrid's mailbox abstraction
 <https://simgrid.org/doc/latest/app_s4u.html#mailboxes>`_ which acts as a rendez-vous point between actors. Only when
 two actors meet on such a rendez-vous point, the simulation of a memory copy or data transfer starts.
 
@@ -121,17 +124,11 @@ evaluation studies, e.g., all the data exchanges made through the DTL take zero 
 abstraction exposed by SimGrid to simulate inter-process communications: **Message queues** have the same semantic and
 purpose as **mailboxes**, ensuring the respect of control and flow dependencies, but do not induce any simulated time.
 
-When streaming data, a :math:`M \times N` data redistribution among *M* publishers and *N* subscribers may be
-necessary. The exact redistribution pattern is automatically determined by DTLMod in three steps:
+Whether to internally rely on mailboxes or message queues to stream data between publishers and subscribers is done by
+selecting the :ref:`Concept_Transport` **method** of the Stream to either ``Transport::Method::Mailbox`` or
+``Transport::Method::MQ``. More details on the internals of Staging engines can be found in the
+:ref:`Inside_staging_engine` section of the documentation.
 
-  1. When a publisher **puts** a variable into a stream, it asynchronously waits for data requests (using
-     zero-simulated-cost message queues) from any subscriber that opened that stream;
-  2. When a subscriber **gets** (a subset of) this variable from the stream, it computes which publishers own pieces
-     of its local view of the variable and send them each a request to put the corresponding pieces, defined by offsets
-     and element counts, in dedicated mailboxes (resp. message queues);
-  3. When publishers end their transaction, they asynchronously put the requested pieces in these mailboxes (resp.
-     message queues). DTLMod then simulates the corresponding data exchanges, and may possibly force actors to wait for
-     their completion when a new transaction starts.
 
 .. |Concept_Variable| replace:: **Variable**
 .. _Concept_Variable:

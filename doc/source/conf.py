@@ -19,7 +19,7 @@ if read_the_docs_build:
 
 version = u'0.2.0'
 project = u'DTLMod'
-copyright = u'2022-2025, The SWAT Team'
+copyright = u'2022-2026, The SWAT Team'
 author = u'The SWAT Team'
 
 # -- General configuration ---------------------------------------------------
