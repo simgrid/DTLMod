@@ -23,11 +23,7 @@ void Metadata::export_to_file(std::ofstream& ostream) const
   ostream << variable_->get_element_size() << "\t" << variable_->get_cname() << "\t" << transaction_infos_.size();
   ostream << "*{";
 
-  std::vector<size_t> shape;
-  if (variable_->is_reduced())
-    shape = variable_->get_reduction_method()->get_reduced_variable_shape(variable_);
-  else
-    shape = variable_->get_shape();
+  std::vector<size_t> shape = variable_->get_shape();
 
   for (unsigned int i = 0; i < shape.size() - 1; i++)
     ostream << shape[i] << ",";
