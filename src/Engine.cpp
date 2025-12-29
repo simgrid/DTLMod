@@ -38,7 +38,7 @@ void Engine::begin_transaction()
 void Engine::put(std::shared_ptr<Variable> var) const
 {
   if (var->is_reduced()) {
-    // Perform a Exec activity before putting the variable into the DTL to account for the time needed to reduce it.
+    // Perform an Exec activity before putting the variable into the DTL to account for the time needed to reduce it.
     sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(var));
     XBT_DEBUG("Variable %s has been reduced!", var->get_cname());
     // Now put the reduced version of the variable into the DTL, i.e., using its reduced local size.
