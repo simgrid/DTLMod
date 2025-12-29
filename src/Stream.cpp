@@ -115,13 +115,17 @@ Stream* Stream::unset_metadata_export()
 
 std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)
 {
+  auto it = reduction_methods_.find(name);
+  if (it != reduction_methods_.end())
+    return it->second;
+
   std::shared_ptr<ReductionMethod> reduction_method;
   if (name == "Decimation" || name == "decimation")
     reduction_method = std::make_shared<DecimationReductionMethod>(name);
   else if (name == "Compression" || name == "compression")
-    reduction_method = std::make_shared<CompressionReductionMethod>(name);  
+    reduction_method = std::make_shared<CompressionReductionMethod>(name);
 
-  reduction_methods_.push_back(reduction_method);
+  reduction_methods_.try_emplace(name, reduction_method);
 
   return reduction_method;
 }

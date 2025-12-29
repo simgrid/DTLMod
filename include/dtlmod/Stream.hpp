@@ -50,7 +50,7 @@ private:
   Mode access_mode_;
 
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
-  std::vector<std::shared_ptr<ReductionMethod>> reduction_methods_;
+  std::unordered_map<std::string, std::shared_ptr<ReductionMethod>> reduction_methods_;
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
