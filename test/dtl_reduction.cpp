@@ -62,6 +62,8 @@ TEST_F(DTLReductionTest, BogusDecimationSetting)
       stream->set_metadata_export();
       XBT_INFO("Create a 3D variable");
       auto var = stream->define_variable("var3D", {640, 640, 640}, {0, 0, 0}, {640, 640, 640}, sizeof(double));
+      XBT_INFO("Define a unknown Reduction Method, should fail");
+      ASSERT_THROW(decimator = stream->define_reduction_method("reduction"), dtlmod::UnknownReductionMethodException);
       XBT_INFO("Define a Decimation Reduction Method");
       ASSERT_NO_THROW(decimator = stream->define_reduction_method("decimation"));
       XBT_INFO("Assign the decimation method to 'var3D' with a bogus option, should fail.");
@@ -180,6 +182,49 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
       XBT_INFO("Disconnect the actor from the DTL");
       dtlmod::DTL::disconnect();
     });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLReductionTest, MultiPubDecimationFileEngine)
+{
+  DO_TEST_WITH_FORK([this]() {
+    xbt_log_control_set("dtlmod_decimation_reduction.thresh:debug");
+    this->setup_platform();
+
+    for (long unsigned int i = 0; i < 2; i++) {
+      host_->add_actor("pub" + std::to_string(i), [this, i]() {
+        std::shared_ptr<dtlmod::ReductionMethod> decimator;
+        auto dtl    = dtlmod::DTL::connect();
+        auto stream = dtl->add_stream("my-output");
+        stream->set_transport_method(dtlmod::Transport::Method::File);
+        stream->set_engine_type(dtlmod::Engine::Type::File);
+        XBT_INFO("Create a 2D-array variable with 20kx20k double, each publisher owns one half (along 2nd dimension)");
+        auto var = stream->define_variable("var", {20000, 20000}, {0, 10000 * i}, {20000, 10000}, sizeof(double));
+        XBT_INFO("Define a Decimation Reduction Method");
+        ASSERT_NO_THROW(decimator = stream->define_reduction_method("decimation"));
+        auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+        XBT_INFO("Wait for all publishers to have opened the stream");
+        sg4::this_actor::sleep_for(.5);
+        XBT_INFO("Assign the decimation method to 'var3D'");
+        ASSERT_NO_THROW(var->set_reduction_operation(decimator, {{"stride", "2,2"}}));
+
+        XBT_INFO("Start a Transaction");
+        ASSERT_NO_THROW(engine->begin_transaction());
+        XBT_INFO("Put Variable 'var' into the DTL");
+        ASSERT_NO_THROW(engine->put(var));
+        XBT_INFO("End a Transaction");
+        ASSERT_NO_THROW(engine->end_transaction());
+
+        sg4::this_actor::sleep_for(1);
+        XBT_INFO("Close the engine");
+        ASSERT_NO_THROW(engine->close());
+        XBT_INFO("Disconnect the actor");
+        dtlmod::DTL::disconnect();
+      });
+    }
 
     // Run the simulation
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
