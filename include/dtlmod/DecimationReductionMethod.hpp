@@ -42,6 +42,11 @@ protected:
   }
 
   [[nodiscard]] const std::vector<size_t>& get_stride() const { return stride_; }
+  void set_stride(const std::vector<size_t>& stride) { stride_ = stride; }
+  [[nodiscard]] const std::string& get_interpolation_method() const { return interpolation_method_; }
+  void set_interpolation_method(const std::string& method) { interpolation_method_ = method; }
+  [[nodiscard]] double get_cost_per_element() const { return cost_per_element_; }
+  void set_cost_per_element(double cost) { cost_per_element_ = cost; }
 
   [[nodiscard]] const std::vector<size_t>& get_reduced_shape() const { return reduced_shape_; }
 
@@ -65,6 +70,8 @@ protected:
 
   [[nodiscard]] double get_flop_amount_to_decimate() const
   {
+    XBT_CDEBUG(dtlmod, "Compute decimation cost with: cost_per_element = %.2f and interpolation_method = %s",
+               cost_per_element_, interpolation_method_.c_str());
     double amount = cost_per_element_;
     if (interpolation_method_.empty()) {
       amount *= var_->get_local_size();
@@ -74,8 +81,7 @@ protected:
       amount = 4 * amount * var_->get_local_size();
     } else if (interpolation_method_ == "cubic") {
       amount = 8 * amount * var_->get_local_size();
-    } else
-      throw UnknownDecimationInterpolationException(XBT_THROW_POINT, interpolation_method_.c_str());
+    } // Sanity check done when parameterizing the reduction method for this variable
     return amount;
   }
 
@@ -94,31 +100,75 @@ protected:
   void parameterize_for_variable(std::shared_ptr<Variable> var,
                                  const std::map<std::string, std::string>& parameters) override
   {
-    std::vector<size_t> stride;
-    std::string interpolation_method = "";
-    double cost_per_element          = 1.0;
+    std::vector<size_t> new_stride;
+    std::string new_interpolation_method = "";
+    double new_cost_per_element          = 1.0;
+
+    // Detect existing parameterization (if any).
+    auto it           = per_variable_parameterizations_.find(var);
+    const bool exists = (it != per_variable_parameterizations_.end());
+
+    // Initialize from existing values (if present) to support partial updates.
+    if (exists) {
+      const auto& existing = it->second;
+      // Replace these getters with your actual API:
+      new_stride               = existing->get_stride();
+      new_interpolation_method = existing->get_interpolation_method();
+      new_cost_per_element     = existing->get_cost_per_element();
+    }
 
     for (const auto& [key, value] : parameters) {
       if (key == "stride") {
         std::vector<std::string> tokens;
         boost::split(tokens, value, boost::is_any_of(","), boost::token_compress_on);
+
         if (var->get_shape().size() != tokens.size())
           throw InconsistentDecimationStrideException(
               XBT_THROW_POINT, "Decimation Stride and Variable Shape vectors must have the same size. Stride: " +
                                    std::to_string(tokens.size()) +
                                    ", Shape: " + std::to_string(var->get_shape().size()));
-        for (const auto& t : tokens)
-          stride.push_back(std::stoul(t));
+
+        std::vector<size_t> parsed_stride;
+        parsed_stride.reserve(tokens.size());
+        for (const auto& t : tokens) {
+          auto dim_stride = std::stoul(t);
+          if (t[0] == '-' || dim_stride == 0)
+            throw InconsistentDecimationStrideException(XBT_THROW_POINT, "Stride values must be strictly positive");
+          parsed_stride.push_back(dim_stride);
+        }
+        new_stride = std::move(parsed_stride);
+
       } else if (key == "interpolation") {
-        interpolation_method = value;
-      } else if (key == "cost_per_element") {
-        cost_per_element = std::stod(value);
-      } else
+        if (value == "linear" || value == "quadratic" || value == "cubic")
+          new_interpolation_method = value;
+        else
+          throw UnknownDecimationInterpolationException(XBT_THROW_POINT,
+                                                        std::string("Unknown interpolation method: ") + value +
+                                                            " (options are: linear, cubic, or quadratic).");
+      } else if (key == "cost_per_element")
+        new_cost_per_element = std::stod(value);
+      else
         throw UnknownDecimationOptionException(XBT_THROW_POINT, key.c_str());
     }
 
-    per_variable_parameterizations_.try_emplace(
-        var, std::make_shared<ParameterizedDecimation>(var, stride, interpolation_method, cost_per_element));
+    if (!exists) {
+      // First-time parameterization
+      per_variable_parameterizations_.try_emplace(
+          var,
+          std::make_shared<ParameterizedDecimation>(var, new_stride, new_interpolation_method, new_cost_per_element));
+      return;
+    }
+
+    // If already exists, update only if changed.
+    const auto& existing = it->second;
+
+    // Compare with existing to avoid unnecessary churn
+    if (existing->get_stride() != new_stride)
+      existing->set_stride(new_stride);
+    if (existing->get_interpolation_method() != new_interpolation_method)
+      existing->set_interpolation_method(new_interpolation_method);
+    if (existing->get_cost_per_element() != new_cost_per_element)
+      existing->set_cost_per_element(new_cost_per_element);
   }
 
   void reduce_variable(std::shared_ptr<Variable> var)
