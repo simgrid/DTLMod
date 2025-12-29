@@ -4,6 +4,7 @@
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
 #include <cmath>
+#include <fstream>
 #include <gtest/gtest.h>
 #include <simgrid/host.h>
 #include <simgrid/s4u/Actor.hpp>
@@ -46,6 +47,48 @@ public:
   }
 };
 
+TEST_F(DTLReductionTest, BogusDecimationSetting)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("TestActor", [this]() {
+      std::shared_ptr<dtlmod::ReductionMethod> decimator;
+      XBT_INFO("Connect to the DTL");
+      auto dtl = dtlmod::DTL::connect();
+      XBT_INFO("Create a stream");
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      stream->set_metadata_export();
+      XBT_INFO("Create a 3D variable");
+      auto var = stream->define_variable("var3D", {640, 640, 640}, {0, 0, 0}, {640, 640, 640}, sizeof(double));
+      XBT_INFO("Define a Decimation Reduction Method");
+      ASSERT_NO_THROW(decimator = stream->define_reduction_method("decimation"));
+      XBT_INFO("Assign the decimation method to 'var3D' with a bogus option, should fail.");
+      ASSERT_THROW(var->set_reduction_operation(decimator, {{"bogus", "-1"}}),
+                   dtlmod::UnknownDecimationOptionException);
+      XBT_INFO("Assign the decimation method to 'var3D' with only a 2D stride, should fail");
+      ASSERT_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2"}}),
+                   dtlmod::InconsistentDecimationStrideException);
+      XBT_INFO("Assign the decimation method to 'var3D' with a negative stride value, should fail");
+      ASSERT_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2,-1"}}),
+                   dtlmod::InconsistentDecimationStrideException);
+      XBT_INFO("Assign the decimation method to 'var3D' with a stride value of 0, should fail");
+      ASSERT_THROW(var->set_reduction_operation(decimator, {{"stride", "1,0,1"}}),
+                   dtlmod::InconsistentDecimationStrideException);
+      XBT_INFO("Assign the decimation method to 'var3D' with an unknown interpolation method, should fail");
+      ASSERT_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2,4"}, {"interpolation", "bogus"}}),
+                   dtlmod::UnknownDecimationInterpolationException);
+
+      XBT_INFO("Disconnect the actor from the DTL");
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
 {
   DO_TEST_WITH_FORK([this]() {
@@ -86,9 +129,54 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
       ASSERT_NO_THROW(engine->put(var));
       XBT_INFO("End a Transaction");
       engine->end_transaction();
+      XBT_INFO("Sleep until t = 8s");
+      sg4::this_actor::sleep_until(8);
+      XBT_INFO("Triple the cost per element of the decimation method assigned to 'var3D'");
+      ASSERT_NO_THROW(var->set_reduction_operation(decimator, {{"cost_per_element", "3"}}));
+      XBT_INFO("Start a Transaction");
+      engine->begin_transaction();
+      XBT_INFO("Put reduced Variable 'var' into the DTL");
+      ASSERT_NO_THROW(engine->put(var));
+      XBT_INFO("End a Transaction");
+      engine->end_transaction();
+      XBT_INFO("Sleep until t = 10s");
+      sg4::this_actor::sleep_until(10);
+      XBT_INFO("Create a second 3D variable");
+      auto var2 = stream->define_variable("var3D_2", {640, 640, 640}, {0, 0, 0}, {640, 640, 640}, sizeof(double));
+      XBT_INFO("Assign the decimation method to 'var3D_2'");
+      ASSERT_NO_THROW(var2->set_reduction_operation(decimator, {{"stride", "2,2,2"}, {"interpolation", "quadratic"}}));
+      XBT_INFO("Start a Transaction");
+      engine->begin_transaction();
+      XBT_INFO("Put reduced Variable 'var2' into the DTL");
+      ASSERT_NO_THROW(engine->put(var2));
+      XBT_INFO("End a Transaction");
+      engine->end_transaction();
       XBT_INFO("Close the engine");
       engine->close();
-      
+
+      XBT_INFO("Get the name of the metadata file");
+      auto metadata_file_name = engine->get_metadata_file_name();
+      XBT_INFO("Check the contents of '%s'", metadata_file_name.c_str());
+      std::ifstream file(metadata_file_name);
+      ASSERT_TRUE(file.is_open());
+      std::string file_contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+
+      file.close();
+      const std::string& expected_contents =
+          "8\tvar3D_2\t1*{640,640,640}\n"
+          "  Transaction 4:\n"
+          "    /host/scratch/my-working-dir/my-output/data.0: [0:320, 0:320, 0:320]\n"
+          "8\tvar3D\t3*{640,640,640}\n"
+          "  Transaction 1:\n"
+          "    /host/scratch/my-working-dir/my-output/data.0: [0:640, 0:640, 0:640]\n"
+          "  Transaction 2:\n"
+          "    /host/scratch/my-working-dir/my-output/data.0: [0:640, 0:320, 0:160]\n"
+          "  Transaction 3:\n"
+          "    /host/scratch/my-working-dir/my-output/data.0: [0:640, 0:320, 0:160]\n";
+
+      ASSERT_EQ(file_contents, expected_contents);
+      std::remove(metadata_file_name.c_str());
+
       XBT_INFO("Disconnect the actor from the DTL");
       dtlmod::DTL::disconnect();
     });
