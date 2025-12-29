@@ -120,10 +120,12 @@ std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::stri
     return it->second;
 
   std::shared_ptr<ReductionMethod> reduction_method;
-  if (name == "Decimation" || name == "decimation")
+  if (name == "decimation")
     reduction_method = std::make_shared<DecimationReductionMethod>(name);
-  else if (name == "Compression" || name == "compression")
+  else if (name == "compression")
     reduction_method = std::make_shared<CompressionReductionMethod>(name);
+  else
+    throw UnknownReductionMethodException(XBT_THROW_POINT, name);
 
   reduction_methods_.try_emplace(name, reduction_method);
 

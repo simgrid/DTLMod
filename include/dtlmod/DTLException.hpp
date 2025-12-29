@@ -54,6 +54,8 @@ DECLARE_DTLMOD_EXCEPTION(IncorrectPathDefinitionException, "Fullpath must be str
 
 DECLARE_DTLMOD_EXCEPTION(GetWhenNoTransactionException, "Impossible to get. No transaction exists for variable");
 
+DECLARE_DTLMOD_EXCEPTION(UnknownReductionMethodException,
+                         "Unkown Reduction Method. Options are 'decimation' and 'compression'");
 DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationStrideException, "Insconsistent Decimation Stride definition");
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationOptionException, "Unknown Decimation option");
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationInterpolationException, "Unknown Decimation interpolation method");
