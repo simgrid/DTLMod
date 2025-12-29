@@ -231,7 +231,6 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
                                std::to_string(i));
   }
 
-  std::unique_lock lock(*mutex_);
   auto publisher = sg4::Actor::self();
   auto var       = variables_.find(name);
   if (var != variables_.end()) {
