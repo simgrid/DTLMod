@@ -56,6 +56,8 @@ DECLARE_DTLMOD_EXCEPTION(GetWhenNoTransactionException, "Impossible to get. No t
 
 DECLARE_DTLMOD_EXCEPTION(UnknownReductionMethodException,
                          "Unkown Reduction Method. Options are 'decimation' and 'compression'");
+DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationInterpolationException,
+                         "Insconsistent Decimation Interpolation definition");
 DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationStrideException, "Insconsistent Decimation Stride definition");
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationOptionException, "Unknown Decimation option");
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationInterpolationException, "Unknown Decimation interpolation method");

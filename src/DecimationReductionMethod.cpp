@@ -96,6 +96,10 @@ void DecimationReductionMethod::parameterize_for_variable(std::shared_ptr<Variab
         throw UnknownDecimationInterpolationException(XBT_THROW_POINT,
                                                       std::string("Unknown interpolation method: ") + value +
                                                           " (options are: linear, cubic, or quadratic).");
+
+      if ((value == "quadratic" && var->get_shape().size() < 2) || (value == "cubic" && var->get_shape().size() < 3))
+        throw InconsistentDecimationInterpolationException(
+            XBT_THROW_POINT, "Variable has not enough dimensions to apply this interpolation method");
     } else if (key == "cost_per_element")
       new_cost_per_element = std::stod(value);
     else
@@ -132,27 +136,24 @@ void DecimationReductionMethod::reduce_variable(std::shared_ptr<Variable> var)
   size_t i = 0;
   for (auto dim_size : original_shape)
     reduced_shape.push_back(std::ceil(dim_size / (stride[i++] * 1.0)));
+  parameterization->set_reduced_shape(reduced_shape);
 
-  std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>> reduced_local_start_and_count;
-  for (const auto& [actor, start_and_count] : var->get_local_start_and_count()) {
-    auto [start, count] = start_and_count;
-    std::vector<size_t> reduced_start;
-    std::vector<size_t> reduced_count;
+  auto self           = sg4::Actor::self();
+  auto [start, count] = var->get_local_start_and_count().at(self);
+  std::vector<size_t> reduced_start;
+  std::vector<size_t> reduced_count;
 
-    for (size_t i = 0; i < original_shape.size(); i++) {
-      // Sanity checks that shape, start, and count have the same size have already been done
-      size_t r_start = std::ceil(start[i] / (stride[i] * 1.0));
-      size_t r_next_start =
-          std::min(original_shape[i], static_cast<size_t>(std::ceil((start[i] + count[i]) / (stride[i] * 1.0))));
-      XBT_DEBUG("Dim %lu: stride = %lu, Start = %lu, r_start = %lu, Count = %lu, r_count = %lu", i, stride[i], start[i],
-                r_start, count[i], r_next_start - r_start);
-      reduced_start.push_back(r_start);
-      reduced_count.push_back(r_next_start - r_start);
-    }
-    reduced_local_start_and_count.try_emplace(actor, std::make_pair(reduced_start, reduced_count));
+  for (size_t i = 0; i < original_shape.size(); i++) {
+    // Sanity checks that shape, start, and count have the same size have already been done
+    size_t r_start = std::ceil(start[i] / (stride[i] * 1.0));
+    size_t r_next_start =
+        std::min(original_shape[i], static_cast<size_t>(std::ceil((start[i] + count[i]) / (stride[i] * 1.0))));
+    XBT_DEBUG("Dim %lu: stride = %lu, Start = %lu, r_start = %lu, Count = %lu, r_count = %lu", i, stride[i], start[i],
+              r_start, count[i], r_next_start - r_start);
+    reduced_start.push_back(r_start);
+    reduced_count.push_back(r_next_start - r_start);
   }
 
-  parameterization->set_reduced_shape(reduced_shape);
-  parameterization->set_reduced_local_start_and_count(reduced_local_start_and_count);
+  parameterization->set_reduced_local_start_and_count(self, reduced_start, reduced_count);
 }
 } // namespace dtlmod

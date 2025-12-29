@@ -27,11 +27,10 @@ class ParameterizedDecimation {
 
 protected:
   void set_reduced_shape(const std::vector<size_t>& reduced_shape) { reduced_shape_ = reduced_shape; }
-  void set_reduced_local_start_and_count(
-      std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>>
-          reduced_local_start_and_count)
+  void set_reduced_local_start_and_count(sg4::ActorPtr actor, const std::vector<size_t>& reduced_local_start,
+                                         const std::vector<size_t>& reduced_local_count)
   {
-    reduced_local_start_and_count_ = reduced_local_start_and_count;
+    reduced_local_start_and_count_.try_emplace(actor, std::make_pair(reduced_local_start, reduced_local_count));
   }
 
   [[nodiscard]] const std::vector<size_t>& get_stride() const { return stride_; }
