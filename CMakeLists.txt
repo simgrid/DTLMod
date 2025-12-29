@@ -136,6 +136,7 @@ mark_as_advanced(PYBIND11_PYTHON_VERSION)
 mark_as_advanced(pybind11_DIR)
 
 set(SOURCE_FILES
+  src/DecimationReductionMethod.cpp
   src/DTL.cpp
   src/Engine.cpp
   src/FileEngine.cpp
