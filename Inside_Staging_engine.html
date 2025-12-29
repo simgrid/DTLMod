@@ -23,6 +23,7 @@
         <script src="_static/clipboard.min.js?v=66b4909c"></script>
         <script src="_static/copybutton.js?v=d509b16f"></script>
         <script src="_static/showfile.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
@@ -98,7 +99,24 @@
              
   <section id="inside-the-staging-engine">
 <span id="inside-staging-engine"></span><h1>Inside the Staging engine<a class="headerlink" href="#inside-the-staging-engine" title="Link to this heading"></a></h1>
-<p>TBD</p>
+<p>The <strong>Staging Engine</strong> implements memory-to-memory and communication-based data movement for the <strong>DTL</strong>. It
+complements the <strong>File Engine</strong> by transporting Variables directly from publishers to subscribers without having to
+read or write files on a shared filesystem. This type of Engine requires publishers and subscribers to be connected to
+a Stream at the same time when performing a transaction. The interactions with the DTL are thus <strong>synchronized</strong>.</p>
+<p>When streaming data, a <span class="math notranslate nohighlight">\(M \times N\)</span> data redistribution among <em>M</em> publishers and <em>N</em> subscribers may be
+necessary. The exact redistribution pattern is automatically determined by DTLMod in three steps:</p>
+<blockquote>
+<div><ol class="arabic simple">
+<li><p>When a publisher <strong>puts</strong> a variable into a stream, it asynchronously waits for data requests (using
+zero-simulated-cost message queues) from any subscriber that opened that stream;</p></li>
+<li><p>When a subscriber <strong>gets</strong> (a subset of) this variable from the stream, it computes which publishers own pieces
+of its local view of the variable and send them each a request to put the corresponding pieces, defined by offsets
+and element counts, in dedicated mailboxes (resp. message queues);</p></li>
+<li><p>When publishers end their transaction, they asynchronously put the requested pieces in these mailboxes (resp.
+message queues). DTLMod then simulates the corresponding data exchanges, and may possibly force actors to wait for
+their completion when a new transaction starts.</p></li>
+</ol>
+</div></blockquote>
 </section>
 
 

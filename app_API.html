@@ -200,32 +200,24 @@ system) without having to modify the code of their simulator.</p>
 <p>The location of the file system has a direct impact on the simulation of I/Os by SimGrid’s file system module. If the
 DTL accesses a remote file system, a write (resp. read) operation implies the simulation of a network communication
 before (resp. after) the simulation of the corresponding I/O operation on a storage device.</p>
+<p>More details on what happens under the hood when using a File Engine are given in the
+<a class="reference internal" href="Inside_File_engine.html#inside-file-engine"><span class="std std-ref">Inside the File engine</span></a> section of the documentation.</p>
 <p>DTLMod exposes two <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> methods for staging engines. The first method simulates both <strong>memory copy</strong>
 and <strong>network transfer</strong> while ensuring the respect of flow dependencies. Whether a data copy or transfer is simulated
 depends on the respective mapping of the publisher and subscriber on computing resources. If both run on the same node,
-they virtually share a memory space, and DTLMod simulates a deep memory copy—as an intra-communication whose
-performance can be configured in description of the simulated platform. Otherwise, it simulates a network
+they virtually share a memory space, and DTLMod simulates a deep memory copy—as an intra-node communication whose
+performance can be configured in the description of the simulated platform. Otherwise, it simulates a network
 communication.</p>
-<p>To implement this, DTLMod leverages <a class="reference external" href="https://simgrid.org/doc/latest/app_s4u.html#mailboxes">SimGrid’s **mailbox** abstraction</a> which acts as a rendez-vous point between actors. Only when
+<p>To implement this, DTLMod leverages <a class="reference external" href="https://simgrid.org/doc/latest/app_s4u.html#mailboxes">SimGrid’s mailbox abstraction</a> which acts as a rendez-vous point between actors. Only when
 two actors meet on such a rendez-vous point, the simulation of a memory copy or data transfer starts.</p>
 <p>The second transport method provides you with a <strong>“what if an ideal transport existed?”</strong> baseline for your performance
 evaluation studies, e.g., all the data exchanges made through the DTL take zero time. This method leverages another
 abstraction exposed by SimGrid to simulate inter-process communications: <strong>Message queues</strong> have the same semantic and
 purpose as <strong>mailboxes</strong>, ensuring the respect of control and flow dependencies, but do not induce any simulated time.</p>
-<p>When streaming data, a <span class="math notranslate nohighlight">\(M \times N\)</span> data redistribution among <em>M</em> publishers and <em>N</em> subscribers may be
-necessary. The exact redistribution pattern is automatically determined by DTLMod in three steps:</p>
-<blockquote>
-<div><ol class="arabic simple">
-<li><p>When a publisher <strong>puts</strong> a variable into a stream, it asynchronously waits for data requests (using
-zero-simulated-cost message queues) from any subscriber that opened that stream;</p></li>
-<li><p>When a subscriber <strong>gets</strong> (a subset of) this variable from the stream, it computes which publishers own pieces
-of its local view of the variable and send them each a request to put the corresponding pieces, defined by offsets
-and element counts, in dedicated mailboxes (resp. message queues);</p></li>
-<li><p>When publishers end their transaction, they asynchronously put the requested pieces in these mailboxes (resp.
-message queues). DTLMod then simulates the corresponding data exchanges, and may possibly force actors to wait for
-their completion when a new transaction starts.</p></li>
-</ol>
-</div></blockquote>
+<p>Whether to internally rely on mailboxes or message queues to stream data between publishers and subscribers is done by
+selecting the <a class="reference internal" href="#concept-transport"><span class="std std-ref">Transport method</span></a> <strong>method</strong> of the Stream to either <code class="docutils literal notranslate"><span class="pre">Transport::Method::Mailbox</span></code> or
+<code class="docutils literal notranslate"><span class="pre">Transport::Method::MQ</span></code>. More details on the internals of Staging engines can be found in the
+<a class="reference internal" href="Inside_Staging_engine.html#inside-staging-engine"><span class="std std-ref">Inside the Staging engine</span></a> section of the documentation.</p>
 </section>
 <section id="variable">
 <span id="concept-variable"></span><h3>Variable<a class="headerlink" href="#variable" title="Link to this heading"></a></h3>
