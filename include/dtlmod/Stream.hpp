@@ -25,7 +25,7 @@ class DTL;
  *         objects to be injected into or retrieve from this Stream.
  */
 
-class Stream {
+class Stream : public std::enable_shared_from_this<Stream> {
   friend class Engine;
   friend class FileEngine;
   friend class StagingEngine;

@@ -97,7 +97,7 @@ void Engine::add_subscriber(sg4::ActorPtr actor)
 void Engine::export_metadata_to_file() const
 {
   std::ofstream metadata_export(metadata_file_, std::ofstream::out);
-  for (const auto& [name, v] : stream_->get_all_variables_internal())
+  for (const auto& [name, v] : stream_.lock()->get_all_variables_internal())
     v->get_metadata()->export_to_file(metadata_export);
   metadata_export.close();
 }
@@ -109,7 +109,7 @@ void Engine::set_metadata_file_name()
 
 void Engine::close_stream()
 {
-  stream_->close();
+  stream_.lock()->close();
 }
 /// \endcond
 

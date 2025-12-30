@@ -52,7 +52,7 @@ public:
   std::string name_;
   Type type_                            = Type::Undefined;
   std::shared_ptr<Transport> transport_ = nullptr;
-  Stream* stream_;
+  std::weak_ptr<Stream> stream_;
 
   sg4::MutexPtr pub_mutex_ = sg4::Mutex::create();
   std::set<sg4::ActorPtr> publishers_;
@@ -109,7 +109,10 @@ protected:
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  explicit Engine(const std::string& name, Stream* stream, Type type) : name_(name), type_(type), stream_(stream) {}
+  explicit Engine(const std::string& name, std::shared_ptr<Stream> stream, Type type)
+      : name_(name), type_(type), stream_(stream)
+  {
+  }
   virtual ~Engine() = default;
   /// \endcond
 

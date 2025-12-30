@@ -29,7 +29,10 @@ protected:
   void sub_close() override;
 
 public:
-  explicit StagingEngine(const std::string& name, Stream* stream) : Engine(name, stream, Engine::Type::Staging) {}
+  explicit StagingEngine(const std::string& name, const std::shared_ptr<Stream>& stream)
+      : Engine(name, stream, Engine::Type::Staging)
+  {
+  }
 
   void create_transport(const Transport::Method& transport_method) override;
 };
