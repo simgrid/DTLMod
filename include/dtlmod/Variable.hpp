@@ -14,6 +14,8 @@
 
 namespace dtlmod {
 
+class Stream;
+
 /// @brief A class to translate a piece of data from an application into an object handled by the DTL and its metadata.
 class Variable {
   friend class Engine;
@@ -28,6 +30,8 @@ class Variable {
   std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>> local_start_and_count_;
   int transaction_start_          = -1;
   unsigned int transaction_count_ = 0;
+
+  std::weak_ptr<const Stream> defined_in_stream_;
 
   std::shared_ptr<Metadata> metadata_;
 
@@ -65,9 +69,11 @@ protected:
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  Variable(const std::string& name, size_t element_size, const std::vector<size_t>& shape)
+  Variable(const std::string& name, size_t element_size, const std::vector<size_t>& shape,
+           std::shared_ptr<const Stream> stream)
       : name_(name), element_size_(element_size), shape_(shape), metadata_(std::make_shared<Metadata>(this))
   {
+    defined_in_stream_ = stream;
   }
   /// \endcond
 

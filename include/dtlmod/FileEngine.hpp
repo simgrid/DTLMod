@@ -47,7 +47,7 @@ protected:
   void sub_close() override;
 
 public:
-  explicit FileEngine(const std::string& fullpath, Stream* stream);
+  explicit FileEngine(const std::string& fullpath, const std::shared_ptr<Stream>& stream);
 };
 /// \endcond
 

@@ -140,11 +140,11 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
   dtl_->lock();
   if (not engine_) {
     if (engine_type_ == Engine::Type::Staging) {
-      engine_ = std::make_shared<StagingEngine>(name, this);
+      engine_ = std::make_shared<StagingEngine>(name, shared_from_this());
       engine_->create_transport(transport_method_);
     } else if (engine_type_ == Engine::Type::File) {
       try {
-        engine_ = std::make_shared<FileEngine>(name, this);
+        engine_ = std::make_shared<FileEngine>(name, shared_from_this());
         engine_->create_transport(transport_method_);
       } catch (const IncorrectPathDefinitionException& e) {
         got_exception = true;
@@ -222,7 +222,7 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
       return var->second;
     }
   } else {
-    auto new_var = std::make_shared<Variable>(name, element_size, shape);
+    auto new_var = std::make_shared<Variable>(name, element_size, shape, shared_from_this());
     new_var->set_local_start_and_count(publisher, std::make_pair(start, count));
     variables_.try_emplace(name, new_var);
     return new_var;
@@ -248,7 +248,8 @@ std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) cons
   if (not engine_ || engine_->is_publisher(actor))
     return var->second;
   else {
-    auto new_var = std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape());
+    auto new_var =
+        std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape(), shared_from_this());
     new_var->set_local_start_and_count(actor, std::make_pair(std::vector<size_t>(var->second->get_shape().size(), 0),
                                                              std::vector<size_t>(var->second->get_shape().size(), 0)));
     new_var->set_metadata(var->second->get_metadata());
