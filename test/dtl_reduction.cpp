@@ -230,3 +230,79 @@ TEST_F(DTLReductionTest, MultiPubDecimationFileEngine)
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
+
+TEST_F(DTLReductionTest, SinglePubSingleSubDecimationOnRead)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("TestActor", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      XBT_INFO("Create a 2D-array variable with 20kx20k double");
+      auto var    = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
+      auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      XBT_INFO("Stream '%s' is ready for Publish data into the DTL", stream->get_cname());
+      sg4::this_actor::sleep_for(1);
+
+      XBT_INFO("Start a Transaction");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      XBT_INFO("Put Variable 'var' into the DTL");
+      ASSERT_NO_THROW(engine->put(var));
+      XBT_INFO("End a Transaction");
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      XBT_INFO("Close the engine");
+      ASSERT_NO_THROW(engine->close());
+
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+
+      XBT_INFO("Check that no Actor is connected to the DTL anymore");
+      ASSERT_EQ(dtl->has_active_connections(), false);
+
+      XBT_INFO("Wait until 10s before becoming a Subscriber");
+      ASSERT_NO_THROW(sg4::this_actor::sleep_until(10));
+      dtl = dtlmod::DTL::connect();
+
+      XBT_INFO("Define a Decimation Reduction Method on Subscriber side");
+      std::shared_ptr<dtlmod::ReductionMethod> decimator;
+      ASSERT_NO_THROW(decimator = stream->define_reduction_method("decimation"));
+
+      engine       = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+      auto shape   = var_sub->get_shape();
+      ASSERT_TRUE(var_sub->get_name() == "var");
+      ASSERT_DOUBLE_EQ(var_sub->get_global_size(), 8. * 20000 * 20000);
+
+      XBT_INFO("Start a Transaction");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      XBT_INFO("Get the entire Variable 'var' from the DTL");
+      ASSERT_NO_THROW(engine->get(var_sub));
+      XBT_INFO("End a Transaction");
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      XBT_INFO("Assign the decimation method to 'var_sub'");
+      ASSERT_NO_THROW(var_sub->set_reduction_operation(decimator, {{"stride", "2,2"}}));
+
+      XBT_INFO("Start a Transaction");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      XBT_INFO("Get a subset of the Variable 'var' from the DTL");
+      ASSERT_NO_THROW(engine->get(var_sub));
+      XBT_INFO("End a Transaction");
+      ASSERT_NO_THROW(engine->end_transaction());
+      XBT_INFO("Check local size of var_sub. Should be 800,000,000 bytes");
+      ASSERT_DOUBLE_EQ(var_sub->get_local_size(), 8. * 10000 * 10000);
+
+      XBT_INFO("Close the engine");
+      ASSERT_NO_THROW(engine->close());
+
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}

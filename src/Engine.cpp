@@ -57,6 +57,12 @@ void Engine::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) 
 /// The actual data transport is delegated to the Transport method associated to the Engine.
 void Engine::get(std::shared_ptr<Variable> var) const
 {
+  if (var->is_reduced() && var->is_reduced_by_subscriber()) {
+    var->is_reduced_with_->reduce_variable(var);
+    // Perform an Exec activity before putting the variable into the DTL to account for the time needed to reduce it.
+    sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(var));
+  }
+
   transport_->get(var);
 }
 

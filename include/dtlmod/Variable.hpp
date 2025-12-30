@@ -26,6 +26,8 @@ class Variable : public std::enable_shared_from_this<Variable> {
   friend class StagingTransport;
   friend class DecimationReductionMethod;
 
+  enum class ReductionOrigin { None, Publisher, Subscriber };
+
   std::string name_;
   size_t element_size_;
   std::vector<size_t> shape_;
@@ -40,6 +42,7 @@ class Variable : public std::enable_shared_from_this<Variable> {
   std::map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>, std::less<>> subscriber_selections_;
   std::map<sg4::ActorPtr, std::pair<unsigned int, unsigned int>, std::less<>> subscriber_transaction_selections_;
   std::shared_ptr<ReductionMethod> is_reduced_with_ = nullptr;
+  ReductionOrigin reduction_origin_{ReductionOrigin::None};
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -122,6 +125,16 @@ public:
   void set_reduction_operation(std::shared_ptr<ReductionMethod> method, std::map<std::string, std::string> parameters);
 
   [[nodiscard]] bool is_reduced() const { return is_reduced_with_ != nullptr; }
+
+  [[nodiscard]] bool is_reduced_by_publisher() const noexcept
+  {
+    return reduction_origin_ == ReductionOrigin::Publisher;
+  }
+  [[nodiscard]] bool is_reduced_by_subscriber() const noexcept
+  {
+    return reduction_origin_ == ReductionOrigin::Subscriber;
+  }
+
   [[nodiscard]] const std::shared_ptr<ReductionMethod>& get_reduction_method() const { return is_reduced_with_; }
 };
 } // namespace dtlmod

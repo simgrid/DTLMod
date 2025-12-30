@@ -61,6 +61,7 @@ DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationInterpolationException,
 DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationStrideException, "Insconsistent Decimation Stride definition");
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationOptionException, "Unknown Decimation option");
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationInterpolationException, "Unknown Decimation interpolation method");
+DECLARE_DTLMOD_EXCEPTION(DoubleReductionException, "Double reduction is forbidden");
 
 } // namespace dtlmod
 
