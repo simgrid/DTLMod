@@ -27,10 +27,10 @@ const char* Stream::get_engine_type_str() const
   return it == EnumStrings.end() ? "Out of range" : it->second;
 }
 
-Stream* Stream::set_engine_type(const Engine::Type& engine_type)
+Stream& Stream::set_engine_type(const Engine::Type& engine_type)
 {
   if (engine_type_ == engine_type) // No modification, just return
-    return this;
+    return *this;
 
   // Check if this engine type is known
   if (engine_type != Engine::Type::File && engine_type != Engine::Type::Staging)
@@ -55,7 +55,7 @@ Stream* Stream::set_engine_type(const Engine::Type& engine_type)
   // set the engine type
   engine_type_ = engine_type;
 
-  return this;
+  return *this;
 }
 
 const char* Stream::get_transport_method_str() const
@@ -70,10 +70,10 @@ const char* Stream::get_transport_method_str() const
   return it == EnumStrings.end() ? "Out of range" : it->second;
 }
 
-Stream* Stream::set_transport_method(const Transport::Method& transport_method)
+Stream& Stream::set_transport_method(const Transport::Method& transport_method)
 {
   if (transport_method_ == transport_method) // No modification, just return
-    return this;
+    return *this;
 
   // Check if this transport method is known
   if (transport_method != Transport::Method::File && transport_method != Transport::Method::Mailbox &&
@@ -99,18 +99,18 @@ Stream* Stream::set_transport_method(const Transport::Method& transport_method)
   // Set the transport method
   transport_method_ = transport_method;
 
-  return this;
+  return *this;
 }
 
-Stream* Stream::set_metadata_export()
+Stream& Stream::set_metadata_export()
 {
   metadata_export_ = true;
-  return this;
+  return *this;
 }
-Stream* Stream::unset_metadata_export()
+Stream& Stream::unset_metadata_export()
 {
   metadata_export_ = false;
-  return this;
+  return *this;
 }
 
 std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)

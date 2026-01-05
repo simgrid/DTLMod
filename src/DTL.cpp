@@ -56,7 +56,7 @@ DTL::DTL(const std::string& filename)
     if (streams_.find(name) == streams_.end())
       streams_.try_emplace(name, std::make_shared<Stream>(name, this));
     // And set its engine type and transport method
-    streams_[name]->set_engine_type(type)->set_transport_method(transport_method);
+    streams_[name]->set_engine_type(type).set_transport_method(transport_method);
 
     // Check if metadata must be exported for this stream
     if (stream.contains("export_metadata")) {
