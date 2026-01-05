@@ -47,6 +47,7 @@ private:
   Transport::Method transport_method_ = Transport::Method::Undefined;
   bool metadata_export_               = false;
   sg4::MutexPtr mutex_                = sg4::Mutex::create();
+  sg4::ConditionVariablePtr engine_created_ = sg4::ConditionVariable::create();
   Mode access_mode_;
 
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
@@ -61,7 +62,7 @@ protected:
   }
   [[nodiscard]] const char* mode_to_str(Mode mode) const
   {
-    return (mode == Mode::Publish) ? "Mode::Publish" : "Mode::Suscribe";
+    return (mode == Mode::Publish) ? "Mode::Publish" : "Mode::Subscribe";
   }
   void close() { engine_ = nullptr; }
   /// \endcond
@@ -122,7 +123,7 @@ public:
   /// @param name name of the Engine created when opening the Stream.
   /// @param mode either Stream::Mode::Publish or Stream::Mode::Subscribe.
   /// @return A shared pointer on the corresponding Engine.
-  std::shared_ptr<Engine> open(const std::string& name, Mode mode);
+  [[nodiscard]] std::shared_ptr<Engine> open(const std::string& name, Mode mode);
 
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Publish.
   /// @return The number of publishers for that Stream.
@@ -137,7 +138,7 @@ public:
   /// @param name The name of the new Variable.
   /// @param element_size The size of the elements in the Variable.
   /// @return A shared pointer on the newly created Variable.
-  std::shared_ptr<Variable> define_variable(const std::string& name, size_t element_size);
+  [[nodiscard]] std::shared_ptr<Variable> define_variable(const std::string& name, size_t element_size);
 
   /// @brief Define a Variable for this Stream.
   /// @param name The name of the new variable.
@@ -146,18 +147,18 @@ public:
   /// @param count A vector that specifies how many elements the calling Actor owns in each dimension.
   /// @param element_size The size of the elements in the Variable.
   /// @return A shared pointer on the newly created Variable
-  std::shared_ptr<Variable> define_variable(const std::string& name, const std::vector<size_t>& shape,
-                                            const std::vector<size_t>& start, const std::vector<size_t>& count,
-                                            size_t element_size);
+  [[nodiscard]] std::shared_ptr<Variable> define_variable(const std::string& name, const std::vector<size_t>& shape,
+                                                          const std::vector<size_t>& start,
+                                                          const std::vector<size_t>& count, size_t element_size);
 
   /// @brief Retrieve the list of Variables defined on this stream
   /// @return the list of Variable names
-  std::vector<std::string> get_all_variables() const;
+  [[nodiscard]] std::vector<std::string> get_all_variables() const;
 
   /// @brief Retrieve a Variable information by name.
   /// @param name The name of desired Variable.
   /// @return Either a shared pointer on the Variable object if known, nullptr otherwise.
-  std::shared_ptr<Variable> inquire_variable(const std::string& name) const;
+  [[nodiscard]] std::shared_ptr<Variable> inquire_variable(const std::string& name) const;
 
   /// @brief Remove a Variable of the list of variables known by the Stream.
   /// @param name The name of the variable to remove.

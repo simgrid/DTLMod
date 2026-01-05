@@ -6,6 +6,8 @@
 #ifndef __DTLMOD_DTL_HPP__
 #define __DTLMOD_DTL_HPP__
 
+#include <optional>
+
 #include <xbt/log.h>
 
 #include "dtlmod/Stream.hpp"
@@ -36,14 +38,12 @@ public:
   /// \endcond
 
   /// @brief Create the Data Transport Layer.
-  static void create();
-  /// @brief Create the Data Transport Layer.
   /// @param filename: a JSON configuration file that provide stream parameters.
-  static void create(const std::string& filename);
+  static void create(const std::string& filename = "");
 
   /// @brief Connect an Actor to the Data Transport Layer.
   /// @return A handler on the DTL object.
-  static std::shared_ptr<DTL> connect();
+  [[nodiscard]] static std::shared_ptr<DTL> connect();
   /// @brief Disconnect an Actor from the Data Transport Layer.
   static void disconnect();
 
@@ -54,7 +54,7 @@ public:
   /// @brief Add a data stream to the Data Transport Layer.
   /// @param name The name of the Stream to add to the DTL.
   /// @return A handler on the newly created Stream object.
-  std::shared_ptr<Stream> add_stream(const std::string& name);
+  [[nodiscard]] std::shared_ptr<Stream> add_stream(const std::string& name);
 
   /// @brief Retrieve all streams declared in the Data Transport Layer.
   /// @return a map of handlers on Stream objects with their names as keys.
@@ -62,8 +62,8 @@ public:
 
   /// @brief Retrieve a data stream from the Data Transport Layer by its name.
   /// @param name The name of the Stream to retrieve.
-  /// @return A handler on the Stream object or nullptr if it doesn't exist.
-  std::shared_ptr<Stream> get_stream_by_name_or_null(const std::string& name) const;
+  /// @return An optional containing the Stream handler if found, std::nullopt otherwise.
+  [[nodiscard]] std::optional<std::shared_ptr<Stream>> get_stream_by_name(const std::string& name) const;
 };
 
 } // namespace dtlmod

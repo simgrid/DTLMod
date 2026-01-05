@@ -18,9 +18,8 @@ namespace sg4 = simgrid::s4u;
 namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
-DTL::DTL(const std::string& filename)
+DTL::DTL(const std::string& filename) : mutex_(sg4::Mutex::create())
 {
-  mutex_ = sg4::Mutex::create();
   // No configuration file has been provided. Nothing else to do
   if (filename.empty())
     return;
@@ -96,8 +95,9 @@ __attribute__((noreturn)) void DTL::connection_manager_init(std::shared_ptr<DTL>
     bool* connect = nullptr;
     auto mess     = connect_mq->get_async(&connect);
     mess->wait();
+    std::unique_ptr<bool> connect_guard(connect); // RAII: automatic cleanup
     auto* sender = mess->get_sender();
-    if (*connect) { // Connection
+    if (*connect_guard) { // Connection
       dtl->connection_manager_connect(sender);
       // Return a handler on the DTL to the newly connected actor
       handler_mq->put_init(&dtl)->detach();
@@ -107,7 +107,7 @@ __attribute__((noreturn)) void DTL::connection_manager_init(std::shared_ptr<DTL>
       if (!dtl->has_active_connections())
         XBT_WARN("The DTL has no active connection");
     }
-    delete connect;
+    // connect_guard automatically deletes connect at end of scope
   } while (true);
 }
 ///\endcond
@@ -122,11 +122,6 @@ void DTL::create(const std::string& filename)
       .front()
       ->add_actor("dtlmod::connection_manager", DTL::connection_manager_init, std::make_shared<DTL>(filename))
       ->daemonize();
-}
-
-void DTL::create()
-{
-  create("");
 }
 
 std::shared_ptr<DTL> DTL::connect()
@@ -152,11 +147,11 @@ std::shared_ptr<Stream> DTL::add_stream(const std::string& name)
   return streams_[name];
 }
 
-std::shared_ptr<Stream> DTL::get_stream_by_name_or_null(const std::string& name) const
+std::optional<std::shared_ptr<Stream>> DTL::get_stream_by_name(const std::string& name) const
 {
   auto it = streams_.find(name);
   if (it == streams_.end())
-    return nullptr;
+    return std::nullopt;
   return it->second;
 }
 } // namespace dtlmod

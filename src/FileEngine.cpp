@@ -65,7 +65,7 @@ FileEngine::FileEngine(const std::string& fullpath, const std::shared_ptr<Stream
   }
 }
 
-void FileEngine::create_transport(const Transport::Method& transport_method)
+void FileEngine::create_transport(const Transport::Method& /*transport_method*/)
 {
   // This function is called in a critical section. Transport can only be created once.
   set_transport(std::make_shared<FileTransport>(this));

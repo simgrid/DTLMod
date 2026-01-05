@@ -6,6 +6,8 @@
 #ifndef __DTLMOD_ENGINE_STAGING_HPP__
 #define __DTLMOD_ENGINE_STAGING_HPP__
 
+#include <atomic>
+
 #include "dtlmod/Engine.hpp"
 
 XBT_LOG_EXTERNAL_CATEGORY(dtlmod);
@@ -16,7 +18,7 @@ namespace dtlmod {
 class StagingEngine : public Engine {
   sg4::ConditionVariablePtr first_pub_transaction_started_ = sg4::ConditionVariable::create();
   sg4::ConditionVariablePtr sub_transaction_started_       = sg4::ConditionVariable::create();
-  int num_subscribers_starting_                            = 0;
+  std::atomic<unsigned int> num_subscribers_starting_{0};
   bool pub_closing_                                        = false;
   bool sub_closing_                                        = false;
 

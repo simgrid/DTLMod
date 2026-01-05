@@ -15,16 +15,16 @@ find_package(SimGrid 4.1 REQUIRED)
 find_package(FSMod 0.3.1 REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
-include_directories(
-  ${CMAKE_SOURCE_DIR}/include
-	${SimGrid_INCLUDE_DIR}
-  ${FSMod_INCLUDE_DIR}
-  ${CMAKE_BINARY_DIR}/include
-)
+# Note: Global include_directories removed in favor of target-specific includes below
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_FLAGS "-O3 -funroll-loops -fno-strict-aliasing -flto=auto")
+set(CMAKE_CXX_FLAGS_RELEASE "-O3 -funroll-loops -fno-strict-aliasing -flto=auto -DNDEBUG")
+set(CMAKE_CXX_FLAGS_DEBUG "-O0 -g3 -Wall -Wextra")
+
+if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
+endif()
 
 # build the version number
 set(DTLMOD_VERSION_MAJOR "0")
@@ -109,7 +109,7 @@ if(enable_python)
                         ${python_files}
                         ${pybind11_options})
 
-    target_compile_features(python-bindings PRIVATE cxx_std_14)
+    target_compile_features(python-bindings PRIVATE cxx_std_17)
     target_link_libraries(python-bindings PUBLIC dtlmod)
     set_target_properties(python-bindings PROPERTIES
                           LIBRARY_OUTPUT_NAME dtlmod
@@ -181,10 +181,18 @@ set_target_properties(dtlmod PROPERTIES
   LINKER_LANGUAGE CXX
   PUBLIC_HEADER "${HEADER_FILES}")
 
-target_include_directories(dtlmod PRIVATE include)
+target_include_directories(dtlmod
+  PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  PRIVATE
+    ${SimGrid_INCLUDE_DIR}
+    ${FSMod_INCLUDE_DIR}
+)
 target_link_libraries(dtlmod PUBLIC ${SimGrid_LIBRARY} ${FSMOD_LIBRARY})
 
-foreach (conf "${CONFIG_FILES}")
+foreach (conf ${CONFIG_FILES})
   add_custom_command(
     TARGET ${PROJECT_NAME} POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
@@ -214,8 +222,13 @@ if(GTEST_LIBRARY)
       
   add_definitions(-DGTEST_USED)
   add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
-  target_include_directories(unit_tests PRIVATE include)
-  target_link_libraries(unit_tests ${GTEST_LIBRARY} ${SIMGRID_LIBRARY} ${FSMOD_LIBRARY} dtlmod -lpthread -lm)
+  target_include_directories(unit_tests PRIVATE
+    ${CMAKE_SOURCE_DIR}/include
+    ${CMAKE_BINARY_DIR}/include
+    ${SimGrid_INCLUDE_DIR}
+    ${FSMod_INCLUDE_DIR}
+  )
+  target_link_libraries(unit_tests ${GTEST_LIBRARY} ${SimGrid_LIBRARY} ${FSMOD_LIBRARY} dtlmod -lpthread -lm)
   set_target_properties(unit_tests PROPERTIES COMPILE_FLAGS "-g -O0 --coverage")
   set_target_properties(unit_tests PROPERTIES LINK_FLAGS "--coverage")
   #add_custom_command(TARGET unit_tests COMMAND find . -name *.gcda -delete)

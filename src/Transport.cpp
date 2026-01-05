@@ -29,7 +29,7 @@ Transport::check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var) 
     count = var->get_shape();
 
   // If the actor made no transaction selection, get the last one
-  int transaction_start          = var->get_metadata()->get_current_transaction();
+  unsigned int transaction_start = var->get_metadata()->get_current_transaction();
   unsigned int transaction_count = 1;
 
   // Check if a selection has been made by this actor, update start and count accordingly if it is the case.

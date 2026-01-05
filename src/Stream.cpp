@@ -173,18 +173,27 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
         exception_msg = std::string(e.what());
       }
     }
-    access_mode_ = mode;
-    if (metadata_export_)
-      engine_->set_metadata_file_name();
+    // Only set access_mode and notify if engine was successfully created
+    if (engine_) {
+      access_mode_ = mode;
+      if (metadata_export_)
+        engine_->set_metadata_file_name();
+      // Notify all waiting actors that the engine has been created
+      engine_created_->notify_all();
+    }
   }
   dtl_->unlock();
-  // Check if an exception has been raised and caugth while creating a FileEngine. If yes, throw it again.
+  // Check if an exception has been raised and caught while creating a FileEngine. If yes, throw it again.
   if (got_exception)
     throw IncorrectPathDefinitionException(XBT_THROW_POINT, exception_msg);
 
-  while (not engine_) {
-    XBT_DEBUG("%s waits for the creation of the engine", sg4::this_actor::get_cname());
-    sg4::this_actor::sleep_for(0.001);
+  // Wait for engine creation using condition variable instead of active polling
+  if (not engine_) {
+    std::unique_lock lock(*mutex_);
+    while (not engine_) {
+      XBT_DEBUG("%s waits for the creation of the engine", sg4::this_actor::get_cname());
+      engine_created_->wait(lock);
+    }
   }
 
   // Then we register the actors calling Stream::open as publishers or subscribers in the newly created Engine.
