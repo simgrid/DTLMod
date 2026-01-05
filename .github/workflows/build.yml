@@ -14,8 +14,6 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      BUILD_WRAPPER_OUT_DIR: bw-outputs
     steps:
       - uses: actions/checkout@v4
         with:
@@ -81,13 +79,11 @@ jobs:
           bash <(curl -s https://codecov.io/bash) -f coverage.info -t ${CODECOV_TOKEN}
 
 
-      - name: Install Build Wrapper
-        uses: SonarSource/sonarqube-scan-action/install-build-wrapper@v7
-      - name: Run build-wrapper
+      - name: Build with CMake
         run: |
           mkdir build
-          cmake -S . -B build
-          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} cmake --build build/ --config Release
+          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
+          cmake --build build/ --config Release -j4
       - name: Run tests to generate coverage statistics
         run: |
           cd build
@@ -111,7 +107,7 @@ jobs:
           args: >
             -Dsonar.projectKey=simgrid_dtlmod
             -Dsonar.organization=simgrid
-            -Dsonar.cfamily.build-wrapper-output=${{ env.BUILD_WRAPPER_OUT_DIR }}
+            -Dsonar.cfamily.compile-commands=build/compile_commands.json
             -Dsonar.coverageReportPaths=coverage.xml
  
       - name: Install Doxygen and Sphinx
