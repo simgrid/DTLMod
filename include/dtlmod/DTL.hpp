@@ -28,8 +28,8 @@ class DTL {
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  void lock() { mutex_->lock(); }
-  void unlock() { mutex_->unlock(); }
+  void lock() noexcept { mutex_->lock(); }
+  void unlock() noexcept { mutex_->unlock(); }
   /// \endcond
 
 public:
@@ -49,7 +49,7 @@ public:
 
   /// @brief Helper function to check whether some simulated actors are currently connected to the DTL.
   /// @return A boolean value.
-  bool has_active_connections() const { return !active_connections_.empty(); }
+  bool has_active_connections() const noexcept { return !active_connections_.empty(); }
 
   /// @brief Add a data stream to the Data Transport Layer.
   /// @param name The name of the Stream to add to the DTL.
@@ -58,7 +58,7 @@ public:
 
   /// @brief Retrieve all streams declared in the Data Transport Layer.
   /// @return a map of handlers on Stream objects with their names as keys.
-  const std::unordered_map<std::string, std::shared_ptr<Stream>>& get_all_streams() const { return streams_; }
+  const std::unordered_map<std::string, std::shared_ptr<Stream>>& get_all_streams() const noexcept { return streams_; }
 
   /// @brief Retrieve a data stream from the Data Transport Layer by its name.
   /// @param name The name of the Stream to retrieve.

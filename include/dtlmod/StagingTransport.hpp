@@ -26,12 +26,12 @@ protected:
 
   // Create a message queue to receive request for variable pieces from subscribers
   void set_publisher_put_requests_mq(const std::string& publisher_name);
-  [[nodiscard]] sg4::MessageQueue* get_publisher_put_requests_mq(const std::string& publisher_name) const;
-  [[nodiscard]] bool pending_put_requests_exist_for(const std::string& pub_name)
+  [[nodiscard]] sg4::MessageQueue* get_publisher_put_requests_mq(const std::string& publisher_name) const noexcept;
+  [[nodiscard]] bool pending_put_requests_exist_for(const std::string& pub_name) noexcept
   {
     return not pending_put_requests_[pub_name].empty();
   }
-  [[nodiscard]] sg4::ActivityPtr wait_any_pending_put_request_for(const std::string& pub_name)
+  [[nodiscard]] sg4::ActivityPtr wait_any_pending_put_request_for(const std::string& pub_name) noexcept
   {
     return pending_put_requests_[pub_name].wait_any();
   }

@@ -40,8 +40,8 @@ protected:
                        const std::string& filename, sg4::ActorPtr publisher);
 
 public:
-  explicit Metadata(Variable* variable) : variable_(variable) {}
-  unsigned int get_current_transaction() const
+  explicit Metadata(Variable* variable) noexcept : variable_(variable) {}
+  unsigned int get_current_transaction() const noexcept
   {
     return transaction_infos_.empty() ? 0 : (transaction_infos_.rbegin())->first;
   }

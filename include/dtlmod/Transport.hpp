@@ -32,10 +32,10 @@ protected:
 public:
   enum class Method { Undefined, File, Mailbox, MQ };
 
-  explicit Transport(Engine* engine) : engine_(engine) {}
+  explicit Transport(Engine* engine) noexcept : engine_(engine) {}
   virtual ~Transport() = default;
 
-  Engine* get_engine() { return engine_; }
+  Engine* get_engine() noexcept { return engine_; }
 
   virtual void put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) = 0;
   virtual void get(std::shared_ptr<Variable> var)                                 = 0;

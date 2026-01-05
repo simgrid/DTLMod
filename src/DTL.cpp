@@ -103,7 +103,8 @@ __attribute__((noreturn)) void DTL::connection_manager_init(std::shared_ptr<DTL>
       handler_mq->put_init(&dtl)->detach();
     } else { // Disconnection
       dtl->connection_manager_disconnect(sender);
-      handler_mq->put_init(new bool(true))->detach();
+      auto payload = std::make_unique<bool>(true);
+      handler_mq->put_init(payload.release())->detach();
       if (!dtl->has_active_connections())
         XBT_WARN("The DTL has no active connection");
     }
@@ -126,14 +127,16 @@ void DTL::create(const std::string& filename)
 
 std::shared_ptr<DTL> DTL::connect()
 {
-  sg4::MessageQueue::by_name("dtlmod::connection_manager_connect")->put(new bool(true));
+  auto payload = std::make_unique<bool>(true);
+  sg4::MessageQueue::by_name("dtlmod::connection_manager_connect")->put(payload.release());
   const auto* handle = sg4::MessageQueue::by_name("dtlmod::connection_manager_handle")->get<std::shared_ptr<DTL>>();
   return *handle;
 }
 
 void DTL::disconnect()
 {
-  sg4::MessageQueue::by_name("dtlmod::connection_manager_connect")->put(new bool(false));
+  auto payload = std::make_unique<bool>(false);
+  sg4::MessageQueue::by_name("dtlmod::connection_manager_connect")->put(payload.release());
   sg4::MessageQueue::by_name("dtlmod::connection_manager_handle")->get_unique<bool>();
 }
 
