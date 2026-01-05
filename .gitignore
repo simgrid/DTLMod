@@ -46,3 +46,6 @@ dtlmod.egg-info/
 
 # doc
 doc/source/_ext/__pycache__/
+
+.sonarlint/
+.vscode/
