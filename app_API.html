@@ -143,7 +143,7 @@
 <span id="dtlmod-main-concepts"></span><h2>Main Concepts<a class="headerlink" href="#main-concepts" title="Link to this heading"></a></h2>
 <section id="dtl">
 <span id="concept-dtl"></span><h3>DTL<a class="headerlink" href="#dtl" title="Link to this heading"></a></h3>
-<p>A <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> is created by calling <a class="reference internal" href="#_CPPv4N6dtlmod3DTL6createEv" title="dtlmod::DTL::create"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code></a> at the beginning of the
+<p>A <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> is created by calling <a class="reference internal" href="#_CPPv4N6dtlmod3DTL6createERKNSt6stringE" title="dtlmod::DTL::create"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code></a> at the beginning of the
 <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">main()</span></code> function of your simulator. This function can take as an optional argument a JSON configuration
 file that describes the different <a class="reference internal" href="#concept-streams"><strong>Streams</strong></a> to be created during the simulation each with a <strong>name</strong>,
 <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> type, and <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> method.</p>
@@ -264,15 +264,18 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 <div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-0-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-0-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-0-Qysr" class="sphinx-tabs-panel group-tab" id="panel-0-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="highlight-C++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;dtlmod/DTL.hpp&gt;</span>
 </pre></div>
 </div>
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL6createEv">
-<span id="_CPPv3N6dtlmod3DTL6createEv"></span><span id="_CPPv2N6dtlmod3DTL6createEv"></span><span id="dtlmod::DTL::create"></span><span class="target" id="classdtlmod_1_1DTL_1aba309f8a8899bd2617d7b4b00711b8d5"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL6createEv" title="Link to this definition"></a><br /></dt>
-<dd><p>Create the Data Transport Layer. </p>
-</dd></dl>
-
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::DTL::create” with arguments () in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">void</span> <span class="n">create</span><span class="p">(</span><span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL6createERKNSt6stringE">
-<span id="_CPPv3N6dtlmod3DTL6createERKNSt6stringE"></span><span id="_CPPv2N6dtlmod3DTL6createERKNSt6stringE"></span><span id="dtlmod::DTL::create__ssCR"></span><span class="target" id="classdtlmod_1_1DTL_1a5d5b2ea7751fc37fa179dc474f5c5426"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">filename</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL6createERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<span id="_CPPv3N6dtlmod3DTL6createERKNSt6stringE"></span><span id="_CPPv2N6dtlmod3DTL6createERKNSt6stringE"></span><span id="dtlmod::DTL::create__ssCR"></span><span class="target" id="classdtlmod_1_1DTL_1a627d6c8a58f765fb178fbba3fd99df0d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">filename</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL6createERKNSt6stringE" title="Link to this definition"></a><br /></dt>
 <dd><p>Create the Data Transport Layer. </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -286,16 +289,8 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 </div>
 <dl class="py method">
 <dt class="sig sig-object py" id="dtlmod.DTL.create">
-<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#dtlmod.DTL.create" title="Link to this definition"></a></dt>
-<dd><p>Overloaded function.</p>
-<ol class="arabic simple">
-<li><p>create() -&gt; None</p></li>
-</ol>
-<p>Create the DTL (no return)</p>
-<ol class="arabic simple" start="2">
-<li><p>create(filename: str) -&gt; None</p></li>
-</ol>
-<p>Create the DTL (no return)</p>
+<em class="property"><span class="pre">static</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">create</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="headerlink" href="#dtlmod.DTL.create" title="Link to this definition"></a></dt>
+<dd><p>Create the DTL (no return)</p>
 </dd></dl>
 
 </div></div>
@@ -368,20 +363,10 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 </dl>
 </dd></dl>
 
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL26get_stream_by_name_or_nullERKNSt6stringE">
-<span id="_CPPv3NK6dtlmod3DTL26get_stream_by_name_or_nullERKNSt6stringE"></span><span id="_CPPv2NK6dtlmod3DTL26get_stream_by_name_or_nullERKNSt6stringE"></span><span id="dtlmod::DTL::get_stream_by_name_or_null__ssCRC"></span><span class="target" id="classdtlmod_1_1DTL_1a64ba730e02c987e10171f532a60b4422"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_stream_by_name_or_null</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL26get_stream_by_name_or_nullERKNSt6stringE" title="Link to this definition"></a><br /></dt>
-<dd><p>Retrieve a data stream from the Data Transport Layer by its name. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> – The name of the Stream to retrieve. </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A handler on the Stream object or nullptr if it doesn’t exist. </p>
-</dd>
-</dl>
-</dd></dl>
-
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Cannot find function “dtlmod::DTL::get_stream_by_name_or_null” in doxygen xml output for project “dtlmod” from directory: ../build/xml</p>
+</div>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL15get_all_streamsEv">
 <span id="_CPPv3NK6dtlmod3DTL15get_all_streamsEv"></span><span id="_CPPv2NK6dtlmod3DTL15get_all_streamsEv"></span><span id="dtlmod::DTL::get_all_streamsC"></span><span class="target" id="classdtlmod_1_1DTL_1ac43f484685892cf7b85e13426ff35b53"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">unordered_map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_all_streams</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL15get_all_streamsEv" title="Link to this definition"></a><br /></dt>
@@ -397,12 +382,6 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 <dt class="sig sig-object py" id="dtlmod.DTL.add_stream">
 <span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">add_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.DTL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod::Stream</span></span></span><a class="headerlink" href="#dtlmod.DTL.add_stream" title="Link to this definition"></a></dt>
 <dd><p>Add a data stream to the DTL</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="dtlmod.DTL.stream_by_name_or_null">
-<span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">stream_by_name_or_null</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.DTL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod::Stream</span></span></span><a class="headerlink" href="#dtlmod.DTL.stream_by_name_or_null" title="Link to this definition"></a></dt>
-<dd><p>Retrieve a data stream from the DTL by its name  (read-only)</p>
 </dd></dl>
 
 <dl class="py property">
