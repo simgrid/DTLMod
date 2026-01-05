@@ -68,7 +68,7 @@ protected:
   void validate_open_parameters(const std::string& name, Mode mode) const;
   void create_engine_if_needed(const std::string& name, Mode mode);
   void wait_for_engine_creation();
-  void register_actor_with_engine(Mode mode);
+  void register_actor_with_engine(Mode mode) const;
   /// \endcond
 
 public:

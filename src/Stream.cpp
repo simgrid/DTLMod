@@ -194,7 +194,7 @@ void Stream::wait_for_engine_creation()
 }
 
 /// Register the current actor as a publisher or subscriber with the Engine.
-void Stream::register_actor_with_engine(Mode mode)
+void Stream::register_actor_with_engine(Mode mode) const
 {
   if (mode == Mode::Publish)
     engine_->add_publisher(sg4::Actor::self());
