@@ -89,10 +89,7 @@ PYBIND11_MODULE(dtlmod, m)
       .def(
           "stream_by_name",
           [](const DTL& self, const std::string& name) -> std::shared_ptr<Stream> {
-            auto result = self.get_stream_by_name(name);
-            if (!result)
-              return nullptr; // Python will convert to None
-            return *result;
+            return self.get_stream_by_name(name).value_or(nullptr); // Python will convert nullptr to None
           },
           py::arg("name"), "Retrieve a data stream from the DTL by its name (returns None if not found)");
 
