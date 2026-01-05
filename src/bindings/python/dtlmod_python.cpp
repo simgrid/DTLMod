@@ -75,12 +75,9 @@ PYBIND11_MODULE(dtlmod, m)
 
   /* Class DTL */
   py::class_<DTL, std::shared_ptr<DTL>>(m, "DTL", "Data Transport Layer")
-      .def_static("create", py::overload_cast<>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
-                  "Create the DTL (no return)")
       .def_static("create", py::overload_cast<const std::string&>(&DTL::create),
-                  py::call_guard<py::gil_scoped_release>(), py::arg("filename"), "Create the DTL (no return)")
-      .def_static("connect", &DTL::connect, py::call_guard<py::gil_scoped_release>(),
-                  "Connect an Actor to the DTL")
+                  py::call_guard<py::gil_scoped_release>(), py::arg("filename") = "", "Create the DTL (no return)")
+      .def_static("connect", &DTL::connect, py::call_guard<py::gil_scoped_release>(), "Connect an Actor to the DTL")
       .def_static("disconnect", &DTL::disconnect, py::call_guard<py::gil_scoped_release>(),
                   "Disconnect an Actor from the DTL")
       .def_property_readonly("has_active_connections", &DTL::has_active_connections,
@@ -89,8 +86,15 @@ PYBIND11_MODULE(dtlmod, m)
            "Add a data stream to the DTL")
       .def_property_readonly("all_streams", &DTL::get_all_streams,
                              "Retrieve all streams declared in the DTL (read-only)")
-      .def("stream_by_name_or_null", &DTL::get_stream_by_name_or_null, py::arg("name"),
-           "Retrieve a data stream from the DTL by its name  (read-only)");
+      .def(
+          "stream_by_name",
+          [](const DTL& self, const std::string& name) -> std::shared_ptr<Stream> {
+            auto result = self.get_stream_by_name(name);
+            if (!result)
+              return nullptr; // Python will convert to None
+            return *result;
+          },
+          py::arg("name"), "Retrieve a data stream from the DTL by its name (returns None if not found)");
 
   /* Class Stream */
   py::class_<Stream, std::shared_ptr<Stream>> stream(

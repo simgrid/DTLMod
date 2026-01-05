@@ -11,7 +11,8 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_metadata, dtlmod, "DTL logging about Meta
 
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
-void Metadata::add_transaction(int id, const std::pair<std::vector<size_t>, std::vector<size_t>>& start_and_count,
+void Metadata::add_transaction(unsigned int id,
+                               const std::pair<std::vector<size_t>, std::vector<size_t>>& start_and_count,
                                const std::string& location, sg4::ActorPtr publisher)
 {
   transaction_infos_[id][start_and_count] = std::make_pair(location, publisher);

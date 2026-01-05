@@ -82,13 +82,13 @@ TEST_F(DTLVariableTest, InconsistentVariableDefinition)
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
       XBT_INFO("Create a 1D variable with an element count bigger than the shape, should fail.");
-      ASSERT_THROW(stream->define_variable("var", {64}, {0}, {128}, sizeof(double)),
+      ASSERT_THROW((void)stream->define_variable("var", {64}, {0}, {128}, sizeof(double)),
                    dtlmod::InconsistentVariableDefinitionException);
       XBT_INFO("Create a 3D variable with only two offsets, should fail.");
-      ASSERT_THROW(stream->define_variable("var3D", {64, 64, 64}, {0, 0}, {64, 64, 64}, sizeof(double)),
+      ASSERT_THROW((void)stream->define_variable("var3D", {64, 64, 64}, {0, 0}, {64, 64, 64}, sizeof(double)),
                    dtlmod::InconsistentVariableDefinitionException);
       XBT_INFO("Create a 3D variable with only two element counts, should fail.");
-      ASSERT_THROW(stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64}, sizeof(double)),
+      ASSERT_THROW((void)stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64}, sizeof(double)),
                    dtlmod::InconsistentVariableDefinitionException);
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
@@ -112,19 +112,19 @@ TEST_F(DTLVariableTest, MultiDefineVariable)
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
       XBT_INFO("Create a scalar int variable");
-      ASSERT_NO_THROW(stream->define_variable("var", sizeof(int)));
+      ASSERT_NO_THROW((void)stream->define_variable("var", sizeof(int)));
       XBT_INFO("Try to redefine var as a scalar double variable, which should fail");
-      ASSERT_THROW(stream->define_variable("var", sizeof(double)), dtlmod::MultipleVariableDefinitionException);
+      ASSERT_THROW((void)stream->define_variable("var", sizeof(double)), dtlmod::MultipleVariableDefinitionException);
       XBT_INFO("Try to redefine var as a 3D variable, which should fail");
-      ASSERT_THROW(stream->define_variable("var", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)),
+      ASSERT_THROW((void)stream->define_variable("var", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)),
                    dtlmod::MultipleVariableDefinitionException);
       XBT_INFO("Define a new 3D variable");
-      ASSERT_NO_THROW(stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
+      ASSERT_NO_THROW((void)stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
       XBT_INFO("Try to redefine var2 as a 2D variable, which should fail");
-      ASSERT_THROW(stream->define_variable("var3D", {64, 64}, {0, 0}, {64, 64}, sizeof(double)),
+      ASSERT_THROW((void)stream->define_variable("var3D", {64, 64}, {0, 0}, {64, 64}, sizeof(double)),
                    dtlmod::MultipleVariableDefinitionException);
       XBT_INFO("Try to redefine var as a 3D int variable, which should fail");
-      ASSERT_THROW(stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(int)),
+      ASSERT_THROW((void)stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(int)),
                    dtlmod::MultipleVariableDefinitionException);
       XBT_INFO("Try to redefine starts and counts which should work");
       ASSERT_NO_THROW(var = stream->define_variable("var3D", {64, 64, 64}, {16, 16, 16}, {32, 32, 32}, sizeof(double)));
@@ -170,7 +170,7 @@ TEST_F(DTLVariableTest, DistributedVariable)
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
       XBT_INFO("Create a 3D variable with a different shape which should fail");
-      ASSERT_THROW(stream->define_variable("var", {64, 64}, {0, 0}, {64, 64}, sizeof(double)),
+      ASSERT_THROW((void)stream->define_variable("var", {64, 64}, {0, 0}, {64, 64}, sizeof(double)),
                    dtlmod::MultipleVariableDefinitionException);
       XBT_INFO("Create a 3D variable with the same shape which should work");
       ASSERT_NO_THROW(var = stream->define_variable("var", {64, 64, 64}, {48, 48, 48}, {16, 16, 16}, sizeof(double)));
@@ -234,7 +234,7 @@ TEST_F(DTLVariableTest, InquireVariableLocal)
       ASSERT_TRUE(var2->get_name() == "var");
       ASSERT_DOUBLE_EQ(var2->get_global_size(), 64 * 64 * 64 * 8);
       XBT_INFO("Inquire an unknown variable, which should raise an exception");
-      ASSERT_THROW(stream->inquire_variable("unknow_var"), dtlmod::UnknownVariableException);
+      ASSERT_THROW((void)stream->inquire_variable("unknow_var"), dtlmod::UnknownVariableException);
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
@@ -256,7 +256,7 @@ TEST_F(DTLVariableTest, InquireVariableRemote)
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
       XBT_INFO("Create a 3D variable");
-      ASSERT_NO_THROW(stream->define_variable("var", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
+      ASSERT_NO_THROW((void)stream->define_variable("var", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
@@ -295,9 +295,9 @@ TEST_F(DTLVariableTest, GetAllVariables)
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
       XBT_INFO("Create 3 variables of different shapes");
-      ASSERT_NO_THROW(stream->define_variable("var1D", {64}, {0}, {64}, sizeof(double)));
-      ASSERT_NO_THROW(stream->define_variable("var2D", {64, 64}, {0, 0}, {64, 64}, sizeof(double)));
-      ASSERT_NO_THROW(stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
+      ASSERT_NO_THROW((void)stream->define_variable("var1D", {64}, {0}, {64}, sizeof(double)));
+      ASSERT_NO_THROW((void)stream->define_variable("var2D", {64, 64}, {0, 0}, {64, 64}, sizeof(double)));
+      ASSERT_NO_THROW((void)stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });

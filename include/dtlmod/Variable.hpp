@@ -28,7 +28,7 @@ class Variable {
   size_t element_size_;
   std::vector<size_t> shape_;
   std::unordered_map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>> local_start_and_count_;
-  int transaction_start_          = -1;
+  unsigned int transaction_start_ = 0;
   unsigned int transaction_count_ = 0;
 
   std::weak_ptr<const Stream> defined_in_stream_;
@@ -41,9 +41,9 @@ class Variable {
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   void set_metadata(std::shared_ptr<Metadata> metadata) { metadata_ = metadata; }
-  void set_transaction_start(int start) { transaction_start_ = start; }
-  [[nodiscard]] int get_transaction_start() const { return transaction_start_; }
-  void set_transaction_count(int count) { transaction_count_ = count; }
+  void set_transaction_start(unsigned int start) { transaction_start_ = start; }
+  [[nodiscard]] unsigned int get_transaction_start() const { return transaction_start_; }
+  void set_transaction_count(unsigned int count) { transaction_count_ = count; }
   [[nodiscard]] unsigned int get_transaction_count() const { return transaction_count_; }
 
   void set_local_start_and_count(sg4::ActorPtr actor,
@@ -51,9 +51,9 @@ protected:
   {
     local_start_and_count_[actor] = local_start_and_count;
   }
-  const std::pair<std::vector<size_t>, std::vector<size_t>>& get_local_start_and_count(sg4::ActorPtr actor)
+  const std::pair<std::vector<size_t>, std::vector<size_t>>& get_local_start_and_count(sg4::ActorPtr actor) const
   {
-    return local_start_and_count_[actor];
+    return local_start_and_count_.at(actor);
   }
 
   void add_transaction_metadata(unsigned int transaction_id, sg4::ActorPtr publisher, const std::string& location);

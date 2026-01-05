@@ -85,17 +85,20 @@ TEST_F(DTLFileEngineTest, BogusStoragePaths)
       stream->set_transport_method(dtlmod::Transport::Method::File);
       stream->set_engine_type(dtlmod::Engine::Type::File);
       XBT_INFO("Try to open the stream with a badly formatted first argument");
-      ASSERT_THROW(stream->open("/node-0/scratch/my-working-dir/my-output", 
-                   dtlmod::Stream::Mode::Publish), dtlmod::IncorrectPathDefinitionException);
+      ASSERT_THROW((void)stream->open("/node-0/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish),
+                   dtlmod::IncorrectPathDefinitionException);
       XBT_INFO("Try to open the stream with a bogus NetZone name");
-      ASSERT_THROW(stream->open("bogus_zone:my_fs:/node-0/scratch/my-working-dir/my-output", 
-                   dtlmod::Stream::Mode::Publish), dtlmod::IncorrectPathDefinitionException);
+      ASSERT_THROW((void)stream->open("bogus_zone:my_fs:/node-0/scratch/my-working-dir/my-output",
+                                      dtlmod::Stream::Mode::Publish),
+                   dtlmod::IncorrectPathDefinitionException);
       XBT_INFO("Try to open the stream with a bogus file system name");
-      ASSERT_THROW(stream->open("cluster:bogus_fs:/node-0/scratch/my-working-dir/my-output", 
-                   dtlmod::Stream::Mode::Publish), dtlmod::IncorrectPathDefinitionException);
+      ASSERT_THROW((void)stream->open("cluster:bogus_fs:/node-0/scratch/my-working-dir/my-output",
+                                      dtlmod::Stream::Mode::Publish),
+                   dtlmod::IncorrectPathDefinitionException);
       XBT_INFO("Try to open the stream with a bogus partition name");
-      ASSERT_THROW(stream->open("cluster:my_fs:/bogus_partition/my-working-dir/my-output", 
-                   dtlmod::Stream::Mode::Publish), dtlmod::IncorrectPathDefinitionException);
+      ASSERT_THROW(
+          (void)stream->open("cluster:my_fs:/bogus_partition/my-working-dir/my-output", dtlmod::Stream::Mode::Publish),
+          dtlmod::IncorrectPathDefinitionException);
       XBT_INFO("Disconnect the actor");
       dtlmod::DTL::disconnect();
       });

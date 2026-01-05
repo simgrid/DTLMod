@@ -25,9 +25,9 @@ size_t Variable::get_global_size() const
 /// the number of transactions.
 size_t Variable::get_local_size() const
 {
-  auto start_and_count = local_start_and_count_.at(sg4::Actor::self()).second;
+  const auto& start_and_count = local_start_and_count_.at(sg4::Actor::self()).second;
   auto total_size = std::accumulate(start_and_count.begin(), start_and_count.end(), element_size_, std::multiplies<>{});
-  if (transaction_start_ >= 0)
+  if (transaction_count_ > 0)
     total_size *= transaction_count_;
   return total_size;
 }
@@ -104,7 +104,7 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
 
       if (element_found && size_in_dim > 0) {
         something_to_get[i] = true;
-        XBT_DEBUG("Mutiply size to read by %zu elements", size_in_dim);
+        XBT_DEBUG("Multiply size to read by %zu elements", size_in_dim);
         size_to_get *= size_in_dim;
       }
     }

@@ -34,7 +34,7 @@ class Engine {
 public:
   /// @brief An enum that defines the type of Engine supported by the DTL
   enum class Type {
-    /// @brief The Engine Type has not nee specified yet.
+    /// @brief The Engine Type has not been specified yet.
     Undefined,
     /// @brief File Engine. Relies on files written to and read from a file system to transport data from publisher(s)
     /// to subscriber(s).

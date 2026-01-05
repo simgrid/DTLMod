@@ -32,8 +32,8 @@ public:
     auto* zone      = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_full("zone");
     prod_host_      = zone->add_host("prod_host", "1Gf")->set_core_count(2);
     cons_host_      = zone->add_host("cons_host", "1Gf");
-    auto* prod_disk = prod_host_->add_disk("disk", "1kBps", "2kBps");
-    auto* cons_disk = cons_host_->add_disk("disk", "1kBps", "2kBps");
+    prod_host_->add_disk("disk", "1kBps", "2kBps");
+    cons_host_->add_disk("disk", "1kBps", "2kBps");
 
     auto pfs_server = zone->add_host("pfs_server", "1Gf");
     std::vector<sg4::Disk*> pfs_disks;
@@ -73,13 +73,13 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
       ASSERT_NO_THROW(no_engine_type_stream = dtl->add_stream("no_engine_type_stream"));
       ASSERT_NO_THROW(no_engine_type_stream->set_transport_method(dtlmod::Transport::Method::File));
       XBT_INFO("Try to open the stream with no engine type set, which should fail");
-      ASSERT_THROW(no_engine_type_stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish),
+      ASSERT_THROW((void)no_engine_type_stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish),
                    dtlmod::UndefinedEngineTypeException);
 
       ASSERT_NO_THROW(no_transport_method_stream = dtl->add_stream("no_transport_method_stream"));
       ASSERT_NO_THROW(no_transport_method_stream->set_engine_type(dtlmod::Engine::Type::File));
       XBT_INFO("Try to open the stream with no transport method set, which should fail");
-      ASSERT_THROW(no_transport_method_stream->open("file", dtlmod::Stream::Mode::Publish),
+      ASSERT_THROW((void)no_transport_method_stream->open("file", dtlmod::Stream::Mode::Publish),
                    dtlmod::UndefinedTransportMethodException);
 
       ASSERT_NO_THROW(file_engine_with_mq_transport_stream = dtl->add_stream("file_engine_with_mq_transport_stream"));
@@ -117,7 +117,7 @@ TEST_F(DTLStreamTest, IncorrectStreamSettings)
       multiple->set_transport_method(dtlmod::Transport::Method::MQ);
       ASSERT_THROW(multiple->set_transport_method(dtlmod::Transport::Method::Mailbox),
                    dtlmod::MultipleTransportMethodException);
-      ASSERT_THROW(multiple->open("file", static_cast<dtlmod::Stream::Mode>(2)),
+      ASSERT_THROW((void)multiple->open("file", static_cast<dtlmod::Stream::Mode>(2)),
                    dtlmod::UnknownOpenModeException);
 
       XBT_INFO("Disconnect the actor from the DTL");

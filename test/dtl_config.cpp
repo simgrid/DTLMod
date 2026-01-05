@@ -108,7 +108,7 @@ TEST_F(DTLConfigTest, BogusConfigFile)
 {
   DO_TEST_WITH_FORK([this]() {
     auto* root = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_full("root");
-    auto host  = root->add_host("host", "1Gf");
+    root->add_host("host", "1Gf");
     root->seal();
 
     std::string bogus_engine_json =

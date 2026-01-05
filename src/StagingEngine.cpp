@@ -131,11 +131,11 @@ void StagingEngine::begin_sub_transaction()
   }
 
   num_subscribers_starting_++;
-  XBT_DEBUG("Subscribe Transaction %u started by %s (%d/%lu)", current_sub_transaction_id_,
-            sg4::Actor::self()->get_cname(), num_subscribers_starting_, get_num_subscribers());
+  XBT_DEBUG("Subscribe Transaction %u started by %s (%u/%lu)", current_sub_transaction_id_,
+            sg4::Actor::self()->get_cname(), num_subscribers_starting_.load(), get_num_subscribers());
 
   // The last subscriber to start a transaction notifies the publishers
-  if (num_subscribers_starting_ == get_num_subscribers() &&
+  if (num_subscribers_starting_.load() == get_num_subscribers() &&
       current_pub_transaction_id_ == current_sub_transaction_id_) {
     XBT_DEBUG("Notify Publishers that they can start their transaction");
     sub_transaction_started_->notify_all();
@@ -167,8 +167,8 @@ void StagingEngine::end_sub_transaction()
     sub_transaction_in_progress_ = false;
   // Decrease counter for next iteration
   num_subscribers_starting_--;
-  XBT_DEBUG("Subscribe Transaction %u end by %s (%d/%lu)", current_sub_transaction_id_, sg4::Actor::self()->get_cname(),
-            num_subscribers_starting_, get_num_subscribers());
+  XBT_DEBUG("Subscribe Transaction %u end by %s (%u/%lu)", current_sub_transaction_id_, sg4::Actor::self()->get_cname(),
+            num_subscribers_starting_.load(), get_num_subscribers());
 }
 
 void StagingEngine::sub_close()
@@ -179,8 +179,7 @@ void StagingEngine::sub_close()
     // I'm the first to close
     sub_closing_ = true;
     XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
-    for (unsigned int i = 0; i < sub_transaction_.size(); i++)
-      sub_transaction_.at(i)->resume()->wait();
+    sub_transaction_.wait_all();
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     sub_transaction_.clear();
   }
