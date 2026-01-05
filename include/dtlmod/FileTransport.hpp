@@ -45,8 +45,8 @@ protected:
   void clear_to_read_in_transaction(sg4::ActorPtr actor) noexcept { to_read_in_transaction_[actor].clear(); }
 
 public:
-  void put(std::shared_ptr<Variable> var, size_t size) override;
-  void get(std::shared_ptr<Variable> var) override;
+  void put(const std::shared_ptr<Variable>& var, size_t size) override;
+  void get(const std::shared_ptr<Variable>& var) override;
 };
 /// \endcond
 

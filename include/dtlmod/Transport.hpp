@@ -37,8 +37,8 @@ public:
 
   Engine* get_engine() noexcept { return engine_; }
 
-  virtual void put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) = 0;
-  virtual void get(std::shared_ptr<Variable> var)                                 = 0;
+  virtual void put(const std::shared_ptr<Variable>& var, size_t simulated_size_in_bytes) = 0;
+  virtual void get(const std::shared_ptr<Variable>& var)                                 = 0;
 };
 /// \endcond
 
