@@ -103,17 +103,17 @@ public:
   /// @brief Stream configuration function: set the Engine type to create.
   /// @param engine_type The type of Engine to create when opening the Stream.
   /// @return The calling Stream (enable method chaining).
-  Stream* set_engine_type(const Engine::Type& engine_type);
+  Stream& set_engine_type(const Engine::Type& engine_type);
   /// @brief Stream configuration function: set the Transport Method to use.
   /// @param transport_method the Transport methode to use when opening the Stream.
   /// @return The calling Stream (enable method chaining).
-  Stream* set_transport_method(const Transport::Method& transport_method);
+  Stream& set_transport_method(const Transport::Method& transport_method);
   /// @brief Stream configuration function: specify that metadata must be exported
   /// @return The calling Stream (enable method chaining).
-  Stream* set_metadata_export();
+  Stream& set_metadata_export();
   /// @brief Stream configuration function: specify that metadata must not be exported
   /// @return The calling Stream (enable method chaining).
-  Stream* unset_metadata_export();
+  Stream& unset_metadata_export();
 
   /******* Engine Factory *******/
 
