@@ -20,10 +20,8 @@ class Stream;
 class Variable {
   friend class Engine;
   friend class Stream;
-  friend class Transport;
-  friend class FileTransport;
-  friend class StagingTransport;
 
+private:
   std::string name_;
   size_t element_size_;
   std::vector<size_t> shape_;
@@ -41,6 +39,11 @@ class Variable {
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   void set_metadata(std::shared_ptr<Metadata> metadata) { metadata_ = metadata; }
+  /// \endcond
+
+public:
+  /// \cond EXCLUDE_FROM_DOCUMENTATION
+  // Public accessors for Transport classes
   void set_transaction_start(unsigned int start) { transaction_start_ = start; }
   [[nodiscard]] unsigned int get_transaction_start() const { return transaction_start_; }
   void set_transaction_count(unsigned int count) { transaction_count_ = count; }

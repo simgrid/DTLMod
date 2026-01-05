@@ -41,13 +41,13 @@ void StagingMqTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
       auto mess = mqueues_[mq_name]->put_init(req_size);
       // Add callback to release memory allocated for the payload on completion
       mess->on_this_completion_cb([req_size](sg4::Mess const&) { delete req_size; });
-      get_engine()->pub_transaction_.push(mess->start());
+      get_engine()->get_pub_transaction().push(mess->start());
     }
   }
 }
 void StagingMqTransport::get_rendez_vous_point_and_do_get(const std::string& name)
 {
-  get_engine()->sub_transaction_.push(mqueues_[name + "_mq"]->get_async());
+  get_engine()->get_sub_transaction().push(mqueues_[name + "_mq"]->get_async());
 }
 /// \endcond
 

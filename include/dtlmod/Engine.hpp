@@ -44,11 +44,8 @@ public:
   };
 
   friend class Stream;
-  friend class FileTransport;
-  friend class StagingMboxTransport;
-  friend class StagingMqTransport;
-  friend class StagingTransport;
 
+protected:
   std::string name_;
   Type type_                            = Type::Undefined;
   std::shared_ptr<Transport> transport_ = nullptr;
@@ -80,7 +77,6 @@ public:
   std::string metadata_file_;
   void export_metadata_to_file() const;
 
-protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   void close_stream() const;
 
@@ -91,15 +87,12 @@ protected:
 
   void add_publisher(sg4::ActorPtr actor);
   void rm_publisher(sg4::ActorPtr actor) { publishers_.erase(actor); }
-  [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const { return publishers_; }
-  [[nodiscard]] size_t get_num_publishers() const { return publishers_.size(); }
   [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const { return publishers_.find(actor) != publishers_.end(); }
   // Synchronize publishers on engine closing
   [[nodiscard]] int is_last_publisher() const { return (pub_barrier_ && pub_barrier_->wait()); }
 
   void add_subscriber(sg4::ActorPtr actor);
   void rm_subscriber(sg4::ActorPtr actor) { subscribers_.erase(actor); }
-  [[nodiscard]] size_t get_num_subscribers() const { return subscribers_.size(); }
   [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const { return subscribers_.find(actor) != subscribers_.end(); }
   // Synchronize subscribers on engine closing
   [[nodiscard]] int is_last_subscriber() const { return subscribers_.empty(); }
@@ -114,6 +107,12 @@ public:
   {
   }
   virtual ~Engine() = default;
+  // Public accessors for Transport classes to access ActivitySets
+  [[nodiscard]] sg4::ActivitySet& get_pub_transaction() { return pub_transaction_; }
+  [[nodiscard]] sg4::ActivitySet& get_sub_transaction() { return sub_transaction_; }
+  [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const { return publishers_; }
+  [[nodiscard]] size_t get_num_publishers() const { return publishers_.size(); }
+  [[nodiscard]] size_t get_num_subscribers() const { return subscribers_.size(); }
   /// \endcond
 
   /// @brief Helper function to print out the name of the Engine.
