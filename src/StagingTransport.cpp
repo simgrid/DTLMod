@@ -25,7 +25,7 @@ void StagingTransport::set_publisher_put_requests_mq(const std::string& publishe
   publisher_put_requests_mq_[publisher_name] = sg4::MessageQueue::by_name(publisher_name);
 }
 
-sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(const std::string& publisher_name) const
+sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(const std::string& publisher_name) const noexcept
 {
   return publisher_put_requests_mq_.at(publisher_name);
 }

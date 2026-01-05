@@ -53,16 +53,17 @@ private:
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  [[nodiscard]] const Transport::Method& get_transport_method() const { return transport_method_; }
-  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Variable>>& get_all_variables_internal() const
+  [[nodiscard]] const Transport::Method& get_transport_method() const noexcept { return transport_method_; }
+  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Variable>>&
+  get_all_variables_internal() const noexcept
   {
     return variables_;
   }
-  [[nodiscard]] const char* mode_to_str(Mode mode) const
+  [[nodiscard]] const char* mode_to_str(Mode mode) const noexcept
   {
     return (mode == Mode::Publish) ? "Mode::Publish" : "Mode::Subscribe";
   }
-  void close() { engine_ = nullptr; }
+  void close() noexcept { engine_ = nullptr; }
 
   // Helper methods for Stream::open
   void validate_open_parameters(const std::string& name, Mode mode) const;
@@ -81,10 +82,10 @@ public:
 
   /// @brief Helper function to print out the name of the Stream.
   /// @return The corresponding string
-  [[nodiscard]] const std::string& get_name() const { return name_; }
+  [[nodiscard]] const std::string& get_name() const noexcept { return name_; }
   /// @brief Helper function to print out the name of the Stream.
   /// @return The corresponding C-string
-  [[nodiscard]] const char* get_cname() const { return name_.c_str(); }
+  [[nodiscard]] const char* get_cname() const noexcept { return name_.c_str(); }
   /// @brief Helper function to print out the Engine::Type of the Stream.
   /// @return The corresponding C-string
   [[nodiscard]] const char* get_engine_type_str() const;
@@ -93,13 +94,13 @@ public:
   [[nodiscard]] const char* get_transport_method_str() const;
   /// @brief Helper function to know the access Mode of the Stream.
   /// @return The corresponding Stream::Mode
-  [[nodiscard]] Mode get_access_mode() const { return access_mode_; }
+  [[nodiscard]] Mode get_access_mode() const noexcept { return access_mode_; }
   /// @brief Helper function to print out the access Mode of the Stream.
   /// @return The corresponding C-string
-  [[nodiscard]] const char* get_access_mode_str() const { return mode_to_str(access_mode_); }
+  [[nodiscard]] const char* get_access_mode_str() const noexcept { return mode_to_str(access_mode_); }
   /// @brief Helper function to know if the Stream does export metadata or not
   /// @return a boolean indicating if the Stream does export metadata or not
-  [[nodiscard]] bool does_export_metadata() const { return metadata_export_; }
+  [[nodiscard]] bool does_export_metadata() const noexcept { return metadata_export_; }
 
   /// @brief Stream configuration function: set the Engine type to create.
   /// @param engine_type The type of Engine to create when opening the Stream.
@@ -131,10 +132,10 @@ public:
 
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Publish.
   /// @return The number of publishers for that Stream.
-  [[nodiscard]] size_t get_num_publishers() const { return engine_->get_num_publishers(); }
+  [[nodiscard]] size_t get_num_publishers() const noexcept { return engine_->get_num_publishers(); }
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Subscribe.
   /// @return The number of subscribers for that Stream.
-  [[nodiscard]] size_t get_num_subscribers() const { return engine_->get_num_subscribers(); }
+  [[nodiscard]] size_t get_num_subscribers() const noexcept { return engine_->get_num_subscribers(); }
 
   /******* Variable Factory *******/
 

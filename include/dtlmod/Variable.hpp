@@ -48,10 +48,10 @@ protected:
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   // Public accessors for Transport classes
-  void set_transaction_start(unsigned int start) { transaction_start_ = start; }
-  [[nodiscard]] unsigned int get_transaction_start() const { return transaction_start_; }
-  void set_transaction_count(unsigned int count) { transaction_count_ = count; }
-  [[nodiscard]] unsigned int get_transaction_count() const { return transaction_count_; }
+  void set_transaction_start(unsigned int start) noexcept { transaction_start_ = start; }
+  [[nodiscard]] unsigned int get_transaction_start() const noexcept { return transaction_start_; }
+  void set_transaction_count(unsigned int count) noexcept { transaction_count_ = count; }
+  [[nodiscard]] unsigned int get_transaction_count() const noexcept { return transaction_count_; }
 
   void set_local_start_and_count(sg4::ActorPtr actor,
                                  const std::pair<std::vector<size_t>, std::vector<size_t>>& local_start_and_count)
@@ -90,17 +90,17 @@ public:
 
   /// @brief Helper function to print out the name of the Variable.
   /// @return The corresponding string.
-  [[nodiscard]] const std::string& get_name() const { return name_; }
+  [[nodiscard]] const std::string& get_name() const noexcept { return name_; }
   /// @brief Helper function to print out the name of the Variable.
   /// @return The corresponding C-string.
-  [[nodiscard]] const char* get_cname() const { return name_.c_str(); }
+  [[nodiscard]] const char* get_cname() const noexcept { return name_.c_str(); }
 
   /// @brief Get the shape of the Variable.
   /// @return A vector of the respective size in each dimension of the Variable.
-  [[nodiscard]] const std::vector<size_t>& get_shape() const { return shape_; }
+  [[nodiscard]] const std::vector<size_t>& get_shape() const noexcept { return shape_; }
   /// @brief Get the size of the elements stored in the Variable.
   /// @return The elements' size.
-  [[nodiscard]] size_t get_element_size() const { return element_size_; }
+  [[nodiscard]] size_t get_element_size() const noexcept { return element_size_; }
 
   /// @brief Get the global size of the Variable.
   /// @return The computed size.

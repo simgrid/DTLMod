@@ -82,20 +82,26 @@ protected:
 
   virtual void create_transport(const Transport::Method& transport_method) = 0;
 
-  void set_transport(std::shared_ptr<Transport> transport) { transport_ = transport; }
-  [[nodiscard]] std::shared_ptr<Transport> get_transport() const { return transport_; }
+  void set_transport(std::shared_ptr<Transport> transport) noexcept { transport_ = transport; }
+  [[nodiscard]] std::shared_ptr<Transport> get_transport() const noexcept { return transport_; }
 
   void add_publisher(sg4::ActorPtr actor);
-  void rm_publisher(sg4::ActorPtr actor) { publishers_.erase(actor); }
-  [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const { return publishers_.find(actor) != publishers_.end(); }
+  void rm_publisher(sg4::ActorPtr actor) noexcept { publishers_.erase(actor); }
+  [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const noexcept
+  {
+    return publishers_.find(actor) != publishers_.end();
+  }
   // Synchronize publishers on engine closing
   [[nodiscard]] int is_last_publisher() const { return (pub_barrier_ && pub_barrier_->wait()); }
 
   void add_subscriber(sg4::ActorPtr actor);
-  void rm_subscriber(sg4::ActorPtr actor) { subscribers_.erase(actor); }
-  [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const { return subscribers_.find(actor) != subscribers_.end(); }
+  void rm_subscriber(sg4::ActorPtr actor) noexcept { subscribers_.erase(actor); }
+  [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const noexcept
+  {
+    return subscribers_.find(actor) != subscribers_.end();
+  }
   // Synchronize subscribers on engine closing
-  [[nodiscard]] int is_last_subscriber() const { return subscribers_.empty(); }
+  [[nodiscard]] int is_last_subscriber() const noexcept { return subscribers_.empty(); }
 
   void set_metadata_file_name();
   /// \endcond
@@ -108,19 +114,21 @@ public:
   }
   virtual ~Engine() = default;
   // Public accessors for Transport classes to access ActivitySets
-  [[nodiscard]] sg4::ActivitySet& get_pub_transaction() { return pub_transaction_; }
-  [[nodiscard]] sg4::ActivitySet& get_sub_transaction() { return sub_transaction_; }
-  [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const { return publishers_; }
-  [[nodiscard]] size_t get_num_publishers() const { return publishers_.size(); }
-  [[nodiscard]] size_t get_num_subscribers() const { return subscribers_.size(); }
+  [[nodiscard]] const sg4::ActivitySet& get_pub_transaction() const noexcept { return pub_transaction_; }
+  [[nodiscard]] sg4::ActivitySet& get_pub_transaction() noexcept { return pub_transaction_; }
+  [[nodiscard]] const sg4::ActivitySet& get_sub_transaction() const noexcept { return sub_transaction_; }
+  [[nodiscard]] sg4::ActivitySet& get_sub_transaction() noexcept { return sub_transaction_; }
+  [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const noexcept { return publishers_; }
+  [[nodiscard]] size_t get_num_publishers() const noexcept { return publishers_.size(); }
+  [[nodiscard]] size_t get_num_subscribers() const noexcept { return subscribers_.size(); }
   /// \endcond
 
   /// @brief Helper function to print out the name of the Engine.
   /// @return the corresponding string
-  [[nodiscard]] const std::string& get_name() const { return name_; }
+  [[nodiscard]] const std::string& get_name() const noexcept { return name_; }
   /// @brief Helper function to print out the name of the Engine.
   /// @return the corresponding C-string
-  [[nodiscard]] const char* get_cname() const { return name_.c_str(); }
+  [[nodiscard]] const char* get_cname() const noexcept { return name_.c_str(); }
 
   /// @brief Start a transaction on an Engine.
   void begin_transaction();
@@ -143,11 +151,11 @@ public:
 
   /// @brief Get the id of the current transaction (on the Publish side).
   /// @return The id of the ongoing transaction.
-  [[nodiscard]] unsigned int get_current_transaction() const { return current_pub_transaction_id_; }
+  [[nodiscard]] unsigned int get_current_transaction() const noexcept { return current_pub_transaction_id_; }
 
   /// @brief Get the name of the file in which the engine stored metadata
   /// @return The name of the file.
-  [[nodiscard]] const std::string& get_metadata_file_name() const { return metadata_file_; }
+  [[nodiscard]] const std::string& get_metadata_file_name() const noexcept { return metadata_file_; }
 
   /// @brief Close the Engine associated to a Stream.
   void close();
