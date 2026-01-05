@@ -18,7 +18,7 @@ namespace sg4 = simgrid::s4u;
 namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
-DTL::DTL(const std::string& filename) : mutex_(sg4::Mutex::create())
+DTL::DTL(const std::string& filename)
 {
   // No configuration file has been provided. Nothing else to do
   if (filename.empty())
