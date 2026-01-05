@@ -88,9 +88,7 @@ PYBIND11_MODULE(dtlmod, m)
                              "Retrieve all streams declared in the DTL (read-only)")
       .def(
           "stream_by_name",
-          [](const DTL& self, const std::string& name) -> std::shared_ptr<Stream> {
-            return self.get_stream_by_name(name).value_or(nullptr); // Python will convert nullptr to None
-          },
+          [](const DTL& self, const std::string& name) { return self.get_stream_by_name(name).value_or(nullptr); },
           py::arg("name"), "Retrieve a data stream from the DTL by its name (returns None if not found)");
 
   /* Class Stream */
