@@ -363,10 +363,20 @@ Potential matches:
 </dl>
 </dd></dl>
 
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>doxygenfunction: Cannot find function “dtlmod::DTL::get_stream_by_name_or_null” in doxygen xml output for project “dtlmod” from directory: ../build/xml</p>
-</div>
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL18get_stream_by_nameERKNSt6stringE">
+<span id="_CPPv3NK6dtlmod3DTL18get_stream_by_nameERKNSt6stringE"></span><span id="_CPPv2NK6dtlmod3DTL18get_stream_by_nameERKNSt6stringE"></span><span id="dtlmod::DTL::get_stream_by_name__ssCRC"></span><span class="target" id="classdtlmod_1_1DTL_1a9f39a416c43be12ed31c987da91df30a"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_stream_by_name</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL18get_stream_by_nameERKNSt6stringE" title="Link to this definition"></a><br /></dt>
+<dd><p>Retrieve a data stream from the Data Transport Layer by its name. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>name</strong> – The name of the Stream to retrieve. </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An optional containing the Stream handler if found, std::nullopt otherwise. </p>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL15get_all_streamsEv">
 <span id="_CPPv3NK6dtlmod3DTL15get_all_streamsEv"></span><span id="_CPPv2NK6dtlmod3DTL15get_all_streamsEv"></span><span id="dtlmod::DTL::get_all_streamsC"></span><span class="target" id="classdtlmod_1_1DTL_1ac43f484685892cf7b85e13426ff35b53"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">unordered_map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_all_streams</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL15get_all_streamsEv" title="Link to this definition"></a><br /></dt>
@@ -382,6 +392,12 @@ Potential matches:
 <dt class="sig sig-object py" id="dtlmod.DTL.add_stream">
 <span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">add_stream</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.DTL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod::Stream</span></span></span><a class="headerlink" href="#dtlmod.DTL.add_stream" title="Link to this definition"></a></dt>
 <dd><p>Add a data stream to the DTL</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="dtlmod.DTL.stream_by_name">
+<span class="sig-prename descclassname"><span class="pre">DTL.</span></span><span class="sig-name descname"><span class="pre">stream_by_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">self</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">dtlmod.DTL</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">dtlmod::Stream</span></span></span><a class="headerlink" href="#dtlmod.DTL.stream_by_name" title="Link to this definition"></a></dt>
+<dd><p>Retrieve a data stream from the DTL by its name (returns None if not found)</p>
 </dd></dl>
 
 <dl class="py property">
