@@ -43,14 +43,14 @@ void StagingMboxTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
       auto comm = mboxes_[mbox_name]->put_init(req_size, *req_size);
       // Add callback to release memory allocated for the payload on completion
       comm->on_this_completion_cb([req_size](sg4::Comm const&) { delete req_size; });
-      get_engine()->pub_transaction_.push(comm->start());
+      get_engine()->get_pub_transaction().push(comm->start());
     }
   }
 }
 
 void StagingMboxTransport::get_rendez_vous_point_and_do_get(const std::string& name)
 {
-  get_engine()->sub_transaction_.push(mboxes_[name + "_mbox"]->get_async());
+  get_engine()->get_sub_transaction().push(mboxes_[name + "_mbox"]->get_async());
 }
 
 /// \endcond

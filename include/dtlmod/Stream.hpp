@@ -27,8 +27,6 @@ class DTL;
 
 class Stream : public std::enable_shared_from_this<Stream> {
   friend class Engine;
-  friend class FileEngine;
-  friend class StagingEngine;
 
 public:
   /// @brief An enum that defines the access mode for a Stream

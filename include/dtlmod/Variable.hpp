@@ -21,13 +21,8 @@ class Stream;
 class Variable : public std::enable_shared_from_this<Variable> {
   friend class Engine;
   friend class Stream;
-  friend class Transport;
-  friend class FileTransport;
-  friend class StagingTransport;
-  friend class DecimationReductionMethod;
 
-  enum class ReductionOrigin { None, Publisher, Subscriber };
-
+private:
   std::string name_;
   size_t element_size_;
   std::vector<size_t> shape_;
@@ -48,6 +43,11 @@ protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   void create_metadata() { metadata_ = std::make_shared<Metadata>(shared_from_this()); }
   void set_metadata(std::shared_ptr<Metadata> metadata) { metadata_ = metadata; }
+  /// \endcond
+
+public:
+  /// \cond EXCLUDE_FROM_DOCUMENTATION
+  // Public accessors for Transport classes
   void set_transaction_start(unsigned int start) { transaction_start_ = start; }
   [[nodiscard]] unsigned int get_transaction_start() const { return transaction_start_; }
   void set_transaction_count(unsigned int count) { transaction_count_ = count; }
