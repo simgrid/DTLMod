@@ -174,11 +174,10 @@ void Stream::wait_for_engine_creation()
 /// Register the current actor as a publisher or subscriber with the Engine.
 void Stream::register_actor_with_engine(Mode mode)
 {
-  if (mode == Mode::Publish) {
+  if (mode == Mode::Publish)
     engine_->add_publisher(sg4::Actor::self());
-  } else {
+  else
     engine_->add_subscriber(sg4::Actor::self());
-  }
 }
 
 /// When multiple actors open the same Stream, only the first one to call this function is in charge of creating an
