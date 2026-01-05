@@ -82,7 +82,7 @@ public:
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  void close_stream();
+  void close_stream() const;
 
   virtual void create_transport(const Transport::Method& transport_method) = 0;
 

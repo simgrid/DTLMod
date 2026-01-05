@@ -18,7 +18,7 @@ namespace dtlmod {
 class DTL {
   friend class Stream;
 
-  sg4::MutexPtr mutex_;
+  sg4::MutexPtr mutex_ = sg4::Mutex::create();
   std::set<simgrid::s4u::Actor*> active_connections_;
   std::unordered_map<std::string, std::shared_ptr<Stream>> streams_;
 

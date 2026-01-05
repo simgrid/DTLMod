@@ -113,7 +113,7 @@ void Engine::set_metadata_file_name()
                    std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
 }
 
-void Engine::close_stream()
+void Engine::close_stream() const
 {
   stream_.lock()->close();
 }
