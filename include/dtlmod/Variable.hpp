@@ -21,7 +21,6 @@ class Variable {
   friend class Engine;
   friend class Stream;
 
-private:
   std::string name_;
   size_t element_size_;
   std::vector<size_t> shape_;
@@ -70,7 +69,6 @@ public:
   const std::pair<unsigned int, unsigned int>& get_subscriber_transaction_selection(sg4::ActorPtr actor) const;
   /// \endcond
 
-public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   Variable(const std::string& name, size_t element_size, const std::vector<size_t>& shape,
            std::shared_ptr<const Stream> stream)
