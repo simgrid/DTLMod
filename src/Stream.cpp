@@ -113,27 +113,21 @@ Stream* Stream::unset_metadata_export()
 
 /****** Engine Factory ******/
 
-/// When multiple actors open the same Stream, only the first one to call this function is in charge of creating an
-/// Engine object for that Stream. The Engine creation is thus in a critical section. Each actor calling the open()
-/// function is considered as a subscriber to the created Engine.
-///
-/// Both Engine::Type and Transport::Method have to be specified before opening a Stream.
-///
-/// For the FileEngine engine type, name corresponds to a fullpath to where to write data. This fullpath is
-/// structured as follows: netzone_name:file_system_name:/path/to/file_name.
-std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
+/// Validate that all required parameters are set before opening a Stream.
+void Stream::validate_open_parameters(const std::string& name, Mode mode) const
 {
-  // Sanity checks
   if (engine_type_ == Engine::Type::Undefined)
     throw UndefinedEngineTypeException(XBT_THROW_POINT, name);
   if (transport_method_ == Transport::Method::Undefined)
     throw UndefinedTransportMethodException(XBT_THROW_POINT, name);
   if (mode != Mode::Publish && mode != Mode::Subscribe)
     throw UnknownOpenModeException(XBT_THROW_POINT, mode_to_str(mode));
+}
 
-  // Only the first Actor calling Stream::open has to create the corresponding Engine and Transport method.
-  // Hence, we use a critical section. The creation of a FileEngine can raise an exception in the critical section
-  // which requires special handling.
+/// Create the Engine if this is the first actor opening the Stream.
+/// Executed in a critical section to ensure only one Engine is created.
+void Stream::create_engine_if_needed(const std::string& name, Mode mode)
+{
   bool got_exception = false;
   std::string exception_msg;
 
@@ -156,16 +150,18 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
       access_mode_ = mode;
       if (metadata_export_)
         engine_->set_metadata_file_name();
-      // Notify all waiting actors that the engine has been created
       engine_created_->notify_all();
     }
   }
   dtl_->unlock();
-  // Check if an exception has been raised and caught while creating a FileEngine. If yes, throw it again.
+
   if (got_exception)
     throw IncorrectPathDefinitionException(XBT_THROW_POINT, exception_msg);
+}
 
-  // Wait for engine creation using condition variable instead of active polling
+/// Wait for the Engine to be created by another actor if needed.
+void Stream::wait_for_engine_creation()
+{
   if (not engine_) {
     std::unique_lock lock(*mutex_);
     while (not engine_) {
@@ -173,17 +169,34 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
       engine_created_->wait(lock);
     }
   }
+}
 
-  // Then we register the actors calling Stream::open as publishers or subscribers in the newly created Engine.
-  if (mode == dtlmod::Stream::Mode::Publish) {
+/// Register the current actor as a publisher or subscriber with the Engine.
+void Stream::register_actor_with_engine(Mode mode)
+{
+  if (mode == Mode::Publish) {
     engine_->add_publisher(sg4::Actor::self());
   } else {
     engine_->add_subscriber(sg4::Actor::self());
   }
+}
 
+/// When multiple actors open the same Stream, only the first one to call this function is in charge of creating an
+/// Engine object for that Stream. The Engine creation is thus in a critical section. Each actor calling the open()
+/// function is considered as a subscriber to the created Engine.
+///
+/// Both Engine::Type and Transport::Method have to be specified before opening a Stream.
+///
+/// For the FileEngine engine type, name corresponds to a fullpath to where to write data. This fullpath is
+/// structured as follows: netzone_name:file_system_name:/path/to/file_name.
+std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
+{
+  validate_open_parameters(name, mode);
+  create_engine_if_needed(name, mode);
+  wait_for_engine_creation();
+  register_actor_with_engine(mode);
   XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(), get_engine_type_str(),
             get_transport_method_str(), engine_->get_num_publishers(), engine_->get_num_subscribers());
-
   return engine_;
 }
 

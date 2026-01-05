@@ -63,6 +63,12 @@ protected:
     return (mode == Mode::Publish) ? "Mode::Publish" : "Mode::Subscribe";
   }
   void close() { engine_ = nullptr; }
+
+  // Helper methods for Stream::open
+  void validate_open_parameters(const std::string& name, Mode mode) const;
+  void create_engine_if_needed(const std::string& name, Mode mode);
+  void wait_for_engine_creation();
+  void register_actor_with_engine(Mode mode);
   /// \endcond
 
 public:
