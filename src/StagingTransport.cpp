@@ -30,7 +30,7 @@ sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(const std::st
   return publisher_put_requests_mq_.at(publisher_name);
 }
 
-void StagingTransport::put(std::shared_ptr<Variable> var, size_t /* simulated_size_in_bytes*/)
+void StagingTransport::put(const std::shared_ptr<Variable>& var, size_t /* simulated_size_in_bytes*/)
 {
   // Register who (this actor) writes in this transaction
   const auto* e        = get_engine();
@@ -48,7 +48,7 @@ void StagingTransport::put(std::shared_ptr<Variable> var, size_t /* simulated_si
     pending_put_requests_[pub_name].push(get_publisher_put_requests_mq(pub_name)->get_async());
 }
 
-void StagingTransport::get(std::shared_ptr<Variable> var)
+void StagingTransport::get(const std::shared_ptr<Variable>& var)
 {
   auto publishers = get_engine()->get_publishers();
   auto self       = sg4::Actor::self();

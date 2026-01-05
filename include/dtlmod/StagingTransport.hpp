@@ -38,8 +38,8 @@ protected:
 
 public:
   ~StagingTransport() override = default;
-  void put(std::shared_ptr<Variable> var, size_t /*simulated_size_in_bytes*/) override;
-  void get(std::shared_ptr<Variable> var) override;
+  void put(const std::shared_ptr<Variable>& var, size_t /*simulated_size_in_bytes*/) override;
+  void get(const std::shared_ptr<Variable>& var) override;
 };
 /// \endcond
 

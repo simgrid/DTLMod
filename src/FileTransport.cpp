@@ -31,7 +31,7 @@ void FileTransport::add_publisher(unsigned long publisher_id)
   publishers_to_files_[self] = e->get_file_system()->open(filename, "a");
 }
 
-void FileTransport::put(std::shared_ptr<Variable> var, size_t size)
+void FileTransport::put(const std::shared_ptr<Variable>& var, size_t size)
 {
   // Register who (this actor) writes in what file (the 'file' opened when adding this actor as a publisher) in this
   // transaction (the transaction_id stored by the Engine)
@@ -56,7 +56,7 @@ void FileTransport::close_pub_files() const
 ///////////// SUBSCRIBER SIDE //////////////
 ////////////////////////////////////////////
 
-void FileTransport::get(std::shared_ptr<Variable> var)
+void FileTransport::get(const std::shared_ptr<Variable>& var)
 {
   auto self = sg4::Actor::self();
   auto fs   = static_cast<FileEngine*>(get_engine())->get_file_system();
