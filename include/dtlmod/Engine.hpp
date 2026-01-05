@@ -135,16 +135,16 @@ public:
 
   /// @brief Put a Variable in the DTL using a specific Engine.
   /// @param var The variable to put in the DTL
-  void put(std::shared_ptr<Variable> var) const;
+  void put(const std::shared_ptr<Variable>& var) const;
 
   /// @brief Put a Variable in the DTL using a specific Engine.
   /// @param var The variable to put in the DTL
   /// @param simulated_size_in_bytes The simulated size of the Variable (can be different of actual size)
-  void put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) const;
+  void put(const std::shared_ptr<Variable>& var, size_t simulated_size_in_bytes) const;
 
   /// @brief Get a Variable from the DTL
   /// @param var The Variable to get in the DTL (Have to do an Inquire first).
-  void get(std::shared_ptr<Variable> var) const;
+  void get(const std::shared_ptr<Variable>& var) const;
 
   /// @brief End a transaction on an Engine.
   void end_transaction();
