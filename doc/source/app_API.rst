@@ -252,13 +252,13 @@ Stream factory
    .. group-tab:: C++
 
       .. doxygenfunction:: dtlmod::DTL::add_stream(const std::string& name)
-      .. doxygenfunction:: dtlmod::DTL::get_stream_by_name_or_null(const std::string& name) const
+      .. doxygenfunction:: dtlmod::DTL::get_stream_by_name(const std::string& name) const
       .. doxygenfunction:: dtlmod::DTL::get_all_streams
 
    .. group-tab:: Python
 
       .. automethod:: dtlmod.DTL.add_stream
-      .. automethod:: dtlmod.DTL.stream_by_name_or_null
+      .. automethod:: dtlmod.DTL.stream_by_name
       .. autoproperty:: dtlmod.DTL.all_streams
 
 .. _API_dtlmod_Stream:
