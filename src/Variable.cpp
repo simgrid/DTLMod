@@ -5,7 +5,6 @@
 
 #include "dtlmod/Variable.hpp"
 #include "dtlmod/DTLException.hpp"
-#include "dtlmod/Stream.hpp"
 #include <numeric>
 
 XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_variable, dtlmod, "DTL logging about Variables");
@@ -105,7 +104,10 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
                                                                                     std::vector<size_t> count) const
 {
   std::vector<std::pair<std::string, sg_size_t>> get_sizes_per_block;
-  // TODO add sanity checks
+  // Validate transaction_id is within valid range
+  if (transaction_id > metadata_->get_current_transaction())
+    throw InvalidTransactionIdException(XBT_THROW_POINT, std::to_string(transaction_id));
+
   auto blocks = metadata_->get_blocks_for_transaction(transaction_id);
   XBT_DEBUG("%zu block(s) to check for transaction %u", blocks.size(), transaction_id);
   for (const auto& [block_info, location] : blocks) {

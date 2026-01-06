@@ -52,6 +52,8 @@ DECLARE_DTLMOD_EXCEPTION(InconsistentVariableDefinitionException, "Insconsistent
 DECLARE_DTLMOD_EXCEPTION(IncorrectPathDefinitionException, "Fullpath must be structured as follows: "
                                                            "netzone_name:file_system_name:/path/to/file_name");
 
+DECLARE_DTLMOD_EXCEPTION(InvalidTransactionIdException,
+                         "Impossible to get. This transaction doesn't exist for variable yet");
 DECLARE_DTLMOD_EXCEPTION(GetWhenNoTransactionException, "Impossible to get. No transaction exists for variable");
 
 DECLARE_DTLMOD_EXCEPTION(UnknownReductionMethodException,
