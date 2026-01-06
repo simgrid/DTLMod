@@ -92,7 +92,7 @@ void FileEngine::begin_pub_transaction()
     XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
               file_pub_transaction_[self].size());
     while (file_pub_transaction_[self].size() > 0)
-      pub_activities_completed_->wait(std::unique_lock(*pub_mutex_));
+      pub_activities_completed_->wait(std::unique_lock(*publishers_.get_mutex()));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     transport->clear_to_write_in_transaction(self);
   }
@@ -104,9 +104,9 @@ void FileEngine::end_pub_transaction()
   auto transport = std::static_pointer_cast<FileTransport>(transport_);
 
   // This is the end of the first transaction, create a barrier
-  if (!pub_barrier_) {
-    XBT_DEBUG("Create a barrier for %zu publishers", publishers_.size());
-    pub_barrier_ = sg4::Barrier::create(publishers_.size());
+  auto pub_barrier = publishers_.get_or_create_barrier();
+  if (pub_barrier) {
+    XBT_DEBUG("Barrier created for %zu publishers", publishers_.count());
   }
 
   // Publisher gets the list of files and size to write that has been build during the put() operations
@@ -144,7 +144,7 @@ void FileEngine::pub_close()
   XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
             file_pub_transaction_[self].size());
   while (file_pub_transaction_[self].size() > 0)
-    pub_activities_completed_->wait(std::unique_lock(*pub_mutex_));
+    pub_activities_completed_->wait(std::unique_lock(*publishers_.get_mutex()));
   transport->clear_to_write_in_transaction(self);
 
   rm_publisher(self);
@@ -173,7 +173,7 @@ void FileEngine::begin_sub_transaction()
 
   // We have publishers on that stream, wait for them to complete a transaction first
   if (get_num_publishers() > 0) {
-    std::unique_lock lock(*sub_mutex_);
+    std::unique_lock lock(*subscribers_.get_mutex());
     while (completed_pub_transaction_id_ < current_sub_transaction_id_) {
       XBT_DEBUG("Wait for publishers to end the transaction I need");
       pub_transaction_completed_->wait(lock);
@@ -191,7 +191,7 @@ void FileEngine::end_sub_transaction()
   // activities
   if (current_sub_transaction_id_ == current_pub_transaction_id_ && get_num_publishers() > 0) {
     XBT_DEBUG("Wait for the completion of publish activities from the current transaction");
-    pub_activities_completed_->wait(std::unique_lock(*sub_mutex_));
+    pub_activities_completed_->wait(std::unique_lock(*subscribers_.get_mutex()));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the subscribe activities.");
   }
 

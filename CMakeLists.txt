@@ -153,6 +153,7 @@ set(SOURCE_FILES
 )
 
 set(HEADER_FILES
+  include/dtlmod/ActorRegistry.hpp
   include/dtlmod/DecimationReductionMethod.hpp
   include/dtlmod/DTL.hpp
   include/dtlmod/DTLException.hpp

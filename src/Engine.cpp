@@ -90,14 +90,14 @@ void Engine::close()
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 void Engine::add_publisher(sg4::ActorPtr actor)
 {
-  transport_->add_publisher(publishers_.size());
-  publishers_.insert(actor);
+  transport_->add_publisher(publishers_.count());
+  publishers_.add(actor);
 }
 
 void Engine::add_subscriber(sg4::ActorPtr actor)
 {
-  transport_->add_subscriber(subscribers_.size());
-  subscribers_.insert(actor);
+  transport_->add_subscriber(subscribers_.count());
+  subscribers_.add(actor);
 }
 
 void Engine::export_metadata_to_file() const
