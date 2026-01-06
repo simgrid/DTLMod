@@ -39,8 +39,6 @@ void StagingMqTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
       XBT_DEBUG("%s received a put request from %s. Put a Message in %s with %lu as payload", pub_name.c_str(),
                 subscriber->get_cname(), mq_name.c_str(), *req_size);
       auto mess = mqueues_[mq_name]->put_init(req_size);
-      // Add callback to release memory allocated for the payload on completion
-      mess->on_this_completion_cb([req_size](sg4::Mess const&) { delete req_size; });
       get_engine()->get_pub_transaction().push(mess->start());
     }
   }
