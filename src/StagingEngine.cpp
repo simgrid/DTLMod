@@ -47,7 +47,7 @@ void StagingEngine::begin_pub_transaction()
   }
 
   // Only one publisher has to do this
-  std::unique_lock lock(*pub_mutex_);
+  std::unique_lock lock(*publishers_.get_mutex());
   if (current_pub_transaction_id_ > 1) { // This is not the first transaction.
     // Wait for the completion of the Publish activities from the previous transaction
     XBT_DEBUG("[T %d] (%d) Wait for the completion of %u publish activities from the previous transaction",
@@ -69,9 +69,9 @@ void StagingEngine::begin_pub_transaction()
 void StagingEngine::end_pub_transaction()
 {
   // This is the end of the first transaction, create a barrier
-  if (!pub_barrier_) {
-    XBT_DEBUG("Create a barrier for %zu publishers", publishers_.size());
-    pub_barrier_ = sg4::Barrier::create(publishers_.size());
+  auto pub_barrier = publishers_.get_or_create_barrier();
+  if (pub_barrier) {
+    XBT_DEBUG("Barrier created for %zu publishers", publishers_.count());
   }
 
   // A new pub transaction has been completed, notify subscribers that they can starting getting variables
@@ -117,7 +117,7 @@ void StagingEngine::begin_sub_transaction()
 {
   if (current_sub_transaction_id_ == 0) { // This is the first transaction
     // Wait for at least one publisher to start a tran
-    std::unique_lock lock(*sub_mutex_);
+    std::unique_lock lock(*subscribers_.get_mutex());
     while (current_pub_transaction_id_ == 0)
       first_pub_transaction_started_->wait(lock);
     XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
@@ -141,7 +141,7 @@ void StagingEngine::begin_sub_transaction()
     sub_transaction_started_->notify_all();
   }
 
-  std::unique_lock lock(*sub_mutex_);
+  std::unique_lock lock(*subscribers_.get_mutex());
   while (completed_pub_transaction_id_ < current_sub_transaction_id_)
     pub_transaction_completed_->wait(lock);
 }
@@ -149,12 +149,12 @@ void StagingEngine::begin_sub_transaction()
 void StagingEngine::end_sub_transaction()
 {
   // This is the end of the first transaction, create a barrier
-  if (!sub_barrier_) {
-    XBT_DEBUG("Create a barrier for %zu subscribers", subscribers_.size());
-    sub_barrier_ = sg4::Barrier::create(subscribers_.size());
+  auto sub_barrier = subscribers_.get_or_create_barrier();
+  if (sub_barrier) {
+    XBT_DEBUG("Barrier created for %zu subscribers", subscribers_.count());
   }
 
-  if (sub_barrier_->wait()) {
+  if (subscribers_.is_last_at_barrier()) {
     XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
     sub_transaction_.wait_all();
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
@@ -162,7 +162,7 @@ void StagingEngine::end_sub_transaction()
   }
 
   // Prevent subscribers to start a new transaction before this one is really over
-  if (sub_barrier_->wait())
+  if (subscribers_.is_last_at_barrier())
     // Mark this transaction as over
     sub_transaction_in_progress_ = false;
   // Decrease counter for next iteration

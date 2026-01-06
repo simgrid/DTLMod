@@ -18,6 +18,7 @@
 
 #include <string>
 
+#include "dtlmod/ActorRegistry.hpp"
 #include "dtlmod/Transport.hpp"
 #include "dtlmod/Variable.hpp"
 
@@ -45,66 +46,52 @@ public:
 
   friend class Stream;
 
-protected:
   std::string name_;
   Type type_                            = Type::Undefined;
   std::shared_ptr<Transport> transport_ = nullptr;
   std::weak_ptr<Stream> stream_;
 
-  sg4::MutexPtr pub_mutex_ = sg4::Mutex::create();
-  std::set<sg4::ActorPtr> publishers_;
+  ActorRegistry publishers_;
+  ActorRegistry subscribers_;
+  std::string metadata_file_;
+
+protected:
   sg4::ActivitySet pub_transaction_;
   sg4::ConditionVariablePtr pub_transaction_completed_ = sg4::ConditionVariable::create();
-  sg4::BarrierPtr pub_barrier_                         = nullptr;
   unsigned int current_pub_transaction_id_             = 0;
   unsigned int completed_pub_transaction_id_           = 0;
   bool pub_transaction_in_progress_                    = false;
-  virtual void begin_pub_transaction()                 = 0;
-  virtual void end_pub_transaction()                   = 0;
-  virtual void pub_close()                             = 0;
 
-  sg4::MutexPtr sub_mutex_ = sg4::Mutex::create();
-  std::set<sg4::ActorPtr> subscribers_;
   sg4::ActivitySet sub_transaction_;
-
-  sg4::BarrierPtr sub_barrier_             = nullptr;
   unsigned int current_sub_transaction_id_ = 0;
   bool sub_transaction_in_progress_        = false;
-  virtual void begin_sub_transaction()     = 0;
-  virtual void end_sub_transaction()       = 0;
-  virtual void sub_close()                 = 0;
 
-  std::string metadata_file_;
-  void export_metadata_to_file() const;
-
-  /// \cond EXCLUDE_FROM_DOCUMENTATION
   void close_stream() const;
 
   virtual void create_transport(const Transport::Method& transport_method) = 0;
-
   void set_transport(std::shared_ptr<Transport> transport) noexcept { transport_ = transport; }
   [[nodiscard]] std::shared_ptr<Transport> get_transport() const noexcept { return transport_; }
 
   void add_publisher(sg4::ActorPtr actor);
-  void rm_publisher(sg4::ActorPtr actor) noexcept { publishers_.erase(actor); }
-  [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const noexcept
-  {
-    return publishers_.find(actor) != publishers_.end();
-  }
+  void rm_publisher(sg4::ActorPtr actor) noexcept { publishers_.remove(actor); }
+  [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const noexcept { return publishers_.contains(actor); }
   // Synchronize publishers on engine closing
-  [[nodiscard]] int is_last_publisher() const { return (pub_barrier_ && pub_barrier_->wait()); }
+  [[nodiscard]] bool is_last_publisher() { return publishers_.is_last_at_barrier(); }
+  virtual void begin_pub_transaction() = 0;
+  virtual void end_pub_transaction()   = 0;
+  virtual void pub_close()             = 0;
 
   void add_subscriber(sg4::ActorPtr actor);
-  void rm_subscriber(sg4::ActorPtr actor) noexcept { subscribers_.erase(actor); }
-  [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const noexcept
-  {
-    return subscribers_.find(actor) != subscribers_.end();
-  }
+  void rm_subscriber(sg4::ActorPtr actor) noexcept { subscribers_.remove(actor); }
+  [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const noexcept { return subscribers_.contains(actor); }
   // Synchronize subscribers on engine closing
-  [[nodiscard]] int is_last_subscriber() const noexcept { return subscribers_.empty(); }
+  [[nodiscard]] bool is_last_subscriber() const noexcept { return subscribers_.is_empty(); }
+  virtual void begin_sub_transaction() = 0;
+  virtual void end_sub_transaction()   = 0;
+  virtual void sub_close()             = 0;
 
   void set_metadata_file_name();
-  /// \endcond
+  void export_metadata_to_file() const;
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -118,9 +105,9 @@ public:
   [[nodiscard]] sg4::ActivitySet& get_pub_transaction() noexcept { return pub_transaction_; }
   [[nodiscard]] const sg4::ActivitySet& get_sub_transaction() const noexcept { return sub_transaction_; }
   [[nodiscard]] sg4::ActivitySet& get_sub_transaction() noexcept { return sub_transaction_; }
-  [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const noexcept { return publishers_; }
-  [[nodiscard]] size_t get_num_publishers() const noexcept { return publishers_.size(); }
-  [[nodiscard]] size_t get_num_subscribers() const noexcept { return subscribers_.size(); }
+  [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const noexcept { return publishers_.get_all(); }
+  [[nodiscard]] size_t get_num_publishers() const noexcept { return publishers_.count(); }
+  [[nodiscard]] size_t get_num_subscribers() const noexcept { return subscribers_.count(); }
   /// \endcond
 
   /// @brief Helper function to print out the name of the Engine.
