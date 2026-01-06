@@ -104,10 +104,8 @@ void FileEngine::end_pub_transaction()
   auto transport = std::static_pointer_cast<FileTransport>(transport_);
 
   // This is the end of the first transaction, create a barrier
-  auto pub_barrier = publishers_.get_or_create_barrier();
-  if (pub_barrier) {
+  if (auto pub_barrier = publishers_.get_or_create_barrier())
     XBT_DEBUG("Barrier created for %zu publishers", publishers_.count());
-  }
 
   // Publisher gets the list of files and size to write that has been build during the put() operations
   auto to_write = transport->get_to_write_in_transaction_by_actor(self);

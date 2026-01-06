@@ -31,18 +31,15 @@ public:
   ActorRegistry() = default;
 
   void add(sg4::ActorPtr actor) { actors_.insert(actor); }
-
   void remove(sg4::ActorPtr actor) noexcept { actors_.erase(actor); }
-
   [[nodiscard]] bool contains(sg4::ActorPtr actor) const noexcept { return actors_.find(actor) != actors_.end(); }
-
   [[nodiscard]] size_t count() const noexcept { return actors_.size(); }
   [[nodiscard]] const std::set<sg4::ActorPtr>& get_all() const noexcept { return actors_; }
   [[nodiscard]] bool is_empty() const noexcept { return actors_.empty(); }
   [[nodiscard]] sg4::BarrierPtr get_or_create_barrier()
   {
     if (!barrier_)
-      barrier_ = sg4::Barrier::create(actors_.size());
+      barrier_ = sg4::Barrier::create(static_cast<unsigned int>(actors_.size()));
     return barrier_;
   }
   [[nodiscard]] bool is_last_at_barrier() { return barrier_ && barrier_->wait(); }

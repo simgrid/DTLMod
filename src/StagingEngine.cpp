@@ -69,10 +69,8 @@ void StagingEngine::begin_pub_transaction()
 void StagingEngine::end_pub_transaction()
 {
   // This is the end of the first transaction, create a barrier
-  auto pub_barrier = publishers_.get_or_create_barrier();
-  if (pub_barrier) {
+  if (auto pub_barrier = publishers_.get_or_create_barrier())
     XBT_DEBUG("Barrier created for %zu publishers", publishers_.count());
-  }
 
   // A new pub transaction has been completed, notify subscribers that they can starting getting variables
   if (is_last_publisher() && (completed_pub_transaction_id_ < current_pub_transaction_id_)) {
@@ -149,10 +147,8 @@ void StagingEngine::begin_sub_transaction()
 void StagingEngine::end_sub_transaction()
 {
   // This is the end of the first transaction, create a barrier
-  auto sub_barrier = subscribers_.get_or_create_barrier();
-  if (sub_barrier) {
+  if (auto sub_barrier = subscribers_.get_or_create_barrier())
     XBT_DEBUG("Barrier created for %zu subscribers", subscribers_.count());
-  }
 
   if (subscribers_.is_last_at_barrier()) {
     XBT_DEBUG("Wait for the %d subscribe activities for the transaction", sub_transaction_.size());
