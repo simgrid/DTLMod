@@ -56,9 +56,9 @@ void StagingTransport::get(const std::shared_ptr<Variable>& var)
 
   // Prepare messages to send to publishers to indicate them whether they have to send something to this subscriber
   // or not. The payload is 0 by default and will be changed when browsing the blocks to get.
-  std::unordered_map<std::string, size_t*> put_requests;
+  std::unordered_map<std::string, std::unique_ptr<size_t>> put_requests;
   for (const auto& pub : publishers)
-    put_requests[pub->get_name()] = new size_t(0);
+    put_requests[pub->get_name()] = std::make_unique<size_t>(0);
 
   for (const auto& [publisher_name, size] : blocks) {
     std::string rdv_name = publisher_name + "_" + self->get_name();
@@ -67,16 +67,15 @@ void StagingTransport::get(const std::shared_ptr<Variable>& var)
 
     // Update the payload of the put request to send to this publisher if necessary.
     if (size > 0) {
-      delete put_requests[publisher_name];
-      put_requests[publisher_name] = new size_t(size);
+      put_requests[publisher_name] = std::make_unique<size_t>(size);
       // Add an activity to the transaction.
       get_rendez_vous_point_and_do_get(rdv_name);
     }
   }
 
   // Send the put requests for that get to all publishers in the Stream in a detached mode.
-  for (const auto& [pub, size] : put_requests)
-    get_publisher_put_requests_mq(pub)->put_init(size)->detach();
+  for (auto& [pub, size_ptr] : put_requests)
+    get_publisher_put_requests_mq(pub)->put_init(size_ptr.release())->detach();
 }
 /// \endcond
 
