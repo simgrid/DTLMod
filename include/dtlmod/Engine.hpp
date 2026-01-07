@@ -55,16 +55,8 @@ public:
   ActorRegistry subscribers_;
   std::string metadata_file_;
 
-protected:
   sg4::ActivitySet pub_transaction_;
-  sg4::ConditionVariablePtr pub_transaction_completed_ = sg4::ConditionVariable::create();
-  unsigned int current_pub_transaction_id_             = 0;
-  unsigned int completed_pub_transaction_id_           = 0;
-  bool pub_transaction_in_progress_                    = false;
-
   sg4::ActivitySet sub_transaction_;
-  unsigned int current_sub_transaction_id_ = 0;
-  bool sub_transaction_in_progress_        = false;
 
   void close_stream() const;
 
@@ -138,7 +130,7 @@ public:
 
   /// @brief Get the id of the current transaction (on the Publish side).
   /// @return The id of the ongoing transaction.
-  [[nodiscard]] unsigned int get_current_transaction() const noexcept { return current_pub_transaction_id_; }
+  [[nodiscard]] virtual unsigned int get_current_transaction() const noexcept = 0;
 
   /// @brief Get the name of the file in which the engine stored metadata
   /// @return The name of the file.
