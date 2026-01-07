@@ -34,6 +34,13 @@ class FileEngine : public Engine {
   sg4::ConditionVariablePtr pub_activities_completed_ = sg4::ConditionVariable::create();
   std::unordered_map<sg4::ActorPtr, sg4::ActivitySet> file_sub_transaction_;
   std::unordered_map<sg4::ActorPtr, sg4::ActivitySet> file_pub_transaction_;
+  unsigned int current_pub_transaction_id_             = 0;
+  unsigned int completed_pub_transaction_id_           = 0;
+  bool pub_transaction_in_progress_                    = false;
+  sg4::ConditionVariablePtr pub_transaction_completed_ = sg4::ConditionVariable::create();
+
+  unsigned int current_sub_transaction_id_ = 0;
+  bool sub_transaction_in_progress_        = false;
 
 protected:
   void create_transport(const Transport::Method& transport_method) override;
@@ -45,6 +52,7 @@ protected:
   void begin_sub_transaction() override;
   void end_sub_transaction() override;
   void sub_close() override;
+  [[nodiscard]] unsigned int get_current_transaction() const noexcept override { return current_pub_transaction_id_; }
 
 public:
   explicit FileEngine(const std::string& fullpath, const std::shared_ptr<Stream>& stream);
