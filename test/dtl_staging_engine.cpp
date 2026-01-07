@@ -282,7 +282,7 @@ TEST_F(DTLStagingEngineTest, MetadataExport)
       ASSERT_NO_THROW(engine->close());
 
       XBT_INFO("Get the name of the metadata file");
-      auto metadata_file_name = engine->get_metadata_file_name();
+      auto metadata_file_name = stream->get_metadata_file_name();
       XBT_INFO("Check the contents of '%s'", metadata_file_name.c_str());
       std::ifstream file(metadata_file_name);
       ASSERT_TRUE(file.is_open());

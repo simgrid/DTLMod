@@ -102,7 +102,7 @@ PYBIND11_MODULE(dtlmod, m)
       .def_property_readonly("access_mode", &Stream::get_access_mode_str,
                              "Print out the access mode of this Stream (read-only)")
       .def_property_readonly("metadata_export", &Stream::does_export_metadata,
-           "Does the stream export metadata (read only)")
+                             "Does the stream export metadata (read only)")
       .def("set_engine_type", &Stream::set_engine_type, py::arg("type"),
            "Set the engine type associated to this Stream")
       .def("set_transport_method", &Stream::set_transport_method, py::arg("method"),
@@ -134,6 +134,8 @@ PYBIND11_MODULE(dtlmod, m)
           py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("shape"), py::arg("start"),
           py::arg("count"), py::arg("element_size"), "Define a variable for this Stream")
       .def_property_readonly("all_variables", &Stream::get_all_variables, "Retrieve the list of Variables by names")
+      .def_property_readonly("metadata_file_name", &Stream::get_metadata_file_name,
+                             "The name of the file in which the stream stores metadata (read-only)")
       .def("inquire_variable", &Stream::inquire_variable, py::arg("name"), "Retrieve a Variable information by name")
       .def("remove_variable", &Stream::remove_variable, py::arg("name"), "Remove a Variable from this Stream");
 
@@ -179,8 +181,6 @@ PYBIND11_MODULE(dtlmod, m)
            "End a transaction on this Engine")
       .def_property_readonly("current_transaction", &Engine::get_current_transaction,
                              "The id of the current transaction on this Engine (read-only)")
-      .def_property_readonly("metadata_file_name", &Engine::get_metadata_file_name,
-                             "The name of the file in which the engine stored metadata (read-only)")
       .def("close", &Engine::close, py::call_guard<py::gil_scoped_release>(), "Close this Engine");
 
   py::enum_<Engine::Type>(engine, "Type", "The type of Engine")

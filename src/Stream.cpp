@@ -3,6 +3,10 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
+#include <boost/algorithm/string/replace.hpp>
+#include <chrono>
+#include <fstream>
+
 #include "dtlmod/Stream.hpp"
 #include "dtlmod/DTL.hpp"
 #include "dtlmod/DTLException.hpp"
@@ -111,6 +115,16 @@ Stream& Stream::unset_metadata_export()
   return *this;
 }
 
+void Stream::export_metadata_to_file() const
+{
+  if (metadata_export_) {
+    std::ofstream export_stream(metadata_file_, std::ofstream::out);
+    for (const auto& [name, v] : variables_)
+      v->get_metadata()->export_to_file(export_stream);
+    export_stream.close();
+  }
+}
+
 /****** Engine Factory ******/
 
 /// Validate that all required parameters are set before opening a Stream.
@@ -149,7 +163,8 @@ void Stream::create_engine_if_needed(const std::string& name, Mode mode)
     if (engine_) {
       access_mode_ = mode;
       if (metadata_export_)
-        engine_->set_metadata_file_name();
+        metadata_file_ = boost::replace_all_copy(engine_->get_name(), "/", "#") + "#md." +
+                         std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
       engine_created_->notify_all();
     }
   }

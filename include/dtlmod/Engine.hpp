@@ -57,7 +57,6 @@ private:
 
   ActorRegistry publishers_;
   ActorRegistry subscribers_;
-  std::string metadata_file_;
 
   sg4::ActivitySet pub_transaction_;
   sg4::ActivitySet sub_transaction_;
@@ -65,7 +64,6 @@ private:
   // Private methods for Stream (friend)
   void add_publisher(sg4::ActorPtr actor);
   void add_subscriber(sg4::ActorPtr actor);
-  void set_metadata_file_name();
 
 protected:
   // Accessors for Transport classes (friend) and Python bindings
@@ -87,8 +85,6 @@ protected:
   [[nodiscard]] const ActorRegistry& get_publishers() const noexcept { return publishers_; }
   [[nodiscard]] ActorRegistry& get_subscribers() noexcept { return subscribers_; }
   [[nodiscard]] const ActorRegistry& get_subscribers() const noexcept { return subscribers_; }
-
-  void export_metadata_to_file() const;
 
   // Pure virtual methods for derived classes to implement
   virtual void create_transport(const Transport::Method& transport_method) = 0;
@@ -137,10 +133,6 @@ public:
   /// @brief Get the id of the current transaction (on the Publish side).
   /// @return The id of the ongoing transaction.
   [[nodiscard]] unsigned int get_current_transaction() const noexcept { return get_current_transaction_impl(); }
-
-  /// @brief Get the name of the file in which the engine stored metadata
-  /// @return The name of the file.
-  [[nodiscard]] const std::string& get_metadata_file_name() const noexcept { return metadata_file_; }
 
   /// @brief Close the Engine associated to a Stream.
   void close();

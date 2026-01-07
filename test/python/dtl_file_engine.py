@@ -355,7 +355,7 @@ def run_test_metadata_export():
         engine.close()
   
         this_actor.info("Get the name of the metadata file")
-        metadata_file_name = engine.metadata_file_name
+        metadata_file_name = stream.metadata_file_name
         this_actor.info(f"Check the contents of {metadata_file_name}")
         with open(metadata_file_name, 'r') as file:
             file_contents = file.read()
