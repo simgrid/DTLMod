@@ -169,7 +169,7 @@ void FileEngine::begin_sub_transaction()
   }
 
   // We have publishers on that stream, wait for them to complete a transaction first
-  if (get_publishers().count() > 0) {
+  if (not get_publishers().is_empty()) {
     std::unique_lock lock(*get_subscribers().get_mutex());
     while (completed_pub_transaction_id_ < current_sub_transaction_id_) {
       XBT_DEBUG("Wait for publishers to end the transaction I need");
@@ -186,7 +186,7 @@ void FileEngine::end_sub_transaction()
 
   // The files subscribers need to read may not have been fully written. Wait to be notified completion of the publish
   // activities
-  if (current_sub_transaction_id_ == current_pub_transaction_id_ && get_publishers().count() > 0) {
+  if (current_sub_transaction_id_ == current_pub_transaction_id_ && not get_publishers().is_empty()) {
     XBT_DEBUG("Wait for the completion of publish activities from the current transaction");
     pub_activities_completed_->wait(std::unique_lock(*get_subscribers().get_mutex()));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the subscribe activities.");
