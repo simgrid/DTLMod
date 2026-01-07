@@ -51,9 +51,9 @@ def run_test_config_file():
         engine.close()
 
         this_actor.info("Get a stream by name from the DTL")
-        stream = dtl.stream_by_name_or_null("Stream2")
+        stream = dtl.stream_by_name("Stream2")
         this_actor.info("Try to get a stream by name from the DTL that doesn't exist. Should return None")
-        assert None == dtl.stream_by_name_or_null("Unknown Stream")
+        assert None == dtl.stream_by_name("Unknown Stream")
         this_actor.info("Open the stream")
         engine = stream.open("staging", Stream.Mode.Publish)
         this_actor.info(f"Stream 1 is opened ({stream.engine_type},{stream.transport_method})")

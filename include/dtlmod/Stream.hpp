@@ -27,6 +27,8 @@ class DTL;
 
 class Stream : public std::enable_shared_from_this<Stream> {
   friend class Engine;
+  friend class FileEngine;
+  friend class StagingEngine;
 
 public:
   /// @brief An enum that defines the access mode for a Stream
@@ -44,6 +46,7 @@ private:
   Engine::Type engine_type_           = Engine::Type::Undefined;
   Transport::Method transport_method_ = Transport::Method::Undefined;
   bool metadata_export_               = false;
+  std::string metadata_file_;
   sg4::MutexPtr mutex_                = sg4::Mutex::create();
   sg4::ConditionVariablePtr engine_created_ = sg4::ConditionVariable::create();
   Mode access_mode_;
@@ -54,16 +57,14 @@ private:
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   [[nodiscard]] const Transport::Method& get_transport_method() const noexcept { return transport_method_; }
-  [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Variable>>&
-  get_all_variables_internal() const noexcept
-  {
-    return variables_;
-  }
+
   [[nodiscard]] const char* mode_to_str(Mode mode) const noexcept
   {
     return (mode == Mode::Publish) ? "Mode::Publish" : "Mode::Subscribe";
   }
   void close() noexcept { engine_ = nullptr; }
+
+  void export_metadata_to_file() const;
 
   // Helper methods for Stream::open
   void validate_open_parameters(const std::string& name, Mode mode) const;
@@ -118,6 +119,9 @@ public:
   /// @brief Stream configuration function: specify that metadata must not be exported
   /// @return The calling Stream (enable method chaining).
   Stream& unset_metadata_export();
+  /// @brief Get the name of the file in which the stream stores metadata
+  /// @return The name of the file.
+  [[nodiscard]] const std::string& get_metadata_file_name() const noexcept { return metadata_file_; }
 
   /// @brief Define a new reduction method that can be applied to that Stream
   /// @param name the name of the reduction method

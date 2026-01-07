@@ -3,10 +3,6 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
-#include <boost/algorithm/string/replace.hpp>
-#include <chrono>
-#include <fstream>
-
 #include <simgrid/s4u/Actor.hpp>
 #include <simgrid/s4u/MessageQueue.hpp>
 
@@ -98,19 +94,6 @@ void Engine::add_subscriber(sg4::ActorPtr actor)
 {
   transport_->add_subscriber(subscribers_.count());
   subscribers_.add(actor);
-}
-
-void Engine::export_metadata_to_file() const
-{
-  std::ofstream metadata_export(metadata_file_, std::ofstream::out);
-  for (const auto& [name, v] : stream_.lock()->get_all_variables_internal())
-    v->get_metadata()->export_to_file(metadata_export);
-  metadata_export.close();
-}
-void Engine::set_metadata_file_name()
-{
-  metadata_file_ = boost::replace_all_copy(name_, "/", "#") + "#md." +
-                   std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
 }
 
 void Engine::close_stream() const
