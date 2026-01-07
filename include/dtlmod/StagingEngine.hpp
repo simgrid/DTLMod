@@ -16,6 +16,8 @@ namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class StagingEngine : public Engine {
+  friend class Stream;
+
   sg4::ConditionVariablePtr first_pub_transaction_started_ = sg4::ConditionVariable::create();
   sg4::ConditionVariablePtr sub_transaction_started_       = sg4::ConditionVariable::create();
   std::atomic<unsigned int> num_subscribers_starting_{0};
@@ -29,22 +31,23 @@ class StagingEngine : public Engine {
   unsigned int current_sub_transaction_id_ = 0;
   bool sub_transaction_in_progress_        = false;
 
-protected:
+  void create_transport(const Transport::Method& transport_method) override;
   void begin_pub_transaction() override;
   void end_pub_transaction() override;
   void pub_close() override;
   void begin_sub_transaction() override;
   void end_sub_transaction() override;
   void sub_close() override;
-  [[nodiscard]] unsigned int get_current_transaction() const noexcept override { return current_pub_transaction_id_; }
+  [[nodiscard]] unsigned int get_current_transaction_impl() const noexcept override
+  {
+    return current_pub_transaction_id_;
+  }
 
 public:
   explicit StagingEngine(const std::string& name, const std::shared_ptr<Stream>& stream)
       : Engine(name, stream, Engine::Type::Staging)
   {
   }
-
-  void create_transport(const Transport::Method& transport_method) override;
 };
 /// \endcond
 

@@ -79,7 +79,7 @@ std::string FileEngine::get_path_to_dataset() const
 void FileEngine::begin_pub_transaction()
 {
   auto self      = sg4::Actor::self();
-  auto transport = std::static_pointer_cast<FileTransport>(transport_);
+  auto transport = std::static_pointer_cast<FileTransport>(get_transport());
 
   if (!pub_transaction_in_progress_) {
     pub_transaction_in_progress_ = true;
@@ -92,7 +92,7 @@ void FileEngine::begin_pub_transaction()
     XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
               file_pub_transaction_[self].size());
     while (file_pub_transaction_[self].size() > 0)
-      pub_activities_completed_->wait(std::unique_lock(*publishers_.get_mutex()));
+      pub_activities_completed_->wait(std::unique_lock(*(get_publishers().get_mutex())));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     transport->clear_to_write_in_transaction(self);
   }
@@ -101,11 +101,11 @@ void FileEngine::begin_pub_transaction()
 void FileEngine::end_pub_transaction()
 {
   auto self      = sg4::Actor::self();
-  auto transport = std::static_pointer_cast<FileTransport>(transport_);
+  auto transport = std::static_pointer_cast<FileTransport>(get_transport());
 
   // This is the end of the first transaction, create a barrier
-  if (auto pub_barrier = publishers_.get_or_create_barrier())
-    XBT_DEBUG("Barrier created for %zu publishers", publishers_.count());
+  if (auto pub_barrier = get_publishers().get_or_create_barrier())
+    XBT_DEBUG("Barrier created for %zu publishers", get_publishers().count());
 
   // Publisher gets the list of files and size to write that has been build during the put() operations
   auto to_write = transport->get_to_write_in_transaction_by_actor(self);
@@ -121,7 +121,7 @@ void FileEngine::end_pub_transaction()
     file_pub_transaction_[self].push(write);
   }
 
-  if (is_last_publisher()) {
+  if (get_publishers().is_last_at_barrier()) {
     // Mark this transaction as over
     pub_transaction_in_progress_ = false;
     // A new pub transaction has been completed, notify subscribers
@@ -134,27 +134,27 @@ void FileEngine::end_pub_transaction()
 void FileEngine::pub_close()
 {
   auto self      = sg4::Actor::self();
-  auto transport = std::static_pointer_cast<FileTransport>(transport_);
+  auto transport = std::static_pointer_cast<FileTransport>(get_transport());
 
   XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());
 
   XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
             file_pub_transaction_[self].size());
   while (file_pub_transaction_[self].size() > 0)
-    pub_activities_completed_->wait(std::unique_lock(*publishers_.get_mutex()));
+    pub_activities_completed_->wait(std::unique_lock(*get_publishers().get_mutex()));
   transport->clear_to_write_in_transaction(self);
 
-  rm_publisher(self);
+  get_publishers().remove(self);
 
   // Synchronize Publishers on engine closing
-  if (is_last_publisher()) {
+  if (get_publishers().is_last_at_barrier()) {
     XBT_DEBUG("[%s] last publish transaction is over", get_cname());
     XBT_DEBUG("All publishers have called the Engine::close() function");
     close_stream();
     XBT_DEBUG("Closing opened files");
     transport->close_pub_files();
     XBT_DEBUG("Engine '%s' is now closed for all publishers ", get_cname());
-    if (stream_.lock()->does_export_metadata())
+    if (get_stream()->does_export_metadata())
       export_metadata_to_file();
   }
 }
@@ -169,8 +169,8 @@ void FileEngine::begin_sub_transaction()
   }
 
   // We have publishers on that stream, wait for them to complete a transaction first
-  if (get_num_publishers() > 0) {
-    std::unique_lock lock(*subscribers_.get_mutex());
+  if (get_publishers().count() > 0) {
+    std::unique_lock lock(*get_subscribers().get_mutex());
     while (completed_pub_transaction_id_ < current_sub_transaction_id_) {
       XBT_DEBUG("Wait for publishers to end the transaction I need");
       pub_transaction_completed_->wait(lock);
@@ -182,13 +182,13 @@ void FileEngine::begin_sub_transaction()
 void FileEngine::end_sub_transaction()
 {
   auto self      = sg4::Actor::self();
-  auto transport = std::static_pointer_cast<FileTransport>(transport_);
+  auto transport = std::static_pointer_cast<FileTransport>(get_transport());
 
   // The files subscribers need to read may not have been fully written. Wait to be notified completion of the publish
   // activities
-  if (current_sub_transaction_id_ == current_pub_transaction_id_ && get_num_publishers() > 0) {
+  if (current_sub_transaction_id_ == current_pub_transaction_id_ && get_publishers().count() > 0) {
     XBT_DEBUG("Wait for the completion of publish activities from the current transaction");
-    pub_activities_completed_->wait(std::unique_lock(*subscribers_.get_mutex()));
+    pub_activities_completed_->wait(std::unique_lock(*get_subscribers().get_mutex()));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the subscribe activities.");
   }
 
@@ -217,9 +217,9 @@ void FileEngine::sub_close()
   auto self = sg4::Actor::self();
   XBT_DEBUG("Subscriber '%s' is closing the engine", self->get_cname());
 
-  rm_subscriber(self);
+  get_subscribers().remove(self);
   // Synchronize subscribers on engine closing
-  if (is_last_subscriber()) {
+  if (get_subscribers().is_last_at_barrier()) {
     XBT_DEBUG("All subscribers have called the Engine::close() function");
     close_stream();
     XBT_DEBUG("Engine '%s' is now closed for all subscribers ", get_cname());

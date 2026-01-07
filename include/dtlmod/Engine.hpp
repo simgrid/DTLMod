@@ -45,7 +45,11 @@ public:
   };
 
   friend class Stream;
+  friend class StagingTransport;
+  friend class StagingMboxTransport;
+  friend class StagingMqTransport;
 
+private:
   std::string name_;
   Type type_                            = Type::Undefined;
   std::shared_ptr<Transport> transport_ = nullptr;
@@ -58,32 +62,42 @@ public:
   sg4::ActivitySet pub_transaction_;
   sg4::ActivitySet sub_transaction_;
 
-  void close_stream() const;
+  // Private methods for Stream (friend)
+  void add_publisher(sg4::ActorPtr actor);
+  void add_subscriber(sg4::ActorPtr actor);
+  void set_metadata_file_name();
 
-  virtual void create_transport(const Transport::Method& transport_method) = 0;
+protected:
+  // Accessors for Transport classes (friend) and Python bindings
+  [[nodiscard]] const sg4::ActivitySet& get_pub_transaction() const noexcept { return pub_transaction_; }
+  [[nodiscard]] sg4::ActivitySet& get_pub_transaction() noexcept { return pub_transaction_; }
+  [[nodiscard]] const sg4::ActivitySet& get_sub_transaction() const noexcept { return sub_transaction_; }
+  [[nodiscard]] sg4::ActivitySet& get_sub_transaction() noexcept { return sub_transaction_; }
+
+  // Protected virtual method for derived classes to implement
+  [[nodiscard]] virtual unsigned int get_current_transaction_impl() const noexcept = 0;
+
+  // Protected methods for derived classes only
+  void close_stream() const;
+  [[nodiscard]] std::shared_ptr<Stream> get_stream() const { return stream_.lock(); }
   void set_transport(std::shared_ptr<Transport> transport) noexcept { transport_ = transport; }
   [[nodiscard]] std::shared_ptr<Transport> get_transport() const noexcept { return transport_; }
 
-  void add_publisher(sg4::ActorPtr actor);
-  void rm_publisher(sg4::ActorPtr actor) noexcept { publishers_.remove(actor); }
-  [[nodiscard]] bool is_publisher(sg4::ActorPtr actor) const noexcept { return publishers_.contains(actor); }
-  // Synchronize publishers on engine closing
-  [[nodiscard]] bool is_last_publisher() { return publishers_.is_last_at_barrier(); }
+  [[nodiscard]] ActorRegistry& get_publishers() noexcept { return publishers_; }
+  [[nodiscard]] const ActorRegistry& get_publishers() const noexcept { return publishers_; }
+  [[nodiscard]] ActorRegistry& get_subscribers() noexcept { return subscribers_; }
+  [[nodiscard]] const ActorRegistry& get_subscribers() const noexcept { return subscribers_; }
+
+  void export_metadata_to_file() const;
+
+  // Pure virtual methods for derived classes to implement
+  virtual void create_transport(const Transport::Method& transport_method) = 0;
   virtual void begin_pub_transaction() = 0;
   virtual void end_pub_transaction()   = 0;
-  virtual void pub_close()             = 0;
-
-  void add_subscriber(sg4::ActorPtr actor);
-  void rm_subscriber(sg4::ActorPtr actor) noexcept { subscribers_.remove(actor); }
-  [[nodiscard]] bool is_subscriber(sg4::ActorPtr actor) const noexcept { return subscribers_.contains(actor); }
-  // Synchronize subscribers on engine closing
-  [[nodiscard]] bool is_last_subscriber() const noexcept { return subscribers_.is_empty(); }
+  virtual void pub_close()                                                 = 0;
   virtual void begin_sub_transaction() = 0;
   virtual void end_sub_transaction()   = 0;
   virtual void sub_close()             = 0;
-
-  void set_metadata_file_name();
-  void export_metadata_to_file() const;
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -92,14 +106,6 @@ public:
   {
   }
   virtual ~Engine() = default;
-  // Public accessors for Transport classes to access ActivitySets
-  [[nodiscard]] const sg4::ActivitySet& get_pub_transaction() const noexcept { return pub_transaction_; }
-  [[nodiscard]] sg4::ActivitySet& get_pub_transaction() noexcept { return pub_transaction_; }
-  [[nodiscard]] const sg4::ActivitySet& get_sub_transaction() const noexcept { return sub_transaction_; }
-  [[nodiscard]] sg4::ActivitySet& get_sub_transaction() noexcept { return sub_transaction_; }
-  [[nodiscard]] const std::set<sg4::ActorPtr>& get_publishers() const noexcept { return publishers_.get_all(); }
-  [[nodiscard]] size_t get_num_publishers() const noexcept { return publishers_.count(); }
-  [[nodiscard]] size_t get_num_subscribers() const noexcept { return subscribers_.count(); }
   /// \endcond
 
   /// @brief Helper function to print out the name of the Engine.
@@ -130,7 +136,7 @@ public:
 
   /// @brief Get the id of the current transaction (on the Publish side).
   /// @return The id of the ongoing transaction.
-  [[nodiscard]] virtual unsigned int get_current_transaction() const noexcept = 0;
+  [[nodiscard]] unsigned int get_current_transaction() const noexcept { return get_current_transaction_impl(); }
 
   /// @brief Get the name of the file in which the engine stored metadata
   /// @return The name of the file.

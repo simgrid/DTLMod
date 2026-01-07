@@ -195,7 +195,7 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
   wait_for_engine_creation();
   register_actor_with_engine(mode);
   XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(), get_engine_type_str(),
-            get_transport_method_str(), engine_->get_num_publishers(), engine_->get_num_subscribers());
+            get_transport_method_str(), engine_->get_publishers().count(), engine_->get_subscribers().count());
   return engine_;
 }
 
@@ -266,7 +266,7 @@ std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) cons
     throw UnknownVariableException(XBT_THROW_POINT, name);
 
   auto actor = sg4::Actor::self();
-  if (not engine_ || engine_->is_publisher(actor))
+  if (not engine_ || engine_->get_publishers().contains(actor))
     return var->second;
   else {
     auto new_var =

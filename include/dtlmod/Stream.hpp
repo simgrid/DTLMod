@@ -127,10 +127,10 @@ public:
 
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Publish.
   /// @return The number of publishers for that Stream.
-  [[nodiscard]] size_t get_num_publishers() const noexcept { return engine_->get_num_publishers(); }
+  [[nodiscard]] size_t get_num_publishers() const noexcept { return engine_->get_publishers().count(); }
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Subscribe.
   /// @return The number of subscribers for that Stream.
-  [[nodiscard]] size_t get_num_subscribers() const noexcept { return engine_->get_num_subscribers(); }
+  [[nodiscard]] size_t get_num_subscribers() const noexcept { return engine_->get_subscribers().count(); }
 
   /******* Variable Factory *******/
 

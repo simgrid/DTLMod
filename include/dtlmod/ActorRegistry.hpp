@@ -34,7 +34,7 @@ public:
   void remove(sg4::ActorPtr actor) noexcept { actors_.erase(actor); }
   [[nodiscard]] bool contains(sg4::ActorPtr actor) const noexcept { return actors_.find(actor) != actors_.end(); }
   [[nodiscard]] size_t count() const noexcept { return actors_.size(); }
-  [[nodiscard]] const std::set<sg4::ActorPtr>& get_all() const noexcept { return actors_; }
+  [[nodiscard]] const std::set<sg4::ActorPtr>& get_actors() const noexcept { return actors_; }
   [[nodiscard]] bool is_empty() const noexcept { return actors_.empty(); }
   [[nodiscard]] sg4::BarrierPtr get_or_create_barrier()
   {
