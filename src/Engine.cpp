@@ -31,7 +31,7 @@ namespace dtlmod {
 /// 3. Otherwise, wait for the completion of the simulated activities started by the previous transaction.
 void Engine::begin_transaction()
 {
-  is_publisher(sg4::Actor::self()) ? begin_pub_transaction() : begin_sub_transaction();
+  publishers_.contains(sg4::Actor::self()) ? begin_pub_transaction() : begin_sub_transaction();
 }
 
 /// The actual data transport is delegated to the Transport method associated to the Engine.
@@ -72,7 +72,7 @@ void Engine::get(const std::shared_ptr<Variable>& var) const
 /// Then it marks the transaction as done.
 void Engine::end_transaction()
 {
-  is_publisher(sg4::Actor::self()) ? end_pub_transaction() : end_sub_transaction();
+  publishers_.contains(sg4::Actor::self()) ? end_pub_transaction() : end_sub_transaction();
 }
 
 /// This function is called by all the actors that have opened that Stream. The first subscriber to enter that
@@ -80,7 +80,7 @@ void Engine::end_transaction()
 /// are synchronized before the Engine is properly closed (and destroyed).
 void Engine::close()
 {
-  is_publisher(sg4::Actor::self()) ? pub_close() : sub_close();
+  publishers_.contains(sg4::Actor::self()) ? pub_close() : sub_close();
 }
 
 ////////////////////////////////////////////

@@ -33,7 +33,7 @@ sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(const std::st
 void StagingTransport::put(const std::shared_ptr<Variable>& var, size_t /* simulated_size_in_bytes*/)
 {
   // Register who (this actor) writes in this transaction
-  const auto* e        = get_engine();
+  auto* e              = get_engine();
   auto tid             = e->get_current_transaction();
   auto self            = sg4::Actor::self();
   const auto& pub_name = self->get_name();
@@ -44,13 +44,14 @@ void StagingTransport::put(const std::shared_ptr<Variable>& var, size_t /* simul
   // Each Subscriber will send a put request to each publisher in the Stream. They can request for a certain size if
   // they need something from this publisher or 0 otherwise.
   // Start with posting all asynchronous gets and creating an ActivitySet.
-  for (size_t i = 0; i < e->get_num_subscribers(); i++)
+  const auto num_subscribers = e->get_subscribers().count();
+  for (size_t i = 0; i < num_subscribers; i++)
     pending_put_requests_[pub_name].push(get_publisher_put_requests_mq(pub_name)->get_async());
 }
 
 void StagingTransport::get(const std::shared_ptr<Variable>& var)
 {
-  auto publishers = get_engine()->get_publishers();
+  auto publishers = get_engine()->get_publishers().get_actors();
   auto self       = sg4::Actor::self();
   auto blocks     = check_selection_and_get_blocks_to_get(var);
 

@@ -15,11 +15,11 @@ namespace dtlmod {
 
 void StagingMqTransport::create_rendez_vous_points()
 {
-  auto publishers      = get_engine()->get_publishers();
+  auto publish_actors  = get_engine()->get_publishers().get_actors();
   auto subscriber_name = sg4::Actor::self()->get_cname();
   // When a new subscriber joins the stream, create a message queue with each know publishers
   XBT_DEBUG("Actor '%s' is creating new message queues", subscriber_name);
-  for (const auto& pub : publishers) {
+  for (const auto& pub : publish_actors) {
     std::string mq_name = pub->get_name() + "_" + subscriber_name + "_mq";
     mqueues_[mq_name]   = sg4::MessageQueue::by_name(mq_name);
   }
