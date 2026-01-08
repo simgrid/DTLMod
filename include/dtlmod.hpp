@@ -3,8 +3,8 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
-#ifndef DTLMOD_DTLMOD_HPP
-#define DTLMOD_DTLMOD_HPP
+#ifndef __DTLMOD_DTLMOD_HPP__
+#define __DTLMOD_DTLMOD_HPP__
 
 #include <dtlmod/DTL.hpp>
 #include <dtlmod/Engine.hpp>
@@ -19,4 +19,4 @@
 #include <dtlmod/Transport.hpp>
 #include <dtlmod/Variable.hpp>
 
-#endif // DTLMOD_DTLMOD_HPP
+#endif // __DTLMOD_DTLMOD_HPP__

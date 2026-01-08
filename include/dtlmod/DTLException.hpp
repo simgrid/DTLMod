@@ -3,8 +3,8 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
-#ifndef DTLMOD_DTLEXCEPTION_HPP
-#define DTLMOD_DTLEXCEPTION_HPP
+#ifndef __DTLMOD_DTLEXCEPTION_HPP__
+#define __DTLMOD_DTLEXCEPTION_HPP__
 
 #include <simgrid/Exception.hpp>
 
@@ -60,4 +60,4 @@ DECLARE_DTLMOD_EXCEPTION(GetWhenNoTransactionException, "Impossible to get. No t
 
 } // namespace dtlmod
 
-#endif // DTLMOD_EXCEPTION_HPP
+#endif // __DTLMOD_EXCEPTION_HPP__
