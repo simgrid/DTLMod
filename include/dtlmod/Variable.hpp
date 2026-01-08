@@ -22,6 +22,8 @@ class Variable : public std::enable_shared_from_this<Variable> {
   friend class Engine;
   friend class Stream;
 
+  enum class ReductionOrigin { None, Publisher, Subscriber };
+
   std::string name_;
   size_t element_size_;
   std::vector<size_t> shape_;

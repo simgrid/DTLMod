@@ -139,7 +139,7 @@ void DecimationReductionMethod::reduce_variable(std::shared_ptr<Variable> var)
   parameterization->set_reduced_shape(reduced_shape);
 
   auto self           = sg4::Actor::self();
-  auto [start, count] = var->get_local_start_and_count().at(self);
+  auto [start, count] = var->get_local_start_and_count(self);
   std::vector<size_t> reduced_start;
   std::vector<size_t> reduced_count;
 
