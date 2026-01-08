@@ -23,6 +23,8 @@ DTLMod (0.2) November 11, 2025
     - Make metadata export configurable at stream level.
     - Have a simpler version of Engine::put() that automatically uses the
       local size of the Variable.
+    - Stream::remove_variable now throws an UnknownVariableException rather
+      than returning a bool
 
 ----------------------------------------------------------------------------
 

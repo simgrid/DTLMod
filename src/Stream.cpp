@@ -294,14 +294,13 @@ std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) cons
   }
 }
 
-bool Stream::remove_variable(const std::string& name)
+void Stream::remove_variable(const std::string& name)
 {
   auto var = variables_.find(name);
-  if (var != variables_.end()) {
+  if (var != variables_.end())
     variables_.erase(var);
-    return true;
-  } else
-    return false;
+  else
+    throw UnknownVariableException(XBT_THROW_POINT, name);
 }
 
 } // namespace dtlmod

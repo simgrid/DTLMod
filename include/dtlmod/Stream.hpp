@@ -166,8 +166,7 @@ public:
 
   /// @brief Remove a Variable of the list of variables known by the Stream.
   /// @param name The name of the variable to remove.
-  /// @return A boolean indicating if the Variable has been successfully removed or not.
-  bool remove_variable(const std::string& name);
+  void remove_variable(const std::string& name);
 };
 
 } // namespace dtlmod
