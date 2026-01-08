@@ -83,7 +83,8 @@ void Engine::add_subscriber(sg4::ActorPtr actor)
 
 void Engine::close_stream() const
 {
-  stream_.lock()->close();
+  if (auto s = stream_.lock())
+    s->close();
 }
 /// \endcond
 
