@@ -1,5 +1,16 @@
 ----------------------------------------------------------------------------
 
+DTLMod (0.3) not released yet (target: spring 2026)
+  - Thorough code review and important refactoring of the internals
+  - API changes:
+    - DTL::get_stream_by_name_or_null is now DTL::get_stream_by_name. The 
+      corresponding python call is now dtl.get_stream_by_name
+    - Metadata management transferred from Engine to Stream. The
+      get_metadata_file_name method (or meta_file_name property in Python)
+      must be called by a Stream instance.  
+
+----------------------------------------------------------------------------
+
 DTLMod (0.2) November 11, 2025
 
   - New comprehensive documentation
