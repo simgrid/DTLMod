@@ -89,10 +89,10 @@ public:
   [[nodiscard]] const char* get_cname() const noexcept { return name_.c_str(); }
   /// @brief Helper function to print out the Engine::Type of the Stream.
   /// @return The corresponding C-string
-  [[nodiscard]] const char* get_engine_type_str() const;
+  [[nodiscard]] const char* get_engine_type_str() const noexcept;
   /// @brief Helper function to print out the Transport::Method of the Stream.
   /// @return The corresponding C-string
-  [[nodiscard]] const char* get_transport_method_str() const;
+  [[nodiscard]] const char* get_transport_method_str() const noexcept;
   /// @brief Helper function to know the access Mode of the Stream.
   /// @return The corresponding Stream::Mode
   [[nodiscard]] Mode get_access_mode() const noexcept { return access_mode_; }
@@ -113,10 +113,10 @@ public:
   Stream& set_transport_method(const Transport::Method& transport_method);
   /// @brief Stream configuration function: specify that metadata must be exported
   /// @return The calling Stream (enable method chaining).
-  Stream& set_metadata_export();
+  Stream& set_metadata_export() noexcept;
   /// @brief Stream configuration function: specify that metadata must not be exported
   /// @return The calling Stream (enable method chaining).
-  Stream& unset_metadata_export();
+  Stream& unset_metadata_export() noexcept;
   /// @brief Get the name of the file in which the stream stores metadata
   /// @return The name of the file.
   [[nodiscard]] const std::string& get_metadata_file_name() const noexcept { return metadata_file_; }
@@ -131,10 +131,10 @@ public:
 
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Publish.
   /// @return The number of publishers for that Stream.
-  [[nodiscard]] size_t get_num_publishers() const noexcept { return engine_->get_publishers().count(); }
+  [[nodiscard]] size_t get_num_publishers() const { return engine_->get_publishers().count(); }
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Subscribe.
   /// @return The number of subscribers for that Stream.
-  [[nodiscard]] size_t get_num_subscribers() const noexcept { return engine_->get_subscribers().count(); }
+  [[nodiscard]] size_t get_num_subscribers() const { return engine_->get_subscribers().count(); }
 
   /******* Variable Factory *******/
 

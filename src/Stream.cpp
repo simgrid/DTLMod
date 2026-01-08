@@ -18,7 +18,7 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_stream, dtlmod, "DTL logging about Stream
 
 namespace dtlmod {
 
-const char* Stream::get_engine_type_str() const
+const char* Stream::get_engine_type_str() const noexcept
 {
   const std::map<Engine::Type, const char*> EnumStrings{
       {Engine::Type::File, "Engine::Type::File"},
@@ -60,7 +60,7 @@ Stream& Stream::set_engine_type(const Engine::Type& engine_type)
   return *this;
 }
 
-const char* Stream::get_transport_method_str() const
+const char* Stream::get_transport_method_str() const noexcept
 {
   const std::map<Transport::Method, const char*> EnumStrings{
       {Transport::Method::File, "Transport::Method::File"},
@@ -104,12 +104,12 @@ Stream& Stream::set_transport_method(const Transport::Method& transport_method)
   return *this;
 }
 
-Stream& Stream::set_metadata_export()
+Stream& Stream::set_metadata_export() noexcept
 {
   metadata_export_ = true;
   return *this;
 }
-Stream& Stream::unset_metadata_export()
+Stream& Stream::unset_metadata_export() noexcept
 {
   metadata_export_ = false;
   return *this;

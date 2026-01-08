@@ -28,8 +28,8 @@ class DTL {
 
 protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  void lock() noexcept { mutex_->lock(); }
-  void unlock() noexcept { mutex_->unlock(); }
+  void lock() { mutex_->lock(); }
+  void unlock() { mutex_->unlock(); }
   /// \endcond
 
 public:

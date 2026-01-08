@@ -31,18 +31,18 @@ protected:
   void close_pub_files() const;
   void close_sub_files(sg4::ActorPtr self);
   const std::vector<std::pair<std::shared_ptr<sgfs::File>, sg_size_t>>&
-  get_to_write_in_transaction_by_actor(sg4::ActorPtr actor) noexcept
+  get_to_write_in_transaction_by_actor(sg4::ActorPtr actor)
   {
     return to_write_in_transaction_[actor];
   }
-  void clear_to_write_in_transaction(sg4::ActorPtr actor) noexcept { to_write_in_transaction_[actor].clear(); }
+  void clear_to_write_in_transaction(sg4::ActorPtr actor) { to_write_in_transaction_[actor].clear(); }
 
   const std::vector<std::pair<std::shared_ptr<sgfs::File>, sg_size_t>>&
-  get_to_read_in_transaction_by_actor(sg4::ActorPtr actor) noexcept
+  get_to_read_in_transaction_by_actor(sg4::ActorPtr actor)
   {
     return to_read_in_transaction_[actor];
   }
-  void clear_to_read_in_transaction(sg4::ActorPtr actor) noexcept { to_read_in_transaction_[actor].clear(); }
+  void clear_to_read_in_transaction(sg4::ActorPtr actor) { to_read_in_transaction_[actor].clear(); }
 
 public:
   void put(const std::shared_ptr<Variable>& var, size_t size) override;
