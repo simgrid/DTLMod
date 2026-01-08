@@ -76,12 +76,7 @@ public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   Variable(const std::string& name, size_t element_size, const std::vector<size_t>& shape,
            std::shared_ptr<const Stream> stream)
-      : name_(name)
-      , element_size_(element_size)
-      , shape_(shape)
-      , defined_in_stream_(stream)
-      , metadata_(std::make_shared<Metadata>(this))
-
+      : name_(name), element_size_(element_size), shape_(shape), defined_in_stream_(stream)
   {
   }
   /// \endcond
