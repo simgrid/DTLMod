@@ -33,18 +33,23 @@ void StagingMqTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
   while (pending_put_requests_exist_for(pub_name)) {
     auto request           = boost::static_pointer_cast<sg4::Mess>(wait_any_pending_put_request_for(pub_name));
     const auto* subscriber = request->get_sender();
-    auto* req_size         = static_cast<size_t*>(request->get_payload());
+    // Take ownership of the payload received from the subscriber
+    std::unique_ptr<size_t> req_size(static_cast<size_t*>(request->get_payload()));
     if (*req_size > 0) {
       std::string mq_name = pub_name + "_" + subscriber->get_name() + "_mq";
       XBT_DEBUG("%s received a put request from %s. Put a Message in %s with %lu as payload", pub_name.c_str(),
                 subscriber->get_cname(), mq_name.c_str(), *req_size);
-      auto mess = mqueues_[mq_name]->put_init(req_size);
+      // Send a static dummy payload - subscribers don't use the actual data, only the simulated transfer size
+      static size_t dummy = 0;
+      auto mess           = mqueues_[mq_name]->put_init(&dummy);
       get_engine()->get_pub_transaction().push(mess->start());
     }
   }
 }
+
 void StagingMqTransport::get_rendez_vous_point_and_do_get(std::string_view name)
 {
+  // The payload will be received via the Mess object but we don't use it in simulation
   get_engine()->get_sub_transaction().push(mqueues_[std::string(name) + "_mq"]->get_async());
 }
 /// \endcond
