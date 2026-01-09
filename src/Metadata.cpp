@@ -24,10 +24,11 @@ void Metadata::export_to_file(std::ofstream& ostream) const
 
   ostream << variable_->get_element_size() << "\t" << variable_->get_cname() << "\t" << transaction_infos_.size();
   ostream << "*{";
-  auto shape = variable_->get_shape();
-  for (unsigned int i = 0; i < shape.size() - 1; i++)
+  auto shape            = variable_->get_shape();
+  const auto last_index = shape.size() - 1;
+  for (unsigned int i = 0; i < last_index; i++)
     ostream << shape[i] << ",";
-  ostream << shape[shape.size() - 1] << "}" << std::endl;
+  ostream << shape[last_index] << "}" << std::endl;
 
   for (const auto& [id, transaction] : transaction_infos_) {
     XBT_DEBUG("  Transaction %u:", id);
