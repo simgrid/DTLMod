@@ -43,9 +43,9 @@ void StagingMqTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
     }
   }
 }
-void StagingMqTransport::get_rendez_vous_point_and_do_get(const std::string& name)
+void StagingMqTransport::get_rendez_vous_point_and_do_get(std::string_view name)
 {
-  get_engine()->get_sub_transaction().push(mqueues_[name + "_mq"]->get_async());
+  get_engine()->get_sub_transaction().push(mqueues_[std::string(name) + "_mq"]->get_async());
 }
 /// \endcond
 

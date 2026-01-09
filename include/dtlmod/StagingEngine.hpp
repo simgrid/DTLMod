@@ -48,8 +48,8 @@ protected:
   [[nodiscard]] std::shared_ptr<StagingTransport> get_staging_transport() const;
 
 public:
-  explicit StagingEngine(const std::string& name, const std::shared_ptr<Stream>& stream)
-      : Engine(name, stream, Engine::Type::Staging)
+  explicit StagingEngine(std::string_view name, const std::shared_ptr<Stream>& stream)
+      : Engine(std::string(name), stream, Engine::Type::Staging)
   {
   }
 };

@@ -18,14 +18,14 @@ namespace sg4 = simgrid::s4u;
 namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
-DTL::DTL(const std::string& filename)
+DTL::DTL(std::string_view filename)
 {
   // No configuration file has been provided. Nothing else to do
   if (filename.empty())
     return;
 
   // Parse the configuration file
-  std::ifstream f(filename);
+  std::ifstream f{std::string(filename)};
   auto data = nlohmann::json::parse(f);
 
   // Get the list of declared Streams
@@ -115,7 +115,7 @@ __attribute__((noreturn)) void DTL::connection_manager_init(std::shared_ptr<DTL>
 
 /*** Public interface ***/
 
-void DTL::create(const std::string& filename)
+void DTL::create(std::string_view filename)
 {
   XBT_DEBUG("Creating the DTL connection manager"); // as a daemon running on the first actor in the platform
   sg4::Engine::get_instance()
@@ -140,19 +140,20 @@ void DTL::disconnect()
   sg4::MessageQueue::by_name("dtlmod::connection_manager_handle")->get_unique<bool>();
 }
 
-std::shared_ptr<Stream> DTL::add_stream(const std::string& name)
+std::shared_ptr<Stream> DTL::add_stream(std::string_view name)
 {
   // This has to be done in critical section to avoid concurrent creation. First actor to get the lock creates the
   // Stream. Other actors will retrieve it from the map.
   std::unique_lock lock(*mutex_);
-  if (streams_.find(name) == streams_.end())
-    streams_.try_emplace(name, std::make_shared<Stream>(name, this));
-  return streams_[name];
+  std::string name_str(name);
+  if (streams_.find(name_str) == streams_.end())
+    streams_.try_emplace(name_str, std::make_shared<Stream>(name_str, this));
+  return streams_[name_str];
 }
 
-std::optional<std::shared_ptr<Stream>> DTL::get_stream_by_name(const std::string& name) const
+std::optional<std::shared_ptr<Stream>> DTL::get_stream_by_name(std::string_view name) const
 {
-  auto it = streams_.find(name);
+  auto it = streams_.find(std::string(name));
   if (it == streams_.end())
     return std::nullopt;
   return it->second;

@@ -58,7 +58,7 @@ protected:
   [[nodiscard]] std::shared_ptr<FileTransport> get_file_transport() const;
 
 public:
-  explicit FileEngine(const std::string& fullpath, const std::shared_ptr<Stream>& stream);
+  explicit FileEngine(std::string_view fullpath, const std::shared_ptr<Stream>& stream);
 };
 /// \endcond
 

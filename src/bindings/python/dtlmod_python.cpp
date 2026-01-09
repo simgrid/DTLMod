@@ -75,8 +75,8 @@ PYBIND11_MODULE(dtlmod, m)
 
   /* Class DTL */
   py::class_<DTL, std::shared_ptr<DTL>>(m, "DTL", "Data Transport Layer")
-      .def_static("create", py::overload_cast<const std::string&>(&DTL::create),
-                  py::call_guard<py::gil_scoped_release>(), py::arg("filename") = "", "Create the DTL (no return)")
+      .def_static("create", py::overload_cast<std::string_view>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
+                  py::arg("filename") = "", "Create the DTL (no return)")
       .def_static("connect", &DTL::connect, py::call_guard<py::gil_scoped_release>(), "Connect an Actor to the DTL")
       .def_static("disconnect", &DTL::disconnect, py::call_guard<py::gil_scoped_release>(),
                   "Disconnect an Actor from the DTL")
@@ -88,7 +88,7 @@ PYBIND11_MODULE(dtlmod, m)
                              "Retrieve all streams declared in the DTL (read-only)")
       .def(
           "stream_by_name",
-          [](const DTL& self, const std::string& name) { return self.get_stream_by_name(name).value_or(nullptr); },
+          [](const DTL& self, std::string_view name) { return self.get_stream_by_name(name).value_or(nullptr); },
           py::arg("name"), "Retrieve a data stream from the DTL by its name (returns None if not found)");
 
   /* Class Stream */
@@ -121,14 +121,14 @@ PYBIND11_MODULE(dtlmod, m)
       // Variable factory
       .def(
           "define_variable",
-          [](Stream& self, const std::string& name, size_t element_size) {
+          [](Stream& self, std::string_view name, size_t element_size) {
             return self.define_variable(name, element_size);
           },
           py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("element_size"),
           "Define a scalar variable for this Stream")
       .def(
           "define_variable",
-          [](Stream& self, const std::string& name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
+          [](Stream& self, std::string_view name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
              const std::vector<size_t>& count,
              size_t element_size) { return self.define_variable(name, shape, start, count, element_size); },
           py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("shape"), py::arg("start"),

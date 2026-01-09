@@ -65,8 +65,8 @@ protected:
   void export_metadata_to_file() const;
 
   // Helper methods for Stream::open
-  void validate_open_parameters(const std::string& name, Mode mode) const;
-  void create_engine_if_needed(const std::string& name, Mode mode);
+  void validate_open_parameters(std::string_view name, Mode mode) const;
+  void create_engine_if_needed(std::string_view name, Mode mode);
   void wait_for_engine_creation();
   void register_actor_with_engine(Mode mode) const;
   /// \endcond
@@ -132,7 +132,7 @@ public:
   /// @param name name of the Engine created when opening the Stream.
   /// @param mode either Stream::Mode::Publish or Stream::Mode::Subscribe.
   /// @return A shared pointer on the corresponding Engine.
-  [[nodiscard]] std::shared_ptr<Engine> open(const std::string& name, Mode mode);
+  [[nodiscard]] std::shared_ptr<Engine> open(std::string_view name, Mode mode);
 
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Publish.
   /// @return The number of publishers for that Stream.
@@ -147,7 +147,7 @@ public:
   /// @param name The name of the new Variable.
   /// @param element_size The size of the elements in the Variable.
   /// @return A shared pointer on the newly created Variable.
-  [[nodiscard]] std::shared_ptr<Variable> define_variable(const std::string& name, size_t element_size);
+  [[nodiscard]] std::shared_ptr<Variable> define_variable(std::string_view name, size_t element_size);
 
   /// @brief Define a Variable for this Stream.
   /// @param name The name of the new variable.
@@ -156,7 +156,7 @@ public:
   /// @param count A vector that specifies how many elements the calling Actor owns in each dimension.
   /// @param element_size The size of the elements in the Variable.
   /// @return A shared pointer on the newly created Variable
-  [[nodiscard]] std::shared_ptr<Variable> define_variable(const std::string& name, const std::vector<size_t>& shape,
+  [[nodiscard]] std::shared_ptr<Variable> define_variable(std::string_view name, const std::vector<size_t>& shape,
                                                           const std::vector<size_t>& start,
                                                           const std::vector<size_t>& count, size_t element_size);
 
@@ -167,11 +167,11 @@ public:
   /// @brief Retrieve a Variable information by name.
   /// @param name The name of desired Variable.
   /// @return Either a shared pointer on the Variable object if known, nullptr otherwise.
-  [[nodiscard]] std::shared_ptr<Variable> inquire_variable(const std::string& name) const;
+  [[nodiscard]] std::shared_ptr<Variable> inquire_variable(std::string_view name) const;
 
   /// @brief Remove a Variable of the list of variables known by the Stream.
   /// @param name The name of the variable to remove.
-  void remove_variable(const std::string& name);
+  void remove_variable(std::string_view name);
 };
 
 } // namespace dtlmod

@@ -22,7 +22,7 @@ class StagingMboxTransport : public StagingTransport {
 protected:
   void create_rendez_vous_points() override;
   void get_requests_and_do_put(sg4::ActorPtr publisher) override;
-  void get_rendez_vous_point_and_do_get(const std::string& name) override;
+  void get_rendez_vous_point_and_do_get(std::string_view name) override;
 };
 /// \endcond
 
