@@ -95,10 +95,20 @@ PYBIND11_MODULE(dtlmod, m)
   py::class_<Stream, std::shared_ptr<Stream>> stream(
       m, "Stream", "A Stream defines the connection between the applications that produce or consume data and the DTL");
   stream.def_property_readonly("name", &Stream::get_name, "The name of the Stream (read-only)")
-      .def_property_readonly("engine_type", &Stream::get_engine_type_str,
-                             "Print out the engine type of this Stream (read-only)")
-      .def_property_readonly("transport_method", &Stream::get_transport_method_str,
-                             "Print out the transport method of this Stream (read-only)")
+      .def_property_readonly(
+          "engine_type",
+          [](const Stream& self) {
+            auto result = self.get_engine_type_str();
+            return result ? py::cast(*result) : py::cast<py::none>(Py_None);
+          },
+          "Print out the engine type of this Stream (read-only, returns None if invalid)")
+      .def_property_readonly(
+          "transport_method",
+          [](const Stream& self) {
+            auto result = self.get_transport_method_str();
+            return result ? py::cast(*result) : py::cast<py::none>(Py_None);
+          },
+          "Print out the transport method of this Stream (read-only, returns None if invalid)")
       .def_property_readonly("access_mode", &Stream::get_access_mode_str,
                              "Print out the access mode of this Stream (read-only)")
       .def_property_readonly("metadata_export", &Stream::does_export_metadata,

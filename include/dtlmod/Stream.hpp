@@ -6,6 +6,7 @@
 #ifndef __DTLMOD_STREAM_HPP__
 #define __DTLMOD_STREAM_HPP__
 
+#include <optional>
 #include <simgrid/s4u/ConditionVariable.hpp>
 
 #include "dtlmod/Engine.hpp"
@@ -93,11 +94,11 @@ public:
   /// @return The corresponding C-string
   [[nodiscard]] const char* get_cname() const noexcept { return name_.c_str(); }
   /// @brief Helper function to print out the Engine::Type of the Stream.
-  /// @return The corresponding C-string
-  [[nodiscard]] const char* get_engine_type_str() const noexcept;
+  /// @return An optional containing the C-string if the type is valid, std::nullopt otherwise
+  [[nodiscard]] std::optional<const char*> get_engine_type_str() const noexcept;
   /// @brief Helper function to print out the Transport::Method of the Stream.
-  /// @return The corresponding C-string
-  [[nodiscard]] const char* get_transport_method_str() const noexcept;
+  /// @return An optional containing the C-string if the method is valid, std::nullopt otherwise
+  [[nodiscard]] std::optional<const char*> get_transport_method_str() const noexcept;
   /// @brief Helper function to know the access Mode of the Stream.
   /// @return The corresponding Stream::Mode
   [[nodiscard]] Mode get_access_mode() const noexcept { return access_mode_; }

@@ -18,7 +18,7 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_stream, dtlmod, "DTL logging about Stream
 
 namespace dtlmod {
 
-const char* Stream::get_engine_type_str() const noexcept
+std::optional<const char*> Stream::get_engine_type_str() const noexcept
 {
   const std::map<Engine::Type, const char*> EnumStrings{
       {Engine::Type::File, "Engine::Type::File"},
@@ -26,7 +26,9 @@ const char* Stream::get_engine_type_str() const noexcept
       {Engine::Type::Undefined, "Engine::Type::Undefined"},
   };
   auto it = EnumStrings.find(engine_type_);
-  return it == EnumStrings.end() ? "Out of range" : it->second;
+  if (it == EnumStrings.end())
+    return std::nullopt;
+  return it->second;
 }
 
 Stream& Stream::set_engine_type(const Engine::Type& engine_type)
@@ -60,7 +62,7 @@ Stream& Stream::set_engine_type(const Engine::Type& engine_type)
   return *this;
 }
 
-const char* Stream::get_transport_method_str() const noexcept
+std::optional<const char*> Stream::get_transport_method_str() const noexcept
 {
   const std::map<Transport::Method, const char*> EnumStrings{
       {Transport::Method::File, "Transport::Method::File"},
@@ -69,7 +71,9 @@ const char* Stream::get_transport_method_str() const noexcept
       {Transport::Method::Undefined, "Transport::Method::Undefined"},
   };
   auto it = EnumStrings.find(transport_method_);
-  return it == EnumStrings.end() ? "Out of range" : it->second;
+  if (it == EnumStrings.end())
+    return std::nullopt;
+  return it->second;
 }
 
 Stream& Stream::set_transport_method(const Transport::Method& transport_method)
@@ -198,8 +202,9 @@ std::shared_ptr<Engine> Stream::open(std::string_view name, Mode mode)
   create_engine_if_needed(name, mode);
   wait_for_engine_creation();
   register_actor_with_engine(mode);
-  XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(), get_engine_type_str(),
-            get_transport_method_str(), engine_->get_publishers().count(), engine_->get_subscribers().count());
+  XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(),
+            get_engine_type_str().value_or("Unknown"), get_transport_method_str().value_or("Unknown"),
+            engine_->get_publishers().count(), engine_->get_subscribers().count());
   return engine_;
 }
 
