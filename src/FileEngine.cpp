@@ -71,6 +71,15 @@ void FileEngine::create_transport(const Transport::Method& /*transport_method*/)
   set_transport(std::make_shared<FileTransport>(this));
 }
 
+std::shared_ptr<FileTransport> FileEngine::get_file_transport() const
+{
+  auto transport = std::dynamic_pointer_cast<FileTransport>(get_transport());
+  if (!transport) {
+    throw std::runtime_error("Transport is not a FileTransport");
+  }
+  return transport;
+}
+
 std::string FileEngine::get_path_to_dataset() const
 {
   return partition_->get_name() + working_directory_ + "/" + dataset_ + "/";
@@ -78,8 +87,7 @@ std::string FileEngine::get_path_to_dataset() const
 
 void FileEngine::begin_pub_transaction()
 {
-  auto self      = sg4::Actor::self();
-  auto transport = std::static_pointer_cast<FileTransport>(get_transport());
+  auto self = sg4::Actor::self();
 
   if (!pub_transaction_in_progress_) {
     pub_transaction_in_progress_ = true;
@@ -94,14 +102,14 @@ void FileEngine::begin_pub_transaction()
     while (file_pub_transaction_[self].size() > 0)
       pub_activities_completed_->wait(std::unique_lock(*(get_publishers().get_mutex())));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
-    transport->clear_to_write_in_transaction(self);
+    get_file_transport()->clear_to_write_in_transaction(self);
   }
 }
 
 void FileEngine::end_pub_transaction()
 {
   auto self      = sg4::Actor::self();
-  auto transport = std::static_pointer_cast<FileTransport>(get_transport());
+  auto transport = get_file_transport();
 
   // This is the end of the first transaction, create a barrier
   if (auto pub_barrier = get_publishers().get_or_create_barrier())
@@ -134,7 +142,7 @@ void FileEngine::end_pub_transaction()
 void FileEngine::pub_close()
 {
   auto self      = sg4::Actor::self();
-  auto transport = std::static_pointer_cast<FileTransport>(get_transport());
+  auto transport = get_file_transport();
 
   XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());
 
@@ -181,7 +189,7 @@ void FileEngine::begin_sub_transaction()
 void FileEngine::end_sub_transaction()
 {
   auto self      = sg4::Actor::self();
-  auto transport = std::static_pointer_cast<FileTransport>(get_transport());
+  auto transport = get_file_transport();
 
   // The files subscribers need to read may not have been fully written. Wait to be notified completion of the publish
   // activities

@@ -13,6 +13,7 @@
 XBT_LOG_EXTERNAL_CATEGORY(dtlmod);
 
 namespace dtlmod {
+class StagingTransport;
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class StagingEngine : public Engine {
@@ -42,6 +43,9 @@ class StagingEngine : public Engine {
   {
     return current_pub_transaction_id_;
   }
+
+protected:
+  [[nodiscard]] std::shared_ptr<StagingTransport> get_staging_transport() const;
 
 public:
   explicit StagingEngine(const std::string& name, const std::shared_ptr<Stream>& stream)
