@@ -79,7 +79,7 @@ protected:
   void close_stream() const;
   [[nodiscard]] std::shared_ptr<Stream> get_stream() const { return stream_.lock(); }
   void set_transport(std::shared_ptr<Transport> transport) noexcept { transport_ = transport; }
-  [[nodiscard]] std::shared_ptr<Transport> get_transport() const noexcept { return transport_; }
+  [[nodiscard]] const std::shared_ptr<Transport>& get_transport() const noexcept { return transport_; }
 
   [[nodiscard]] ActorRegistry& get_publishers() noexcept { return publishers_; }
   [[nodiscard]] const ActorRegistry& get_publishers() const noexcept { return publishers_; }
