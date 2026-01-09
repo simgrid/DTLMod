@@ -6,6 +6,7 @@
 #ifndef __DTLMOD_STREAM_HPP__
 #define __DTLMOD_STREAM_HPP__
 
+#include <optional>
 #include <simgrid/s4u/ConditionVariable.hpp>
 
 #include "dtlmod/Engine.hpp"
@@ -67,8 +68,8 @@ protected:
   void export_metadata_to_file() const;
 
   // Helper methods for Stream::open
-  void validate_open_parameters(const std::string& name, Mode mode) const;
-  void create_engine_if_needed(const std::string& name, Mode mode);
+  void validate_open_parameters(std::string_view name, Mode mode) const;
+  void create_engine_if_needed(std::string_view name, Mode mode);
   void wait_for_engine_creation();
   void register_actor_with_engine(Mode mode) const;
   /// \endcond
@@ -78,7 +79,12 @@ public:
   Stream(const std::string& name, DTL* dtl) : name_(name), dtl_(dtl) {}
   Stream(const Stream&)            = delete;
   Stream& operator=(const Stream&) = delete;
-  Stream(Stream&&)                 = delete; // Also delete move if not needed
+  // Move operations are deleted because:
+  // 1. Stream inherits from std::enable_shared_from_this, making move semantics problematic
+  // 2. Contains non-owning raw pointer (dtl_) and synchronization primitives (mutex_, condition variables)
+  // 3. Has bidirectional relationships with Engine objects that hold weak_ptr<Stream>
+  // 4. Always managed via std::shared_ptr, so move operations are never needed
+  Stream(Stream&&)                 = delete;
   Stream& operator=(Stream&&)      = delete;
   ~Stream() noexcept               = default;
   /// \endcond
@@ -90,11 +96,11 @@ public:
   /// @return The corresponding C-string
   [[nodiscard]] const char* get_cname() const noexcept { return name_.c_str(); }
   /// @brief Helper function to print out the Engine::Type of the Stream.
-  /// @return The corresponding C-string
-  [[nodiscard]] const char* get_engine_type_str() const;
+  /// @return An optional containing the C-string if the type is valid, std::nullopt otherwise
+  [[nodiscard]] std::optional<const char*> get_engine_type_str() const noexcept;
   /// @brief Helper function to print out the Transport::Method of the Stream.
-  /// @return The corresponding C-string
-  [[nodiscard]] const char* get_transport_method_str() const;
+  /// @return An optional containing the C-string if the method is valid, std::nullopt otherwise
+  [[nodiscard]] std::optional<const char*> get_transport_method_str() const noexcept;
   /// @brief Helper function to know the access Mode of the Stream.
   /// @return The corresponding Stream::Mode
   [[nodiscard]] Mode get_access_mode() const noexcept { return access_mode_; }
@@ -115,10 +121,10 @@ public:
   Stream& set_transport_method(const Transport::Method& transport_method);
   /// @brief Stream configuration function: specify that metadata must be exported
   /// @return The calling Stream (enable method chaining).
-  Stream& set_metadata_export();
+  Stream& set_metadata_export() noexcept;
   /// @brief Stream configuration function: specify that metadata must not be exported
   /// @return The calling Stream (enable method chaining).
-  Stream& unset_metadata_export();
+  Stream& unset_metadata_export() noexcept;
   /// @brief Get the name of the file in which the stream stores metadata
   /// @return The name of the file.
   [[nodiscard]] const std::string& get_metadata_file_name() const noexcept { return metadata_file_; }
@@ -134,14 +140,14 @@ public:
   /// @param name name of the Engine created when opening the Stream.
   /// @param mode either Stream::Mode::Publish or Stream::Mode::Subscribe.
   /// @return A shared pointer on the corresponding Engine.
-  [[nodiscard]] std::shared_ptr<Engine> open(const std::string& name, Mode mode);
+  [[nodiscard]] std::shared_ptr<Engine> open(std::string_view name, Mode mode);
 
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Publish.
   /// @return The number of publishers for that Stream.
-  [[nodiscard]] size_t get_num_publishers() const noexcept { return engine_->get_publishers().count(); }
+  [[nodiscard]] size_t get_num_publishers() const { return engine_->get_publishers().count(); }
   /// @brief Helper function to obtain the number of actors connected to Stream in Mode::Subscribe.
   /// @return The number of subscribers for that Stream.
-  [[nodiscard]] size_t get_num_subscribers() const noexcept { return engine_->get_subscribers().count(); }
+  [[nodiscard]] size_t get_num_subscribers() const { return engine_->get_subscribers().count(); }
 
   /******* Variable Factory *******/
 
@@ -149,7 +155,7 @@ public:
   /// @param name The name of the new Variable.
   /// @param element_size The size of the elements in the Variable.
   /// @return A shared pointer on the newly created Variable.
-  [[nodiscard]] std::shared_ptr<Variable> define_variable(const std::string& name, size_t element_size);
+  [[nodiscard]] std::shared_ptr<Variable> define_variable(std::string_view name, size_t element_size);
 
   /// @brief Define a Variable for this Stream.
   /// @param name The name of the new variable.
@@ -158,7 +164,7 @@ public:
   /// @param count A vector that specifies how many elements the calling Actor owns in each dimension.
   /// @param element_size The size of the elements in the Variable.
   /// @return A shared pointer on the newly created Variable
-  [[nodiscard]] std::shared_ptr<Variable> define_variable(const std::string& name, const std::vector<size_t>& shape,
+  [[nodiscard]] std::shared_ptr<Variable> define_variable(std::string_view name, const std::vector<size_t>& shape,
                                                           const std::vector<size_t>& start,
                                                           const std::vector<size_t>& count, size_t element_size);
 
@@ -169,12 +175,11 @@ public:
   /// @brief Retrieve a Variable information by name.
   /// @param name The name of desired Variable.
   /// @return Either a shared pointer on the Variable object if known, nullptr otherwise.
-  [[nodiscard]] std::shared_ptr<Variable> inquire_variable(const std::string& name) const;
+  [[nodiscard]] std::shared_ptr<Variable> inquire_variable(std::string_view name) const;
 
   /// @brief Remove a Variable of the list of variables known by the Stream.
   /// @param name The name of the variable to remove.
-  /// @return A boolean indicating if the Variable has been successfully removed or not.
-  bool remove_variable(const std::string& name);
+  void remove_variable(std::string_view name);
 };
 
 } // namespace dtlmod

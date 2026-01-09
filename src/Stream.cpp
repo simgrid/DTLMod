@@ -22,7 +22,7 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_stream, dtlmod, "DTL logging about Stream
 
 namespace dtlmod {
 
-const char* Stream::get_engine_type_str() const
+std::optional<const char*> Stream::get_engine_type_str() const noexcept
 {
   const std::map<Engine::Type, const char*> EnumStrings{
       {Engine::Type::File, "Engine::Type::File"},
@@ -30,7 +30,9 @@ const char* Stream::get_engine_type_str() const
       {Engine::Type::Undefined, "Engine::Type::Undefined"},
   };
   auto it = EnumStrings.find(engine_type_);
-  return it == EnumStrings.end() ? "Out of range" : it->second;
+  if (it == EnumStrings.end())
+    return std::nullopt;
+  return it->second;
 }
 
 Stream& Stream::set_engine_type(const Engine::Type& engine_type)
@@ -64,7 +66,7 @@ Stream& Stream::set_engine_type(const Engine::Type& engine_type)
   return *this;
 }
 
-const char* Stream::get_transport_method_str() const
+std::optional<const char*> Stream::get_transport_method_str() const noexcept
 {
   const std::map<Transport::Method, const char*> EnumStrings{
       {Transport::Method::File, "Transport::Method::File"},
@@ -73,7 +75,9 @@ const char* Stream::get_transport_method_str() const
       {Transport::Method::Undefined, "Transport::Method::Undefined"},
   };
   auto it = EnumStrings.find(transport_method_);
-  return it == EnumStrings.end() ? "Out of range" : it->second;
+  if (it == EnumStrings.end())
+    return std::nullopt;
+  return it->second;
 }
 
 Stream& Stream::set_transport_method(const Transport::Method& transport_method)
@@ -108,15 +112,25 @@ Stream& Stream::set_transport_method(const Transport::Method& transport_method)
   return *this;
 }
 
-Stream& Stream::set_metadata_export()
+Stream& Stream::set_metadata_export() noexcept
 {
   metadata_export_ = true;
   return *this;
 }
-Stream& Stream::unset_metadata_export()
+Stream& Stream::unset_metadata_export() noexcept
 {
   metadata_export_ = false;
   return *this;
+}
+
+void Stream::export_metadata_to_file() const
+{
+  if (metadata_export_) {
+    std::ofstream export_stream(metadata_file_, std::ofstream::out);
+    for (const auto& [name, v] : variables_)
+      v->get_metadata()->export_to_file(export_stream);
+    export_stream.close();
+  }
 }
 
 void Stream::export_metadata_to_file() const
@@ -152,36 +166,29 @@ std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::stri
 /****** Engine Factory ******/
 
 /// Validate that all required parameters are set before opening a Stream.
-void Stream::validate_open_parameters(const std::string& name, Mode mode) const
+void Stream::validate_open_parameters(std::string_view name, Mode mode) const
 {
   if (engine_type_ == Engine::Type::Undefined)
-    throw UndefinedEngineTypeException(XBT_THROW_POINT, name);
+    throw UndefinedEngineTypeException(XBT_THROW_POINT, std::string(name));
   if (transport_method_ == Transport::Method::Undefined)
-    throw UndefinedTransportMethodException(XBT_THROW_POINT, name);
+    throw UndefinedTransportMethodException(XBT_THROW_POINT, std::string(name));
   if (mode != Mode::Publish && mode != Mode::Subscribe)
     throw UnknownOpenModeException(XBT_THROW_POINT, mode_to_str(mode));
 }
 
 /// Create the Engine if this is the first actor opening the Stream.
 /// Executed in a critical section to ensure only one Engine is created.
-void Stream::create_engine_if_needed(const std::string& name, Mode mode)
+void Stream::create_engine_if_needed(std::string_view name, Mode mode)
 {
-  bool got_exception = false;
-  std::string exception_msg;
+  std::scoped_lock lock(*dtl_->mutex_);
 
-  dtl_->lock();
   if (not engine_) {
     if (engine_type_ == Engine::Type::Staging) {
       engine_ = std::make_shared<StagingEngine>(name, shared_from_this());
       engine_->create_transport(transport_method_);
     } else if (engine_type_ == Engine::Type::File) {
-      try {
-        engine_ = std::make_shared<FileEngine>(name, shared_from_this());
-        engine_->create_transport(transport_method_);
-      } catch (const IncorrectPathDefinitionException& e) {
-        got_exception = true;
-        exception_msg = std::string(e.what());
-      }
+      engine_ = std::make_shared<FileEngine>(name, shared_from_this());
+      engine_->create_transport(transport_method_);
     }
     // Only set access_mode and notify if engine was successfully created
     if (engine_) {
@@ -192,10 +199,6 @@ void Stream::create_engine_if_needed(const std::string& name, Mode mode)
       engine_created_->notify_all();
     }
   }
-  dtl_->unlock();
-
-  if (got_exception)
-    throw IncorrectPathDefinitionException(XBT_THROW_POINT, exception_msg);
 }
 
 /// Wait for the Engine to be created by another actor if needed.
@@ -227,14 +230,15 @@ void Stream::register_actor_with_engine(Mode mode) const
 ///
 /// For the FileEngine engine type, name corresponds to a fullpath to where to write data. This fullpath is
 /// structured as follows: netzone_name:file_system_name:/path/to/file_name.
-std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
+std::shared_ptr<Engine> Stream::open(std::string_view name, Mode mode)
 {
   validate_open_parameters(name, mode);
   create_engine_if_needed(name, mode);
   wait_for_engine_creation();
   register_actor_with_engine(mode);
-  XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(), get_engine_type_str(),
-            get_transport_method_str(), engine_->get_publishers().count(), engine_->get_subscribers().count());
+  XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(),
+            get_engine_type_str().value_or("Unknown"), get_transport_method_str().value_or("Unknown"),
+            engine_->get_publishers().count(), engine_->get_subscribers().count());
   return engine_;
 }
 
@@ -243,7 +247,7 @@ std::shared_ptr<Engine> Stream::open(const std::string& name, Mode mode)
 /// This function creates a new scalar Variable and the corresponding entry in the internal directory of the Stream that
 /// stores all the known variables. This definition does not refer to the data carried by the Variable but provides
 /// information about its shape (here a scalar) and element type.
-std::shared_ptr<Variable> Stream::define_variable(const std::string& name, size_t element_size)
+std::shared_ptr<Variable> Stream::define_variable(std::string_view name, size_t element_size)
 {
   return define_variable(name, {1}, {0}, {1}, element_size);
 }
@@ -251,7 +255,7 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, size_
 /// This function creates a new Variable and the corresponding entry in the internal directory of the Stream that
 /// stores all the known variables. This definition does not refer to the data carried by the Variable but provides
 /// information about its shape (here a multi-dimensional array) and element type.
-std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const std::vector<size_t>& shape,
+std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const std::vector<size_t>& shape,
                                                   const std::vector<size_t>& start, const std::vector<size_t>& count,
                                                   size_t element_size)
 {
@@ -272,16 +276,17 @@ std::shared_ptr<Variable> Stream::define_variable(const std::string& name, const
   }
 
   auto publisher = sg4::Actor::self();
-  auto var       = variables_.find(name);
+  std::string name_str(name);
+  auto var = variables_.find(name_str);
   if (var != variables_.end()) {
     if (var->second->get_shape().size() != shape.size() || var->second->get_element_size() != element_size)
-      throw MultipleVariableDefinitionException(XBT_THROW_POINT, name + " already exists in Stream " + get_name());
+      throw MultipleVariableDefinitionException(XBT_THROW_POINT, name_str + " already exists in Stream " + get_name());
     else {
       var->second->set_local_start_and_count(publisher, std::make_pair(start, count));
       return var->second;
     }
   } else {
-    auto new_var = std::make_shared<Variable>(name, element_size, shape, shared_from_this());
+    auto new_var = std::make_shared<Variable>(name_str, element_size, shape, shared_from_this());
     new_var->set_local_start_and_count(publisher, std::make_pair(start, count));
     new_var->create_metadata();
     variables_.try_emplace(name, new_var);
@@ -298,18 +303,19 @@ std::vector<std::string> Stream::get_all_variables() const
   return variable_names;
 }
 
-std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) const
+std::shared_ptr<Variable> Stream::inquire_variable(std::string_view name) const
 {
-  auto var = variables_.find(name);
+  std::string name_str(name);
+  auto var = variables_.find(name_str);
   if (var == variables_.end())
-    throw UnknownVariableException(XBT_THROW_POINT, name);
+    throw UnknownVariableException(XBT_THROW_POINT, name_str);
 
   auto actor = sg4::Actor::self();
   if (not engine_ || engine_->get_publishers().contains(actor))
     return var->second;
   else {
-    auto new_var =
-        std::make_shared<Variable>(name, var->second->get_element_size(), var->second->get_shape(), shared_from_this());
+    auto new_var = std::make_shared<Variable>(name_str, var->second->get_element_size(), var->second->get_shape(),
+                                              shared_from_this());
     new_var->set_local_start_and_count(actor, std::make_pair(std::vector<size_t>(var->second->get_shape().size(), 0),
                                                              std::vector<size_t>(var->second->get_shape().size(), 0)));
     new_var->set_metadata(var->second->get_metadata());
@@ -318,14 +324,14 @@ std::shared_ptr<Variable> Stream::inquire_variable(const std::string& name) cons
   }
 }
 
-bool Stream::remove_variable(const std::string& name)
+void Stream::remove_variable(std::string_view name)
 {
-  auto var = variables_.find(name);
-  if (var != variables_.end()) {
+  std::string name_str(name);
+  auto var = variables_.find(name_str);
+  if (var != variables_.end())
     variables_.erase(var);
-    return true;
-  } else
-    return false;
+  else
+    throw UnknownVariableException(XBT_THROW_POINT, name_str);
 }
 
 } // namespace dtlmod

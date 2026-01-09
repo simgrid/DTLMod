@@ -3,20 +3,20 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
-#ifndef DTLMOD_VERSION_HPP
-#define DTLMOD_VERSION_HPP
+#ifndef __DTLMOD_VERSION_HPP__
+#define __DTLMOD_VERSION_HPP__
 
 #define DTLMOD_GIT_VERSION "@GIT_VERSION@"
 
-/** Define the version numbers of the used header files.
-  See dtlmod_version_get() to retrieve the version of the dynamic library. */
+/// Define the version numbers of the used header files.
+/// See dtlmod_version_get() to retrieve the version of the dynamic library.
 #define DTLMOD_VERSION_MAJOR @DTLMOD_VERSION_MAJOR@
 #define DTLMOD_VERSION_MINOR @DTLMOD_VERSION_MINOR@
 #define DTLMOD_VERSION_PATCH @DTLMOD_VERSION_PATCH@
 #define DTLMOD_INSTALL_PREFIX "@CMAKE_INSTALL_PREFIX@"
 
-/** Retrieves the version numbers of the used dynamic library (so, DLL or dynlib), while
-    DTLMOD_VERSION_MAJOR and friends give the version numbers of the used header files */
+/// Retrieves the version numbers of the used dynamic library (so, DLL or dynlib), while
+///    DTLMOD_VERSION_MAJOR and friends give the version numbers of the used header files
 void dtlmod_version_get(int* major, int* minor, int* patch);
 
-#endif /* DTLMOD_VERSION_HPP */
+#endif // __DTLMOD_VERSION_HPP__

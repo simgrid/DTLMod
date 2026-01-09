@@ -31,7 +31,7 @@ public:
   ActorRegistry() = default;
 
   void add(sg4::ActorPtr actor) { actors_.insert(actor); }
-  void remove(sg4::ActorPtr actor) noexcept { actors_.erase(actor); }
+  void remove(sg4::ActorPtr actor) { actors_.erase(actor); }
   [[nodiscard]] bool contains(sg4::ActorPtr actor) const noexcept { return actors_.find(actor) != actors_.end(); }
   [[nodiscard]] size_t count() const noexcept { return actors_.size(); }
   [[nodiscard]] const std::set<sg4::ActorPtr>& get_actors() const noexcept { return actors_; }

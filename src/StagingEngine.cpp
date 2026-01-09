@@ -33,6 +33,14 @@ void StagingEngine::create_transport(const Transport::Method& transport_method)
   }
 }
 
+std::shared_ptr<StagingTransport> StagingEngine::get_staging_transport() const
+{
+  auto transport = std::dynamic_pointer_cast<StagingTransport>(get_transport());
+  if (!transport)
+    throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a StagingTransport");
+  return transport;
+}
+
 void StagingEngine::begin_pub_transaction()
 {
   if (!pub_transaction_in_progress_) {
@@ -79,7 +87,7 @@ void StagingEngine::end_pub_transaction()
   }
 
   // Wait for the put requests and actually put (asynchrously) comm/mess in Mbox/MQ
-  std::static_pointer_cast<StagingTransport>(get_transport())->get_requests_and_do_put(sg4::Actor::self());
+  get_staging_transport()->get_requests_and_do_put(sg4::Actor::self());
   XBT_DEBUG("Start publish activities for the transaction");
 
   if (get_publishers().is_last_at_barrier()) // Mark this transaction as over
@@ -120,7 +128,7 @@ void StagingEngine::begin_sub_transaction()
       first_pub_transaction_started_->wait(lock);
     XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
     // We now know the number of publishers, subscriber can create mailboxes/mqs with publishers
-    std::static_pointer_cast<StagingTransport>(get_transport())->create_rendez_vous_points();
+    get_staging_transport()->create_rendez_vous_points();
   }
 
   if (!sub_transaction_in_progress_) {

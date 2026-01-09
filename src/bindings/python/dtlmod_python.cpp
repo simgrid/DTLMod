@@ -75,8 +75,8 @@ PYBIND11_MODULE(dtlmod, m)
 
   /* Class DTL */
   py::class_<DTL, std::shared_ptr<DTL>>(m, "DTL", "Data Transport Layer")
-      .def_static("create", py::overload_cast<const std::string&>(&DTL::create),
-                  py::call_guard<py::gil_scoped_release>(), py::arg("filename") = "", "Create the DTL (no return)")
+      .def_static("create", py::overload_cast<std::string_view>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
+                  py::arg("filename") = "", "Create the DTL (no return)")
       .def_static("connect", &DTL::connect, py::call_guard<py::gil_scoped_release>(), "Connect an Actor to the DTL")
       .def_static("disconnect", &DTL::disconnect, py::call_guard<py::gil_scoped_release>(),
                   "Disconnect an Actor from the DTL")
@@ -88,17 +88,27 @@ PYBIND11_MODULE(dtlmod, m)
                              "Retrieve all streams declared in the DTL (read-only)")
       .def(
           "stream_by_name",
-          [](const DTL& self, const std::string& name) { return self.get_stream_by_name(name).value_or(nullptr); },
+          [](const DTL& self, std::string_view name) { return self.get_stream_by_name(name).value_or(nullptr); },
           py::arg("name"), "Retrieve a data stream from the DTL by its name (returns None if not found)");
 
   /* Class Stream */
   py::class_<Stream, std::shared_ptr<Stream>> stream(
       m, "Stream", "A Stream defines the connection between the applications that produce or consume data and the DTL");
   stream.def_property_readonly("name", &Stream::get_name, "The name of the Stream (read-only)")
-      .def_property_readonly("engine_type", &Stream::get_engine_type_str,
-                             "Print out the engine type of this Stream (read-only)")
-      .def_property_readonly("transport_method", &Stream::get_transport_method_str,
-                             "Print out the transport method of this Stream (read-only)")
+      .def_property_readonly(
+          "engine_type",
+          [](const Stream& self) {
+            auto result = self.get_engine_type_str();
+            return result ? py::cast(*result) : py::cast<py::none>(Py_None);
+          },
+          "Print out the engine type of this Stream (read-only, returns None if invalid)")
+      .def_property_readonly(
+          "transport_method",
+          [](const Stream& self) {
+            auto result = self.get_transport_method_str();
+            return result ? py::cast(*result) : py::cast<py::none>(Py_None);
+          },
+          "Print out the transport method of this Stream (read-only, returns None if invalid)")
       .def_property_readonly("access_mode", &Stream::get_access_mode_str,
                              "Print out the access mode of this Stream (read-only)")
       .def_property_readonly("metadata_export", &Stream::does_export_metadata,
@@ -121,14 +131,14 @@ PYBIND11_MODULE(dtlmod, m)
       // Variable factory
       .def(
           "define_variable",
-          [](Stream& self, const std::string& name, size_t element_size) {
+          [](Stream& self, std::string_view name, size_t element_size) {
             return self.define_variable(name, element_size);
           },
           py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("element_size"),
           "Define a scalar variable for this Stream")
       .def(
           "define_variable",
-          [](Stream& self, const std::string& name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
+          [](Stream& self, std::string_view name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
              const std::vector<size_t>& count,
              size_t element_size) { return self.define_variable(name, shape, start, count, element_size); },
           py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("shape"), py::arg("start"),

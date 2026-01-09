@@ -67,9 +67,10 @@ TEST_F(DTLConfigTest, ConfigFile)
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream1"));
       XBT_INFO("Open the stream");
       ASSERT_NO_THROW(engine = stream->open("root:fs:/scratch/file", dtlmod::Stream::Mode::Publish));
-      XBT_INFO("Stream 1 is opened (%s, %s)", stream->get_engine_type_str(), stream->get_transport_method_str());
-      ASSERT_TRUE(strcmp(stream->get_engine_type_str(), "Engine::Type::File") == 0);
-      ASSERT_TRUE(strcmp(stream->get_transport_method_str(), "Transport::Method::File") == 0);
+      XBT_INFO("Stream 1 is opened (%s, %s)", stream->get_engine_type_str().value_or("Unknown"),
+               stream->get_transport_method_str().value_or("Unknown"));
+      ASSERT_TRUE(strcmp(stream->get_engine_type_str().value(), "Engine::Type::File") == 0);
+      ASSERT_TRUE(strcmp(stream->get_transport_method_str().value(), "Transport::Method::File") == 0);
       ASSERT_TRUE(strcmp(stream->get_access_mode_str(), "Mode::Publish") == 0);
       ASSERT_EQ(stream->get_access_mode(), dtlmod::Stream::Mode::Publish);
       XBT_INFO("Check if this stream is set to export metadata (it is)");
@@ -88,9 +89,10 @@ TEST_F(DTLConfigTest, ConfigFile)
       ASSERT_FALSE(dtl->get_stream_by_name("Unknown Stream").has_value());
       XBT_INFO("Open the stream");
       ASSERT_NO_THROW(engine = stream->open("staging", dtlmod::Stream::Mode::Publish));
-      XBT_INFO("Stream 2 is opened (%s, %s)", stream->get_engine_type_str(), stream->get_transport_method_str());
-      ASSERT_TRUE(strcmp(stream->get_engine_type_str(), "Engine::Type::Staging") == 0);
-      ASSERT_TRUE(strcmp(stream->get_transport_method_str(), "Transport::Method::MQ") == 0);
+      XBT_INFO("Stream 2 is opened (%s, %s)", stream->get_engine_type_str().value_or("Unknown"),
+               stream->get_transport_method_str().value_or("Unknown"));
+      ASSERT_TRUE(strcmp(stream->get_engine_type_str().value(), "Engine::Type::Staging") == 0);
+      ASSERT_TRUE(strcmp(stream->get_transport_method_str().value(), "Transport::Method::MQ") == 0);
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
       XBT_INFO("Close the engine");
       ASSERT_NO_THROW(engine->close());

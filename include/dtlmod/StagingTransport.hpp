@@ -22,18 +22,18 @@ protected:
   void add_publisher(unsigned long publisher_id) override;
   virtual void create_rendez_vous_points()                               = 0;
   virtual void get_requests_and_do_put(sg4::ActorPtr publisher)          = 0;
-  virtual void get_rendez_vous_point_and_do_get(const std::string& name) = 0;
+  virtual void get_rendez_vous_point_and_do_get(std::string_view name)   = 0;
 
   // Create a message queue to receive request for variable pieces from subscribers
-  void set_publisher_put_requests_mq(const std::string& publisher_name);
-  [[nodiscard]] sg4::MessageQueue* get_publisher_put_requests_mq(const std::string& publisher_name) const noexcept;
-  [[nodiscard]] bool pending_put_requests_exist_for(const std::string& pub_name) noexcept
+  void set_publisher_put_requests_mq(std::string_view publisher_name);
+  [[nodiscard]] sg4::MessageQueue* get_publisher_put_requests_mq(std::string_view publisher_name) const;
+  [[nodiscard]] bool pending_put_requests_exist_for(std::string_view pub_name)
   {
-    return not pending_put_requests_[pub_name].empty();
+    return not pending_put_requests_[std::string(pub_name)].empty();
   }
-  [[nodiscard]] sg4::ActivityPtr wait_any_pending_put_request_for(const std::string& pub_name) noexcept
+  [[nodiscard]] sg4::ActivityPtr wait_any_pending_put_request_for(std::string_view pub_name)
   {
-    return pending_put_requests_[pub_name].wait_any();
+    return pending_put_requests_[std::string(pub_name)].wait_any();
   }
 
 public:

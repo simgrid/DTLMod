@@ -3,8 +3,8 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
-#ifndef DTLMOD_DTLEXCEPTION_HPP
-#define DTLMOD_DTLEXCEPTION_HPP
+#ifndef __DTLMOD_DTLEXCEPTION_HPP__
+#define __DTLMOD_DTLEXCEPTION_HPP__
 
 #include <simgrid/Exception.hpp>
 
@@ -32,6 +32,7 @@ namespace dtlmod {
 
 // All these exceptions derive from simgrid::Exception (but are in the dtlmod namespace)
 DECLARE_DTLMOD_EXCEPTION(UnknownEngineTypeException, "Unknown Engine Type");
+DECLARE_DTLMOD_EXCEPTION(TransportEngineMismatchException, "Transport and Engine mismatch");
 DECLARE_DTLMOD_EXCEPTION(UndefinedEngineTypeException, "Undefined Engine Type. Cannot open Stream");
 DECLARE_DTLMOD_EXCEPTION(MultipleEngineTypeException, "Stream can only use one engine type. Check your code.");
 
@@ -67,4 +68,4 @@ DECLARE_DTLMOD_EXCEPTION(DoubleReductionException, "Double reduction is forbidde
 
 } // namespace dtlmod
 
-#endif // DTLMOD_EXCEPTION_HPP
+#endif // __DTLMOD_EXCEPTION_HPP__

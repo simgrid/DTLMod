@@ -147,9 +147,10 @@ TEST_F(DTLStreamTest, PublishFileStreamOpenClose)
       ASSERT_NO_THROW(stream->set_engine_type(dtlmod::Engine::Type::File));
       XBT_INFO("Open the Stream in Stream::Mode::Publish mode");
       ASSERT_NO_THROW(engine = stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish));
-      XBT_INFO("Stream is opened (%s, %s)", stream->get_engine_type_str(), stream->get_transport_method_str());
-      ASSERT_TRUE(strcmp(stream->get_engine_type_str(), "Engine::Type::File") == 0);
-      ASSERT_TRUE(strcmp(stream->get_transport_method_str(), "Transport::Method::File") == 0);
+      XBT_INFO("Stream is opened (%s, %s)", stream->get_engine_type_str().value_or("Unknown"),
+               stream->get_transport_method_str().value_or("Unknown"));
+      ASSERT_TRUE(strcmp(stream->get_engine_type_str().value(), "Engine::Type::File") == 0);
+      ASSERT_TRUE(strcmp(stream->get_transport_method_str().value(), "Transport::Method::File") == 0);
       XBT_INFO("Let actor %s sleep for 1 second", sg4::this_actor::get_cname());
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
       XBT_INFO("Close the engine");

@@ -5,7 +5,6 @@
 
 #include "dtlmod/Variable.hpp"
 #include "dtlmod/DTLException.hpp"
-#include "dtlmod/Stream.hpp"
 #include <numeric>
 
 XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_variable, dtlmod, "DTL logging about Variables");

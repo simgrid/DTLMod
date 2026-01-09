@@ -26,20 +26,14 @@ class DTL {
   void connection_manager_disconnect(simgrid::s4u::Actor* actor);
   static void connection_manager_init(std::shared_ptr<DTL> dtl);
 
-protected:
-  /// \cond EXCLUDE_FROM_DOCUMENTATION
-  void lock() noexcept { mutex_->lock(); }
-  void unlock() noexcept { mutex_->unlock(); }
-  /// \endcond
-
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  explicit DTL(const std::string& filename);
+  explicit DTL(std::string_view filename);
   /// \endcond
 
   /// @brief Create the Data Transport Layer.
   /// @param filename: a JSON configuration file that provide stream parameters.
-  static void create(const std::string& filename = "");
+  static void create(std::string_view filename = std::string_view{});
 
   /// @brief Connect an Actor to the Data Transport Layer.
   /// @return A handler on the DTL object.
@@ -54,7 +48,7 @@ public:
   /// @brief Add a data stream to the Data Transport Layer.
   /// @param name The name of the Stream to add to the DTL.
   /// @return A handler on the newly created Stream object.
-  [[nodiscard]] std::shared_ptr<Stream> add_stream(const std::string& name);
+  [[nodiscard]] std::shared_ptr<Stream> add_stream(std::string_view name);
 
   /// @brief Retrieve all streams declared in the Data Transport Layer.
   /// @return a map of handlers on Stream objects with their names as keys.
@@ -63,7 +57,7 @@ public:
   /// @brief Retrieve a data stream from the Data Transport Layer by its name.
   /// @param name The name of the Stream to retrieve.
   /// @return An optional containing the Stream handler if found, std::nullopt otherwise.
-  [[nodiscard]] std::optional<std::shared_ptr<Stream>> get_stream_by_name(const std::string& name) const;
+  [[nodiscard]] std::optional<std::shared_ptr<Stream>> get_stream_by_name(std::string_view name) const;
 };
 
 } // namespace dtlmod

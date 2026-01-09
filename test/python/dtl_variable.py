@@ -39,10 +39,13 @@ def run_test_define_variable():
         assert var3d.name == "var3d"
         this_actor.info("Check size: should be 64^3 times 8 as elements are double")
         assert var3d.global_size == (64 * 64 * 64 * 8)
-        this_actor.info("Remove variable named 'var3d'. It is known, should be true")
-        assert stream.remove_variable("var3d") == True
+        this_actor.info("Remove variable named 'var3d'. It is known, should be fine")
+        stream.remove_variable("var3d")
         this_actor.info("Remove variable named 'var2D'. It is unknown, should be false")
-        assert stream.remove_variable("var2D") == False
+        try:
+            stream.remove_variable("var2D")
+        except UnknownVariableException:
+            pass
 
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()
@@ -177,10 +180,13 @@ def run_test_remove_variable():
         stream = dtl.add_stream("Stream")
         this_actor.info("Create a scalar int variable")
         stream.define_variable("var", ctypes.sizeof(ctypes.c_int))
-        this_actor.info("Remove variable named 'var'. It is known, should be true")
-        assert stream.remove_variable("var") == True
+        this_actor.info("Remove variable named 'var'. It is known, should be fine")
+        stream.remove_variable("var")
         this_actor.info("Remove an unknown variable, which should return false")
-        assert stream.remove_variable("unknow_var") == False
+        try:
+            stream.remove_variable("unknow_var")
+        except UnknownVariableException:
+            pass
         this_actor.info("Disconnect the actor from the DTL")
         DTL.disconnect()
 

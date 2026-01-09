@@ -20,14 +20,14 @@ void StagingTransport::add_publisher(unsigned long /*publisher_id*/)
   set_publisher_put_requests_mq(sg4::Actor::self()->get_name());
 }
 // Create a message queue to receive request for variable pieces from subscribers
-void StagingTransport::set_publisher_put_requests_mq(const std::string& publisher_name)
+void StagingTransport::set_publisher_put_requests_mq(std::string_view publisher_name)
 {
-  publisher_put_requests_mq_[publisher_name] = sg4::MessageQueue::by_name(publisher_name);
+  publisher_put_requests_mq_[std::string(publisher_name)] = sg4::MessageQueue::by_name(std::string(publisher_name));
 }
 
-sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(const std::string& publisher_name) const noexcept
+sg4::MessageQueue* StagingTransport::get_publisher_put_requests_mq(std::string_view publisher_name) const
 {
-  return publisher_put_requests_mq_.at(publisher_name);
+  return publisher_put_requests_mq_.at(std::string(publisher_name));
 }
 
 void StagingTransport::put(const std::shared_ptr<Variable>& var, size_t /* simulated_size_in_bytes*/)
