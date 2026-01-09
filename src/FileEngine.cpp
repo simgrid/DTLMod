@@ -75,7 +75,7 @@ std::shared_ptr<FileTransport> FileEngine::get_file_transport() const
 {
   auto transport = std::dynamic_pointer_cast<FileTransport>(get_transport());
   if (!transport) {
-    throw std::runtime_error("Transport is not a FileTransport");
+    throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a FileTransport");
   }
   return transport;
 }

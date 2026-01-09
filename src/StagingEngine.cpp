@@ -37,7 +37,7 @@ std::shared_ptr<StagingTransport> StagingEngine::get_staging_transport() const
 {
   auto transport = std::dynamic_pointer_cast<StagingTransport>(get_transport());
   if (!transport)
-    throw std::runtime_error("Transport is not a StagingTransport");
+    throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a StagingTransport");
   return transport;
 }
 

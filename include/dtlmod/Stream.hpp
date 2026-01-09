@@ -76,7 +76,12 @@ public:
   Stream(const std::string& name, DTL* dtl) : name_(name), dtl_(dtl) {}
   Stream(const Stream&)            = delete;
   Stream& operator=(const Stream&) = delete;
-  Stream(Stream&&)                 = delete; // Also delete move if not needed
+  // Move operations are deleted because:
+  // 1. Stream inherits from std::enable_shared_from_this, making move semantics problematic
+  // 2. Contains non-owning raw pointer (dtl_) and synchronization primitives (mutex_, condition variables)
+  // 3. Has bidirectional relationships with Engine objects that hold weak_ptr<Stream>
+  // 4. Always managed via std::shared_ptr, so move operations are never needed
+  Stream(Stream&&)                 = delete;
   Stream& operator=(Stream&&)      = delete;
   ~Stream() noexcept               = default;
   /// \endcond
