@@ -143,7 +143,7 @@
 <span id="dtlmod-main-concepts"></span><h2>Main Concepts<a class="headerlink" href="#main-concepts" title="Link to this heading"></a></h2>
 <section id="dtl">
 <span id="concept-dtl"></span><h3>DTL<a class="headerlink" href="#dtl" title="Link to this heading"></a></h3>
-<p>A <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> is created by calling <a class="reference internal" href="#_CPPv4N6dtlmod3DTL6createERKNSt6stringE" title="dtlmod::DTL::create"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code></a> at the beginning of the
+<p>A <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> is created by calling <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code> at the beginning of the
 <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">main()</span></code> function of your simulator. This function can take as an optional argument a JSON configuration
 file that describes the different <a class="reference internal" href="#concept-streams"><strong>Streams</strong></a> to be created during the simulation each with a <strong>name</strong>,
 <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> type, and <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> method.</p>
@@ -193,7 +193,7 @@ operations of these files, wherever they are virtually stored. The simulation of
 the <a class="reference external" href="https://github.com/simgrid/file-system-module">file system module of SimGrid</a> that exposes high-level
 abstractions for the simulation of file-system operations on local and remote storage.</p>
 <p>To create a <strong>file-based</strong> <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a>, you must specify where to store the simulated files. This is done by
-passing as argument to the <a class="reference internal" href="#_CPPv4N6dtlmod6Stream4openERKNSt6stringE4Mode" title="dtlmod::Stream::open"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::open()</span></code></a> method a string which contains the
+passing as argument to the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::open()</span></code> method a string which contains the
 location and name of the targeted file system and a path to a specific directory. This information can also be stored
 in a separate configuration file, which means that you can test different scenarios (e.g., using a local or remote file
 system) without having to modify the code of their simulator.</p>
@@ -269,21 +269,19 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 <p>doxygenfunction: Unable to resolve function “dtlmod::DTL::create” with arguments () in doxygen xml output for project “dtlmod” from directory: ../build/xml.
 Potential matches:
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">void</span> <span class="n">create</span><span class="p">(</span><span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">string</span> <span class="o">&amp;</span><span class="n">filename</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">void</span> <span class="n">create</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">string_view</span><span class="p">{})</span>
 </pre></div>
 </div>
 </div>
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL6createERKNSt6stringE">
-<span id="_CPPv3N6dtlmod3DTL6createERKNSt6stringE"></span><span id="_CPPv2N6dtlmod3DTL6createERKNSt6stringE"></span><span id="dtlmod::DTL::create__ssCR"></span><span class="target" id="classdtlmod_1_1DTL_1a627d6c8a58f765fb178fbba3fd99df0d"></span><span class="k"><span class="pre">static</span></span><span class="w"> </span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">create</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">filename</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="s"><span class="pre">&quot;&quot;</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL6createERKNSt6stringE" title="Link to this definition"></a><br /></dt>
-<dd><p>Create the Data Transport Layer. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>filename</strong> – a JSON configuration file that provide stream parameters. </p>
-</dd>
-</dl>
-</dd></dl>
-
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::DTL::create” with arguments (const std::string&amp;) in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">void</span> <span class="n">create</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">filename</span> <span class="o">=</span> <span class="n">std</span><span class="p">::</span><span class="n">string_view</span><span class="p">{})</span>
+</pre></div>
+</div>
+</div>
 </div><div aria-labelledby="tab-0-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-0-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"><div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">dtlmod</span>
 </pre></div>
 </div>
@@ -349,34 +347,24 @@ Potential matches:
 <section id="stream-factory">
 <h4>Stream factory<a class="headerlink" href="#stream-factory" title="Link to this heading"></a></h4>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-2-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-2-Qysr" class="sphinx-tabs-panel group-tab" id="panel-2-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL10add_streamERKNSt6stringE">
-<span id="_CPPv3N6dtlmod3DTL10add_streamERKNSt6stringE"></span><span id="_CPPv2N6dtlmod3DTL10add_streamERKNSt6stringE"></span><span id="dtlmod::DTL::add_stream__ssCR"></span><span class="target" id="classdtlmod_1_1DTL_1a542388ff495a999688310b08a6ac1c3a"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">add_stream</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL10add_streamERKNSt6stringE" title="Link to this definition"></a><br /></dt>
-<dd><p>Add a data stream to the Data Transport Layer. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> – The name of the Stream to add to the DTL. </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A handler on the newly created Stream object. </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL18get_stream_by_nameERKNSt6stringE">
-<span id="_CPPv3NK6dtlmod3DTL18get_stream_by_nameERKNSt6stringE"></span><span id="_CPPv2NK6dtlmod3DTL18get_stream_by_nameERKNSt6stringE"></span><span id="dtlmod::DTL::get_stream_by_name__ssCRC"></span><span class="target" id="classdtlmod_1_1DTL_1a9f39a416c43be12ed31c987da91df30a"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_stream_by_name</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL18get_stream_by_nameERKNSt6stringE" title="Link to this definition"></a><br /></dt>
-<dd><p>Retrieve a data stream from the Data Transport Layer by its name. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> – The name of the Stream to retrieve. </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>An optional containing the Stream handler if found, std::nullopt otherwise. </p>
-</dd>
-</dl>
-</dd></dl>
-
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-2-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-2-Qysr" class="sphinx-tabs-panel group-tab" id="panel-2-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::DTL::add_stream” with arguments (const std::string&amp;) in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Stream</span><span class="o">&gt;</span> <span class="n">add_stream</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::DTL::get_stream_by_name” with arguments (const std::string&amp;) const in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Stream</span><span class="o">&gt;&gt;</span> <span class="n">get_stream_by_name</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">)</span> <span class="n">const</span>
+</pre></div>
+</div>
+</div>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod3DTL15get_all_streamsEv">
 <span id="_CPPv3NK6dtlmod3DTL15get_all_streamsEv"></span><span id="_CPPv2NK6dtlmod3DTL15get_all_streamsEv"></span><span id="dtlmod::DTL::get_all_streamsC"></span><span class="target" id="classdtlmod_1_1DTL_1a25686d87826a59b32b270a632601a424"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">unordered_map</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_all_streams</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod3DTL15get_all_streamsEv" title="Link to this definition"></a><br /></dt>
@@ -566,27 +554,15 @@ Potential matches:
 <section id="engine-factory">
 <h4>Engine factory<a class="headerlink" href="#engine-factory" title="Link to this heading"></a></h4>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-5-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-5-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-5-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-5-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-5-Qysr" class="sphinx-tabs-panel group-tab" id="panel-5-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream4openERKNSt6stringE4Mode">
-<span id="_CPPv3N6dtlmod6Stream4openERKNSt6stringE4Mode"></span><span id="_CPPv2N6dtlmod6Stream4openERKNSt6stringE4Mode"></span><span id="dtlmod::Stream::open__ssCR.Mode"></span><span class="target" id="classdtlmod_1_1Stream_1a1acdc23c23e2cf92dc2552247828f39a"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">open</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="n"><span class="pre">Mode</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">mode</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream4openERKNSt6stringE4Mode" title="Link to this definition"></a><br /></dt>
-<dd><p>Open a Stream and create an Engine. </p>
-<p>
-When multiple actors open the same Stream, only the first one to call this function is in charge of creating an Engine object for that Stream. The Engine creation is thus in a critical section. Each actor calling the open() function is considered as a subscriber to the created Engine.</p>
-<p>Both Engine::Type and Transport::Method have to be specified before opening a Stream.</p>
-<p>For the FileEngine engine type, name corresponds to a fullpath to where to write data. This fullpath is structured as follows: netzone_name:file_system_name:/path/to/file_name. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> – name of the Engine created when opening the Stream. </p></li>
-<li><p><strong>mode</strong> – either Stream::Mode::Publish or Stream::Mode::Subscribe. </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A shared pointer on the corresponding Engine.</p>
-</dd>
-</dl>
-</dd></dl>
-
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-5-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-5-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-5-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-5-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-5-Qysr" class="sphinx-tabs-panel group-tab" id="panel-5-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::Stream::open” with arguments (const std::string&amp;, Mode) in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Engine</span><span class="o">&gt;</span> <span class="nb">open</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">,</span> <span class="n">Mode</span> <span class="n">mode</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream18get_num_publishersEv">
 <span id="_CPPv3NK6dtlmod6Stream18get_num_publishersEv"></span><span id="_CPPv2NK6dtlmod6Stream18get_num_publishersEv"></span><span id="dtlmod::Stream::get_num_publishersC"></span><span class="target" id="classdtlmod_1_1Stream_1a6f3c343accac18171624d907f057b330"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_num_publishers</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream18get_num_publishersEv" title="Link to this definition"></a><br /></dt>
@@ -632,72 +608,44 @@ When multiple actors open the same Stream, only the first one to call this funct
 <section id="variable-factory">
 <h4>Variable factory<a class="headerlink" href="#variable-factory" title="Link to this heading"></a></h4>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-6-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-6-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-6-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-6-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-6-Qysr" class="sphinx-tabs-panel group-tab" id="panel-6-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream15define_variableERKNSt6stringE6size_t">
-<span id="_CPPv3N6dtlmod6Stream15define_variableERKNSt6stringE6size_t"></span><span id="_CPPv2N6dtlmod6Stream15define_variableERKNSt6stringE6size_t"></span><span id="dtlmod::Stream::define_variable__ssCR.s"></span><span class="target" id="classdtlmod_1_1Stream_1ac20c71f4a2a0a23285a74b0b65fbff66"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">define_variable</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">element_size</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream15define_variableERKNSt6stringE6size_t" title="Link to this definition"></a><br /></dt>
-<dd><p>Define a scalar Variable for this Stream. </p>
-<p>
-This function creates a new scalar Variable and the corresponding entry in the internal directory of the Stream that stores all the known variables. This definition does not refer to the data carried by the Variable but provides information about its shape (here a scalar) and element type. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> – The name of the new Variable. </p></li>
-<li><p><strong>element_size</strong> – The size of the elements in the Variable. </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A shared pointer on the newly created Variable.</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream15define_variableERKNSt6stringERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE6size_t">
-<span id="_CPPv3N6dtlmod6Stream15define_variableERKNSt6stringERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE6size_t"></span><span id="_CPPv2N6dtlmod6Stream15define_variableERKNSt6stringERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE6size_t"></span><span id="dtlmod::Stream::define_variable__ssCR.std::vector:s:CR.std::vector:s:CR.std::vector:s:CR.s"></span><span class="target" id="classdtlmod_1_1Stream_1afa4ed87c8073fb413fe9854c764a03ee"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">define_variable</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">shape</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">start</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">size_t</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">count</span></span>, <span class="n"><span class="pre">size_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">element_size</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream15define_variableERKNSt6stringERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEERKNSt6vectorI6size_tEE6size_t" title="Link to this definition"></a><br /></dt>
-<dd><p>Define a Variable for this Stream. </p>
-<p>
-This function creates a new Variable and the corresponding entry in the internal directory of the Stream that stores all the known variables. This definition does not refer to the data carried by the Variable but provides information about its shape (here a multi-dimensional array) and element type. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>name</strong> – The name of the new variable. </p></li>
-<li><p><strong>shape</strong> – A vector that specifies the total number of element in each dimension. </p></li>
-<li><p><strong>start</strong> – A vector that specifies the offset at which the calling Actor start to own data in each dimension. </p></li>
-<li><p><strong>count</strong> – A vector that specifies how many elements the calling Actor owns in each dimension. </p></li>
-<li><p><strong>element_size</strong> – The size of the elements in the Variable. </p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A shared pointer on the newly created Variable</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream16inquire_variableERKNSt6stringE">
-<span id="_CPPv3NK6dtlmod6Stream16inquire_variableERKNSt6stringE"></span><span id="_CPPv2NK6dtlmod6Stream16inquire_variableERKNSt6stringE"></span><span id="dtlmod::Stream::inquire_variable__ssCRC"></span><span class="target" id="classdtlmod_1_1Stream_1a2e2f36ba38198b0f06fbc88a6d080a2b"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">inquire_variable</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream16inquire_variableERKNSt6stringE" title="Link to this definition"></a><br /></dt>
-<dd><p>Retrieve a Variable information by name. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> – The name of desired Variable. </p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Either a shared pointer on the Variable object if known, nullptr otherwise. </p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="cpp function">
-<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream15remove_variableERKNSt6stringE">
-<span id="_CPPv3N6dtlmod6Stream15remove_variableERKNSt6stringE"></span><span id="_CPPv2N6dtlmod6Stream15remove_variableERKNSt6stringE"></span><span id="dtlmod::Stream::remove_variable__ssCR"></span><span class="target" id="classdtlmod_1_1Stream_1ac69ee813a83077d4b961b6991237ad1f"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">remove_variable</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream15remove_variableERKNSt6stringE" title="Link to this definition"></a><br /></dt>
-<dd><p>Remove a Variable of the list of variables known by the Stream. </p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>name</strong> – The name of the variable to remove. </p>
-</dd>
-</dl>
-</dd></dl>
-
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-6-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-6-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-6-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-6-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-6-Qysr" class="sphinx-tabs-panel group-tab" id="panel-6-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::Stream::define_variable” with arguments (const std::string&amp;, size_t) in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Variable</span><span class="o">&gt;</span> <span class="n">define_variable</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">,</span> <span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">size_t</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">shape</span><span class="p">,</span> <span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">size_t</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">start</span><span class="p">,</span> <span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">size_t</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">count</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">element_size</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Variable</span><span class="o">&gt;</span> <span class="n">define_variable</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">element_size</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::Stream::define_variable” with arguments (const std::string&amp;, const std::vector&lt;size_t&gt;&amp;, const std::vector&lt;size_t&gt;&amp;, const std::vector&lt;size_t&gt;&amp;, size_t) in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Variable</span><span class="o">&gt;</span> <span class="n">define_variable</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">,</span> <span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">size_t</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">shape</span><span class="p">,</span> <span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">size_t</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">start</span><span class="p">,</span> <span class="n">const</span> <span class="n">std</span><span class="p">::</span><span class="n">vector</span><span class="o">&lt;</span><span class="n">size_t</span><span class="o">&gt;</span> <span class="o">&amp;</span><span class="n">count</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">element_size</span><span class="p">)</span>
+<span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Variable</span><span class="o">&gt;</span> <span class="n">define_variable</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">,</span> <span class="n">size_t</span> <span class="n">element_size</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::Stream::inquire_variable” with arguments (const std::string&amp;) const in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Variable</span><span class="o">&gt;</span> <span class="n">inquire_variable</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">)</span> <span class="n">const</span>
+</pre></div>
+</div>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>doxygenfunction: Unable to resolve function “dtlmod::Stream::remove_variable” with arguments (const std::string&amp;) in doxygen xml output for project “dtlmod” from directory: ../build/xml.
+Potential matches:
+</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">void</span> <span class="n">remove_variable</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream17get_all_variablesEv">
 <span id="_CPPv3NK6dtlmod6Stream17get_all_variablesEv"></span><span id="_CPPv2NK6dtlmod6Stream17get_all_variablesEv"></span><span id="dtlmod::Stream::get_all_variablesC"></span><span class="target" id="classdtlmod_1_1Stream_1a13f8e378457183a0c94fd3be919f98d9"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">vector</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_all_variables</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream17get_all_variablesEv" title="Link to this definition"></a><br /></dt>
