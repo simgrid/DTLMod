@@ -146,7 +146,7 @@ void Stream::validate_open_parameters(std::string_view name, Mode mode) const
 /// Executed in a critical section to ensure only one Engine is created.
 void Stream::create_engine_if_needed(std::string_view name, Mode mode)
 {
-  std::lock_guard<sg4::Mutex> lock(*dtl_->mutex_);
+  std::scoped_lock lock(*dtl_->mutex_);
 
   if (not engine_) {
     if (engine_type_ == Engine::Type::Staging) {
