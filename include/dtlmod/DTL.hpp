@@ -26,12 +26,6 @@ class DTL {
   void connection_manager_disconnect(simgrid::s4u::Actor* actor);
   static void connection_manager_init(std::shared_ptr<DTL> dtl);
 
-protected:
-  /// \cond EXCLUDE_FROM_DOCUMENTATION
-  void lock() { mutex_->lock(); }
-  void unlock() { mutex_->unlock(); }
-  /// \endcond
-
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   explicit DTL(std::string_view filename);

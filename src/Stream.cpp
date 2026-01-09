@@ -142,22 +142,15 @@ void Stream::validate_open_parameters(std::string_view name, Mode mode) const
 /// Executed in a critical section to ensure only one Engine is created.
 void Stream::create_engine_if_needed(std::string_view name, Mode mode)
 {
-  bool got_exception = false;
-  std::string exception_msg;
+  std::lock_guard<sg4::Mutex> lock(*dtl_->mutex_);
 
-  dtl_->lock();
   if (not engine_) {
     if (engine_type_ == Engine::Type::Staging) {
       engine_ = std::make_shared<StagingEngine>(name, shared_from_this());
       engine_->create_transport(transport_method_);
     } else if (engine_type_ == Engine::Type::File) {
-      try {
-        engine_ = std::make_shared<FileEngine>(name, shared_from_this());
-        engine_->create_transport(transport_method_);
-      } catch (const IncorrectPathDefinitionException& e) {
-        got_exception = true;
-        exception_msg = std::string(e.what());
-      }
+      engine_ = std::make_shared<FileEngine>(name, shared_from_this());
+      engine_->create_transport(transport_method_);
     }
     // Only set access_mode and notify if engine was successfully created
     if (engine_) {
@@ -168,10 +161,6 @@ void Stream::create_engine_if_needed(std::string_view name, Mode mode)
       engine_created_->notify_all();
     }
   }
-  dtl_->unlock();
-
-  if (got_exception)
-    throw IncorrectPathDefinitionException(XBT_THROW_POINT, exception_msg);
 }
 
 /// Wait for the Engine to be created by another actor if needed.
