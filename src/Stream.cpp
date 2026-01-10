@@ -133,16 +133,6 @@ void Stream::export_metadata_to_file() const
   }
 }
 
-void Stream::export_metadata_to_file() const
-{
-  if (metadata_export_) {
-    std::ofstream export_stream(metadata_file_, std::ofstream::out);
-    for (const auto& [name, v] : variables_)
-      v->get_metadata()->export_to_file(export_stream);
-    export_stream.close();
-  }
-}
-
 std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)
 {
   auto it = reduction_methods_.find(name);
@@ -289,7 +279,7 @@ std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const s
     auto new_var = std::make_shared<Variable>(name_str, element_size, shape, shared_from_this());
     new_var->set_local_start_and_count(publisher, std::make_pair(start, count));
     new_var->create_metadata();
-    variables_.try_emplace(name, new_var);
+    variables_.try_emplace(name_str, new_var);
     return new_var;
   }
 }
