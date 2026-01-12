@@ -12,7 +12,7 @@ project(dtlmod VERSION 0.2 DESCRIPTION "Data Transport Layer Module")
 include(GNUInstallDirs)
 find_package(Boost 1.48)
 find_package(SimGrid 4.1 REQUIRED)
-find_package(FSMod 0.3.1 REQUIRED)
+find_package(FSMod 0.4 REQUIRED)
 find_package(nlohmann_json REQUIRED)
 
 # Note: Global include_directories removed in favor of target-specific includes below
