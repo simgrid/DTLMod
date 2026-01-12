@@ -85,12 +85,38 @@ jobs:
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
-      - name: Build and test with coverage
-        env:
-          LD_LIBRARY_PATH: /opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
-          PYTHONPATH: /opt/simgrid/lib/python3.12/site-packages:/usr/local/lib/python3.12/dist-packages
-          CMAKE_PREFIX_PATH: /opt/simgrid:/opt/fsmod:/opt/gtest
+      - name: Verify SimGrid Python bindings
         run: |
+          echo "Searching for SimGrid Python module..."
+          find /opt/simgrid -name "*.so" -path "*/python*" 2>/dev/null || echo "No .so files found in /opt/simgrid/*/python*"
+          find /opt/simgrid -type d -name "site-packages" 2>/dev/null || echo "No site-packages directory found"
+          echo "Python version:"
+          python3 --version
+          echo "Python site packages:"
+          python3 -c "import site; print(site.getsitepackages())"
+          echo "Testing Python import with various paths..."
+          for path in /opt/simgrid/lib/python*/site-packages /opt/simgrid/lib/python*/dist-packages; do
+            if [ -d "$path" ]; then
+              echo "Found: $path"
+              ls -la "$path" 2>/dev/null || true
+              export PYTHONPATH="$path:$PYTHONPATH"
+            fi
+          done
+          python3 -c "import sys; print('PYTHONPATH entries:'); [print(p) for p in sys.path]"
+
+      - name: Build and test with coverage
+        run: |
+          # Dynamically find SimGrid Python path
+          SIMGRID_PYTHON_PATH=$(find /opt/simgrid/lib -type d -path "*/python*/site-packages" 2>/dev/null | head -1)
+          if [ -z "$SIMGRID_PYTHON_PATH" ]; then
+            SIMGRID_PYTHON_PATH=$(find /opt/simgrid/lib -type d -path "*/python*/dist-packages" 2>/dev/null | head -1)
+          fi
+          echo "Using SimGrid Python path: $SIMGRID_PYTHON_PATH"
+
+          export LD_LIBRARY_PATH=/opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
+          export PYTHONPATH="$SIMGRID_PYTHON_PATH:/usr/local/lib/python3.12/dist-packages"
+          export CMAKE_PREFIX_PATH=/opt/simgrid:/opt/fsmod:/opt/gtest
+
           cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
           cmake --build build -j$(nproc)
           sudo cmake --install build
