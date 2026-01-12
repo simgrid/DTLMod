@@ -1,0 +1,30 @@
+# Valgrind suppressions file for DTLMod
+# This file contains suppressions for known false positives and third-party library issues
+
+{
+   simgrid_context_factory
+   Memcheck:Leak
+   ...
+   obj:*/libsimgrid.so*
+}
+
+{
+   boost_filesystem
+   Memcheck:Leak
+   ...
+   obj:*/libboost_filesystem.so*
+}
+
+{
+   python_interpreter
+   Memcheck:Leak
+   ...
+   obj:*/libpython*.so*
+}
+
+{
+   gtest_initialization
+   Memcheck:Leak
+   ...
+   obj:*/libgtest.so*
+}

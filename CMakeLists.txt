@@ -26,6 +26,44 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 endif()
 
+# Sanitizer support
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
+option(ENABLE_VALGRIND "Build with Valgrind support (without sanitizers)" OFF)
+
+if(ENABLE_VALGRIND)
+  if(ENABLE_ASAN OR ENABLE_UBSAN OR ENABLE_TSAN)
+    message(FATAL_ERROR "Cannot enable both Valgrind and sanitizers. Please choose one.")
+  endif()
+  message(STATUS "Building with Valgrind support")
+  add_definitions(-DVALGRIND_BUILD)
+endif()
+
+if(ENABLE_ASAN)
+  message(STATUS "Building with AddressSanitizer")
+  set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+  set(SANITIZER_LINK_FLAGS "${SANITIZER_LINK_FLAGS} -fsanitize=address")
+endif()
+
+if(ENABLE_UBSAN)
+  message(STATUS "Building with UndefinedBehaviorSanitizer")
+  set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -fsanitize=undefined -fno-omit-frame-pointer")
+  set(SANITIZER_LINK_FLAGS "${SANITIZER_LINK_FLAGS} -fsanitize=undefined")
+endif()
+
+if(ENABLE_TSAN)
+  message(STATUS "Building with ThreadSanitizer")
+  set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -fsanitize=thread -fno-omit-frame-pointer")
+  set(SANITIZER_LINK_FLAGS "${SANITIZER_LINK_FLAGS} -fsanitize=thread")
+endif()
+
+if(SANITIZER_FLAGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZER_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_LINK_FLAGS}")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZER_LINK_FLAGS}")
+endif()
+
 # build the version number
 set(DTLMOD_VERSION_MAJOR "0")
 set(DTLMOD_VERSION_MINOR "2")
@@ -229,6 +267,30 @@ if(GTEST_LIBRARY)
   set_target_properties(unit_tests PROPERTIES COMPILE_FLAGS "-g -O0 --coverage")
   set_target_properties(unit_tests PROPERTIES LINK_FLAGS "--coverage")
   #add_custom_command(TARGET unit_tests COMMAND find . -name *.gcda -delete)
+
+  # Valgrind target
+  find_program(VALGRIND_EXECUTABLE valgrind)
+  if(VALGRIND_EXECUTABLE)
+    add_custom_target(valgrind
+      COMMAND ${VALGRIND_EXECUTABLE}
+        --leak-check=full
+        --show-leak-kinds=all
+        --track-origins=yes
+        --verbose
+        --log-file=valgrind-output.txt
+        --suppressions=${CMAKE_SOURCE_DIR}/test/valgrind.supp
+        $<TARGET_FILE:unit_tests>
+      DEPENDS unit_tests
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMENT "Running Valgrind memory checks"
+    )
+    message(STATUS "Valgrind found: ${VALGRIND_EXECUTABLE}")
+  else()
+    add_custom_target(valgrind
+      COMMAND ${CMAKE_COMMAND} -E echo "ERROR: Valgrind not found. Please install valgrind."
+      VERBATIM
+    )
+  endif()
 else()
   add_custom_target(unit_tests echo "ERROR: Cannot build unit_tests because Google Test (libgtest) was not found by cmake." COMMAND echo "       If you have installed Google Test, re-run cmake." VERBATIM)
 endif()

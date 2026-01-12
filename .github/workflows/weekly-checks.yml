@@ -1,0 +1,336 @@
+name: Weekly Memory & Sanitizer Checks
+
+on:
+  schedule:
+    # Run every Monday at 3 AM UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch: # Allow manual trigger
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  sanitizers:
+    name: Sanitizer Checks
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        sanitizer:
+          - name: AddressSanitizer
+            cmake_flag: ENABLE_ASAN
+            env_options: "ASAN_OPTIONS=detect_leaks=1:check_initialization_order=1:strict_init_order=1"
+          - name: UndefinedBehaviorSanitizer
+            cmake_flag: ENABLE_UBSAN
+            env_options: "UBSAN_OPTIONS=print_stacktrace=1:halt_on_error=1"
+          - name: AddressSanitizer+UndefinedBehaviorSanitizer
+            cmake_flag: ENABLE_ASAN ENABLE_UBSAN
+            env_options: "ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=print_stacktrace=1"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: cache-deps
+        with:
+          path: |
+            ~/simgrid-install
+            ~/fsmod-install
+            ~/gtest-install
+          key: ${{ runner.os }}-deps-sanitizer-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+
+      - name: Install system prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgraphviz-dev \
+            libboost-all-dev \
+            nlohmann-json3-dev \
+            pybind11-dev
+
+      - name: Install SimGrid
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://framagit.org/simgrid/simgrid.git
+          cd simgrid
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF
+          cmake --build build -j$(nproc)
+          DESTDIR=~/simgrid-install cmake --install build
+
+      - name: Install FSMod
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/simgrid/file-system-module.git
+          cd file-system-module
+          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF
+          cmake --build build -j$(nproc)
+          DESTDIR=~/fsmod-install cmake --install build
+
+      - name: Install Google Test
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          wget -q https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz
+          tar xf release-1.11.0.tar.gz
+          cd googletest-release-1.11.0
+          cmake -B build
+          cmake --build build -j$(nproc)
+          DESTDIR=~/gtest-install cmake --install build
+
+      - name: Restore cached dependencies
+        if: steps.cache-deps.outputs.cache-hit == 'true'
+        run: |
+          sudo cp -r ~/simgrid-install/* /
+          sudo cp -r ~/fsmod-install/* /
+          sudo cp -r ~/gtest-install/* /
+
+      - name: Install dependencies from cache
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          sudo cp -r ~/simgrid-install/* /
+          sudo cp -r ~/fsmod-install/* /
+          sudo cp -r ~/gtest-install/* /
+
+      - name: Build with ${{ matrix.sanitizer.name }}
+        run: |
+          FLAGS=""
+          for flag in ${{ matrix.sanitizer.cmake_flag }}; do
+            FLAGS="$FLAGS -D${flag}=ON"
+          done
+          cmake -B build $FLAGS -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j$(nproc)
+          sudo cmake --install build
+          cmake --build build --target unit_tests -j$(nproc)
+
+      - name: Run tests with ${{ matrix.sanitizer.name }}
+        env:
+          LD_LIBRARY_PATH: /usr/local/lib
+          PYTHONPATH: /usr/local/lib/python3.12/dist-packages/
+        run: |
+          export ${{ matrix.sanitizer.env_options }}
+          cd build
+          ./unit_tests 2>&1 | tee sanitizer-output.txt
+          cd test/python
+          python3 ./unit_tests_python.py 2>&1 | tee -a ../../sanitizer-output.txt
+          cd ../..
+
+      - name: Upload sanitizer report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ${{ matrix.sanitizer.name }}-report
+          path: build/sanitizer-output.txt
+          retention-days: 30
+
+      - name: Check for sanitizer errors
+        run: |
+          if grep -E "ERROR:|WARNING:" build/sanitizer-output.txt; then
+            echo "::error::${{ matrix.sanitizer.name }} detected issues!"
+            exit 1
+          fi
+
+  valgrind:
+    name: Valgrind Memory Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Cache dependencies
+        uses: actions/cache@v4
+        id: cache-deps
+        with:
+          path: |
+            ~/simgrid-install
+            ~/fsmod-install
+            ~/gtest-install
+          key: ${{ runner.os }}-deps-valgrind-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+
+      - name: Install system prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libgraphviz-dev \
+            libboost-all-dev \
+            nlohmann-json3-dev \
+            pybind11-dev \
+            valgrind
+
+      - name: Install SimGrid
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://framagit.org/simgrid/simgrid.git
+          cd simgrid
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF
+          cmake --build build -j$(nproc)
+          DESTDIR=~/simgrid-install cmake --install build
+
+      - name: Install FSMod
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          git clone --depth 1 https://github.com/simgrid/file-system-module.git
+          cd file-system-module
+          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF
+          cmake --build build -j$(nproc)
+          DESTDIR=~/fsmod-install cmake --install build
+
+      - name: Install Google Test
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          wget -q https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz
+          tar xf release-1.11.0.tar.gz
+          cd googletest-release-1.11.0
+          cmake -B build
+          cmake --build build -j$(nproc)
+          DESTDIR=~/gtest-install cmake --install build
+
+      - name: Restore cached dependencies
+        if: steps.cache-deps.outputs.cache-hit == 'true'
+        run: |
+          sudo cp -r ~/simgrid-install/* /
+          sudo cp -r ~/fsmod-install/* /
+          sudo cp -r ~/gtest-install/* /
+
+      - name: Install dependencies from cache
+        if: steps.cache-deps.outputs.cache-hit != 'true'
+        run: |
+          sudo cp -r ~/simgrid-install/* /
+          sudo cp -r ~/fsmod-install/* /
+          sudo cp -r ~/gtest-install/* /
+
+      - name: Build with Valgrind support
+        run: |
+          cmake -B build -DENABLE_VALGRIND=ON -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j$(nproc)
+          sudo cmake --install build
+          cmake --build build --target unit_tests -j$(nproc)
+
+      - name: Run Valgrind checks
+        env:
+          LD_LIBRARY_PATH: /usr/local/lib
+        run: |
+          cd build
+          cmake --build . --target valgrind
+
+      - name: Upload Valgrind report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: valgrind-report
+          path: build/valgrind-output.txt
+          retention-days: 30
+
+      - name: Parse Valgrind output
+        if: always()
+        run: |
+          cd build
+          echo "## Valgrind Memory Check Summary" > valgrind-summary.txt
+          echo "" >> valgrind-summary.txt
+
+          if [ -f valgrind-output.txt ]; then
+            # Extract key metrics
+            DEFINITELY_LOST=$(grep "definitely lost:" valgrind-output.txt | tail -1 | awk '{print $4}')
+            INDIRECTLY_LOST=$(grep "indirectly lost:" valgrind-output.txt | tail -1 | awk '{print $4}')
+            POSSIBLY_LOST=$(grep "possibly lost:" valgrind-output.txt | tail -1 | awk '{print $4}')
+            STILL_REACHABLE=$(grep "still reachable:" valgrind-output.txt | tail -1 | awk '{print $4}')
+            ERROR_SUMMARY=$(grep "ERROR SUMMARY:" valgrind-output.txt | tail -1)
+
+            echo "### Memory Leak Summary:" >> valgrind-summary.txt
+            echo "- Definitely lost: ${DEFINITELY_LOST:-0} bytes" >> valgrind-summary.txt
+            echo "- Indirectly lost: ${INDIRECTLY_LOST:-0} bytes" >> valgrind-summary.txt
+            echo "- Possibly lost: ${POSSIBLY_LOST:-0} bytes" >> valgrind-summary.txt
+            echo "- Still reachable: ${STILL_REACHABLE:-0} bytes" >> valgrind-summary.txt
+            echo "" >> valgrind-summary.txt
+            echo "### ${ERROR_SUMMARY}" >> valgrind-summary.txt
+
+            cat valgrind-summary.txt
+
+            # Check for critical errors
+            if grep -q "ERROR SUMMARY: [^0]" valgrind-output.txt; then
+              echo "::error::Valgrind detected memory errors!"
+              exit 1
+            fi
+
+            if [ "${DEFINITELY_LOST:-0}" != "0" ]; then
+              echo "::error::Valgrind detected definite memory leaks!"
+              exit 1
+            fi
+          else
+            echo "::error::Valgrind output file not found!"
+            exit 1
+          fi
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: valgrind-summary
+          path: build/valgrind-summary.txt
+          retention-days: 30
+
+  report:
+    name: Generate Report
+    needs: [sanitizers, valgrind]
+    runs-on: ubuntu-latest
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: reports
+
+      - name: Generate summary report
+        run: |
+          echo "# Weekly Memory & Sanitizer Checks Report" > weekly-report.md
+          echo "" >> weekly-report.md
+          echo "Date: $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> weekly-report.md
+          echo "Commit: ${{ github.sha }}" >> weekly-report.md
+          echo "" >> weekly-report.md
+
+          echo "## Test Results" >> weekly-report.md
+          echo "" >> weekly-report.md
+
+          # Check sanitizer results
+          if [ -d "reports" ]; then
+            for report in reports/*-report/*.txt; do
+              if [ -f "$report" ]; then
+                echo "### $(basename $(dirname $report))" >> weekly-report.md
+                if grep -q "ERROR:\|WARNING:" "$report" 2>/dev/null; then
+                  echo "❌ Issues detected" >> weekly-report.md
+                else
+                  echo "✅ No issues detected" >> weekly-report.md
+                fi
+                echo "" >> weekly-report.md
+              fi
+            done
+          fi
+
+          cat weekly-report.md
+
+      - name: Upload weekly report
+        uses: actions/upload-artifact@v4
+        with:
+          name: weekly-report
+          path: weekly-report.md
+          retention-days: 90
+
+      - name: Comment on latest commit (on failure)
+        if: failure() && github.event_name == 'schedule'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '## ⚠️ Weekly Memory & Sanitizer Checks Failed\n\n';
+            body += 'The weekly automated checks detected issues. Please review the artifacts.\n\n';
+            body += `[View workflow run](${context.payload.repository.html_url}/actions/runs/${context.runId})`;
+
+            github.rest.repos.createCommitComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              commit_sha: context.sha,
+              body: body
+            });
