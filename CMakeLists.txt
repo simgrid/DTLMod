@@ -222,9 +222,8 @@ target_include_directories(dtlmod
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
-  PRIVATE
     ${SimGrid_INCLUDE_DIR}
-    ${FSMod_INCLUDE_DIR}
+    ${FSMOD_INCLUDE_DIR}
 )
 target_link_libraries(dtlmod PUBLIC ${SimGrid_LIBRARY} ${FSMOD_LIBRARY})
 
@@ -261,7 +260,7 @@ if(GTEST_LIBRARY)
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/include
     ${SimGrid_INCLUDE_DIR}
-    ${FSMod_INCLUDE_DIR}
+    ${FSMOD_INCLUDE_DIR}
   )
   target_link_libraries(unit_tests ${GTEST_LIBRARY} ${SimGrid_LIBRARY} ${FSMOD_LIBRARY} dtlmod -lpthread -lm)
   set_target_properties(unit_tests PROPERTIES COMPILE_FLAGS "-g -O0 --coverage")
