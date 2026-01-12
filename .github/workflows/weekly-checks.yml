@@ -33,16 +33,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        id: cache-deps
-        with:
-          path: |
-            ~/simgrid-install
-            ~/fsmod-install
-            ~/gtest-install
-          key: ${{ runner.os }}-deps-sanitizer-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
-
       - name: Install system prerequisites
         run: |
           sudo apt-get update
@@ -52,49 +42,58 @@ jobs:
             nlohmann-json3-dev \
             pybind11-dev
 
+      - name: Cache SimGrid
+        uses: actions/cache@v4
+        id: cache-simgrid
+        with:
+          path: /opt/simgrid
+          key: ${{ runner.os }}-simgrid-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+
       - name: Install SimGrid
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+        if: steps.cache-simgrid.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://framagit.org/simgrid/simgrid.git
           cd simgrid
-          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -DCMAKE_INSTALL_PREFIX=/opt/simgrid
           cmake --build build -j$(nproc)
-          DESTDIR=~/simgrid-install cmake --install build
+          sudo cmake --install build
+
+      - name: Cache FSMod
+        uses: actions/cache@v4
+        id: cache-fsmod
+        with:
+          path: /opt/fsmod
+          key: ${{ runner.os }}-fsmod-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
 
       - name: Install FSMod
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+        if: steps.cache-fsmod.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://github.com/simgrid/file-system-module.git
           cd file-system-module
-          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF
+          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF -DCMAKE_INSTALL_PREFIX=/opt/fsmod -DCMAKE_PREFIX_PATH=/opt/simgrid
           cmake --build build -j$(nproc)
-          DESTDIR=~/fsmod-install cmake --install build
+          sudo cmake --install build
+
+      - name: Cache Google Test
+        uses: actions/cache@v4
+        id: cache-gtest
+        with:
+          path: /opt/gtest
+          key: ${{ runner.os }}-gtest-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
 
       - name: Install Google Test
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+        if: steps.cache-gtest.outputs.cache-hit != 'true'
         run: |
           wget -q https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz
           tar xf release-1.11.0.tar.gz
           cd googletest-release-1.11.0
-          cmake -B build
+          cmake -B build -DCMAKE_INSTALL_PREFIX=/opt/gtest
           cmake --build build -j$(nproc)
-          DESTDIR=~/gtest-install cmake --install build
-
-      - name: Restore cached dependencies
-        if: steps.cache-deps.outputs.cache-hit == 'true'
-        run: |
-          sudo cp -r ~/simgrid-install/* /
-          sudo cp -r ~/fsmod-install/* /
-          sudo cp -r ~/gtest-install/* /
-
-      - name: Install dependencies from cache
-        if: steps.cache-deps.outputs.cache-hit != 'true'
-        run: |
-          sudo cp -r ~/simgrid-install/* /
-          sudo cp -r ~/fsmod-install/* /
-          sudo cp -r ~/gtest-install/* /
+          sudo cmake --install build
 
       - name: Build with ${{ matrix.sanitizer.name }}
+        env:
+          CMAKE_PREFIX_PATH: /opt/simgrid:/opt/fsmod:/opt/gtest
         run: |
           FLAGS=""
           for flag in ${{ matrix.sanitizer.cmake_flag }}; do
@@ -107,7 +106,7 @@ jobs:
 
       - name: Run tests with ${{ matrix.sanitizer.name }}
         env:
-          LD_LIBRARY_PATH: /usr/local/lib
+          LD_LIBRARY_PATH: /opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
           PYTHONPATH: /usr/local/lib/python3.12/dist-packages/
         run: |
           export ${{ matrix.sanitizer.env_options }}
@@ -140,16 +139,6 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Cache dependencies
-        uses: actions/cache@v4
-        id: cache-deps
-        with:
-          path: |
-            ~/simgrid-install
-            ~/fsmod-install
-            ~/gtest-install
-          key: ${{ runner.os }}-deps-valgrind-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
-
       - name: Install system prerequisites
         run: |
           sudo apt-get update
@@ -160,49 +149,58 @@ jobs:
             pybind11-dev \
             valgrind
 
+      - name: Cache SimGrid
+        uses: actions/cache@v4
+        id: cache-simgrid
+        with:
+          path: /opt/simgrid
+          key: ${{ runner.os }}-simgrid-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+
       - name: Install SimGrid
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+        if: steps.cache-simgrid.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://framagit.org/simgrid/simgrid.git
           cd simgrid
-          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -DCMAKE_INSTALL_PREFIX=/opt/simgrid
           cmake --build build -j$(nproc)
-          DESTDIR=~/simgrid-install cmake --install build
+          sudo cmake --install build
+
+      - name: Cache FSMod
+        uses: actions/cache@v4
+        id: cache-fsmod
+        with:
+          path: /opt/fsmod
+          key: ${{ runner.os }}-fsmod-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
 
       - name: Install FSMod
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+        if: steps.cache-fsmod.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://github.com/simgrid/file-system-module.git
           cd file-system-module
-          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF
+          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF -DCMAKE_INSTALL_PREFIX=/opt/fsmod -DCMAKE_PREFIX_PATH=/opt/simgrid
           cmake --build build -j$(nproc)
-          DESTDIR=~/fsmod-install cmake --install build
+          sudo cmake --install build
+
+      - name: Cache Google Test
+        uses: actions/cache@v4
+        id: cache-gtest
+        with:
+          path: /opt/gtest
+          key: ${{ runner.os }}-gtest-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
 
       - name: Install Google Test
-        if: steps.cache-deps.outputs.cache-hit != 'true'
+        if: steps.cache-gtest.outputs.cache-hit != 'true'
         run: |
           wget -q https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz
           tar xf release-1.11.0.tar.gz
           cd googletest-release-1.11.0
-          cmake -B build
+          cmake -B build -DCMAKE_INSTALL_PREFIX=/opt/gtest
           cmake --build build -j$(nproc)
-          DESTDIR=~/gtest-install cmake --install build
-
-      - name: Restore cached dependencies
-        if: steps.cache-deps.outputs.cache-hit == 'true'
-        run: |
-          sudo cp -r ~/simgrid-install/* /
-          sudo cp -r ~/fsmod-install/* /
-          sudo cp -r ~/gtest-install/* /
-
-      - name: Install dependencies from cache
-        if: steps.cache-deps.outputs.cache-hit != 'true'
-        run: |
-          sudo cp -r ~/simgrid-install/* /
-          sudo cp -r ~/fsmod-install/* /
-          sudo cp -r ~/gtest-install/* /
+          sudo cmake --install build
 
       - name: Build with Valgrind support
+        env:
+          CMAKE_PREFIX_PATH: /opt/simgrid:/opt/fsmod:/opt/gtest
         run: |
           cmake -B build -DENABLE_VALGRIND=ON -DCMAKE_BUILD_TYPE=Debug
           cmake --build build -j$(nproc)
@@ -211,7 +209,7 @@ jobs:
 
       - name: Run Valgrind checks
         env:
-          LD_LIBRARY_PATH: /usr/local/lib
+          LD_LIBRARY_PATH: /opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
         run: |
           cd build
           cmake --build . --target valgrind
