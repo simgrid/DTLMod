@@ -85,25 +85,6 @@ jobs:
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
-      - name: Verify SimGrid Python bindings
-        run: |
-          echo "Searching for SimGrid Python module..."
-          find /opt/simgrid -name "*.so" -path "*/python*" 2>/dev/null || echo "No .so files found in /opt/simgrid/*/python*"
-          find /opt/simgrid -type d -name "site-packages" 2>/dev/null || echo "No site-packages directory found"
-          echo "Python version:"
-          python3 --version
-          echo "Python site packages:"
-          python3 -c "import site; print(site.getsitepackages())"
-          echo "Testing Python import with various paths..."
-          for path in /opt/simgrid/lib/python*/site-packages /opt/simgrid/lib/python*/dist-packages; do
-            if [ -d "$path" ]; then
-              echo "Found: $path"
-              ls -la "$path" 2>/dev/null || true
-              export PYTHONPATH="$path:$PYTHONPATH"
-            fi
-          done
-          python3 -c "import sys; print('PYTHONPATH entries:'); [print(p) for p in sys.path]"
-
       - name: Build and test with coverage
         run: |
           # Dynamically find SimGrid Python path
