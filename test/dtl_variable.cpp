@@ -312,7 +312,7 @@ TEST_F(DTLVariableTest, GetAllVariables)
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
       ASSERT_NO_THROW(var_list = stream->get_all_variables());
-      ASSERT_EQ(var_list.size(), 3);
+      ASSERT_EQ(var_list.size(), 3U);
       XBT_INFO("Inquire the different variables created by the producer");
       double ndims = 3.0;
       for (const auto& var_name : var_list) {
