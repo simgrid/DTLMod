@@ -59,7 +59,7 @@ The documentation provides insights on evaluating performance of different execu
 **Required:**
 
 - [SimGrid](https://simgrid.frama.io/simgrid/) 4.1 or higher
-- [File System Module](https://github.com/simgrid/file-system-module) 0.3.1 or higher
+- [File System Module](https://github.com/simgrid/file-system-module) 0.4 or higher
 - [Boost](https://www.boost.org/) 1.48 or higher
 - [nlohmann/json](https://github.com/nlohmann/json)
 - CMake 3.12 or higher
@@ -68,7 +68,7 @@ The documentation provides insights on evaluating performance of different execu
 **Optional:**
 
 - [Google Test](https://github.com/google/googletest) (for C++ unit tests)
-- [Python 3](https://www.python.org/) and [pybind11](https://github.com/pybind/pybind11) 2.4+ (for Python bindings)
+- [Python 3](https://www.python.org/) and [pybind11](https://github.com/pybind/pybind11) 2.4 or higher (for Python bindings)
 
 ### Building and Installing
 
