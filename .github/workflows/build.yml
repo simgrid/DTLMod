@@ -113,8 +113,15 @@ jobs:
           fi
           echo "Using SimGrid Python path: $SIMGRID_PYTHON_PATH"
 
+          # Dynamically find FSMod Python path
+          FSMOD_PYTHON_PATH=$(find /opt/fsmod/lib -type d -path "*/python*/site-packages" 2>/dev/null | head -1)
+          if [ -z "$FSMOD_PYTHON_PATH" ]; then
+            FSMOD_PYTHON_PATH=$(find /opt/fsmod/lib -type d -path "*/python*/dist-packages" 2>/dev/null | head -1)
+          fi
+          echo "Using FSMod Python path: $FSMOD_PYTHON_PATH"
+
           export LD_LIBRARY_PATH=/opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
-          export PYTHONPATH="$SIMGRID_PYTHON_PATH:/usr/local/lib/python3.12/dist-packages"
+          export PYTHONPATH="$SIMGRID_PYTHON_PATH:$FSMOD_PYTHON_PATH:/usr/local/lib/python3.12/dist-packages"
           export CMAKE_PREFIX_PATH=/opt/simgrid:/opt/fsmod:/opt/gtest
 
           cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
