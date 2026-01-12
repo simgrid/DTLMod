@@ -63,14 +63,14 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-fsmod-python-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://github.com/simgrid/file-system-module.git
           cd file-system-module
-          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF -DCMAKE_INSTALL_PREFIX=/opt/fsmod -DCMAKE_PREFIX_PATH=/opt/simgrid
+          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/fsmod -DCMAKE_PREFIX_PATH=/opt/simgrid
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
@@ -170,14 +170,14 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-fsmod-python-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://github.com/simgrid/file-system-module.git
           cd file-system-module
-          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF -DCMAKE_INSTALL_PREFIX=/opt/fsmod -DCMAKE_PREFIX_PATH=/opt/simgrid
+          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/fsmod -DCMAKE_PREFIX_PATH=/opt/simgrid
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
