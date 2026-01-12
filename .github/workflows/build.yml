@@ -41,14 +41,14 @@ jobs:
         id: cache-simgrid
         with:
           path: /opt/simgrid
-          key: ${{ runner.os }}-simgrid-${{ hashFiles('.github/workflows/build.yml') }}
+          key: ${{ runner.os }}-simgrid-python-${{ hashFiles('.github/workflows/build.yml') }}
 
       - name: Install SimGrid
         if: steps.cache-simgrid.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://framagit.org/simgrid/simgrid.git
           cd simgrid
-          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -DCMAKE_INSTALL_PREFIX=/opt/simgrid
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/simgrid
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
@@ -88,7 +88,7 @@ jobs:
       - name: Build and test with coverage
         env:
           LD_LIBRARY_PATH: /opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
-          PYTHONPATH: /usr/local/lib/python3.12/dist-packages/
+          PYTHONPATH: /opt/simgrid/lib/python3.12/site-packages:/usr/local/lib/python3.12/dist-packages
           CMAKE_PREFIX_PATH: /opt/simgrid:/opt/fsmod:/opt/gtest
         run: |
           cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug

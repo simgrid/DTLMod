@@ -47,14 +47,14 @@ jobs:
         id: cache-simgrid
         with:
           path: /opt/simgrid
-          key: ${{ runner.os }}-simgrid-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-simgrid-python-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
 
       - name: Install SimGrid
         if: steps.cache-simgrid.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://framagit.org/simgrid/simgrid.git
           cd simgrid
-          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -DCMAKE_INSTALL_PREFIX=/opt/simgrid
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/simgrid
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
@@ -107,7 +107,7 @@ jobs:
       - name: Run tests with ${{ matrix.sanitizer.name }}
         env:
           LD_LIBRARY_PATH: /opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
-          PYTHONPATH: /usr/local/lib/python3.12/dist-packages/
+          PYTHONPATH: /opt/simgrid/lib/python3.12/site-packages:/usr/local/lib/python3.12/dist-packages
         run: |
           export ${{ matrix.sanitizer.env_options }}
           cd build
@@ -154,14 +154,14 @@ jobs:
         id: cache-simgrid
         with:
           path: /opt/simgrid
-          key: ${{ runner.os }}-simgrid-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-simgrid-python-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
 
       - name: Install SimGrid
         if: steps.cache-simgrid.outputs.cache-hit != 'true'
         run: |
           git clone --depth 1 https://framagit.org/simgrid/simgrid.git
           cd simgrid
-          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -DCMAKE_INSTALL_PREFIX=/opt/simgrid
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/simgrid
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
