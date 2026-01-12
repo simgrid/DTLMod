@@ -41,7 +41,7 @@ jobs:
         id: cache-simgrid
         with:
           path: /opt/simgrid
-          key: ${{ runner.os }}-simgrid-python-${{ hashFiles('.github/workflows/build.yml') }}
+          key: ${{ runner.os }}-simgrid-python-v2
 
       - name: Install SimGrid
         if: steps.cache-simgrid.outputs.cache-hit != 'true'
@@ -57,7 +57,7 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-python-${{ hashFiles('.github/workflows/build.yml') }}
+          key: ${{ runner.os }}-fsmod-python-v2
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
@@ -73,7 +73,7 @@ jobs:
         id: cache-gtest
         with:
           path: /opt/gtest
-          key: ${{ runner.os }}-gtest-${{ hashFiles('.github/workflows/build.yml') }}
+          key: ${{ runner.os }}-gtest-v1
 
       - name: Install Google Test
         if: steps.cache-gtest.outputs.cache-hit != 'true'
@@ -119,8 +119,8 @@ jobs:
         run: |
           cd build
           lcov --keep-going --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '*/test/*' '*/include/*' -o coverage.info
-          gcovr -e test -e examples --sonarqube -u -o coverage.xml --exclude-throw-branches \
+          lcov --remove coverage.info '*/test/*' -o coverage.info
+          gcovr -e test -e examples --sonarqube -o coverage.xml --exclude-throw-branches \
                 --gcov-ignore-parse-errors --exclude-unreachable-branches
 
       - name: Upload coverage to Codecov

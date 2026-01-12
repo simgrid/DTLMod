@@ -47,7 +47,7 @@ jobs:
         id: cache-simgrid
         with:
           path: /opt/simgrid
-          key: ${{ runner.os }}-simgrid-python-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-simgrid-python-v2
 
       - name: Install SimGrid
         if: steps.cache-simgrid.outputs.cache-hit != 'true'
@@ -63,7 +63,7 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-python-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-fsmod-python-v2
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
@@ -79,7 +79,7 @@ jobs:
         id: cache-gtest
         with:
           path: /opt/gtest
-          key: ${{ runner.os }}-gtest-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-gtest-v1
 
       - name: Install Google Test
         if: steps.cache-gtest.outputs.cache-hit != 'true'
@@ -154,7 +154,7 @@ jobs:
         id: cache-simgrid
         with:
           path: /opt/simgrid
-          key: ${{ runner.os }}-simgrid-python-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-simgrid-python-v2
 
       - name: Install SimGrid
         if: steps.cache-simgrid.outputs.cache-hit != 'true'
@@ -170,7 +170,7 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-python-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-fsmod-python-v2
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
@@ -186,7 +186,7 @@ jobs:
         id: cache-gtest
         with:
           path: /opt/gtest
-          key: ${{ runner.os }}-gtest-${{ hashFiles('.github/workflows/weekly-checks.yml') }}
+          key: ${{ runner.os }}-gtest-v1
 
       - name: Install Google Test
         if: steps.cache-gtest.outputs.cache-hit != 'true'
