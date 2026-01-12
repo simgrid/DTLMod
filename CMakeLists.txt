@@ -242,6 +242,7 @@ install(FILES include/dtlmod.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Google test
 find_library(GTEST_LIBRARY NAMES gtest)
+find_path(GTEST_INCLUDE_DIR NAMES gtest/gtest.h PATHS /opt/gtest/include)
 if(GTEST_LIBRARY)
   set(TEST_FILES
       test/dtl_config.cpp
@@ -253,7 +254,7 @@ if(GTEST_LIBRARY)
       test/main.cpp
       test/test_util.hpp
       include/dtlmod.hpp)
-      
+
   add_definitions(-DGTEST_USED)
   add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
   target_include_directories(unit_tests PRIVATE
@@ -261,6 +262,7 @@ if(GTEST_LIBRARY)
     ${CMAKE_BINARY_DIR}/include
     ${SimGrid_INCLUDE_DIR}
     ${FSMOD_INCLUDE_DIR}
+    ${GTEST_INCLUDE_DIR}
   )
   target_link_libraries(unit_tests ${GTEST_LIBRARY} ${SimGrid_LIBRARY} ${FSMOD_LIBRARY} dtlmod -lpthread -lm)
   set_target_properties(unit_tests PROPERTIES COMPILE_FLAGS "-g -O0 --coverage")
