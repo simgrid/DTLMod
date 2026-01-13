@@ -74,6 +74,17 @@ public:
 
   {
   }
+
+  // Copy and move operations are deleted because:
+  // 1. Variable objects contain shared state (metadata_) with bidirectional pointers (Metadata holds raw pointer to
+  // Variable)
+  // 2. Contains maps indexed by actor pointers that track per-actor selections and transaction state
+  // 3. Always managed via std::shared_ptr by Stream, so copy/move operations are never needed
+  // 4. Copying would require deep copy of metadata and careful handling of back-pointers
+  Variable(const Variable&)            = delete;
+  Variable& operator=(const Variable&) = delete;
+  Variable(Variable&&)                 = delete;
+  Variable& operator=(Variable&&)      = delete;
   /// \endcond
 
   /// @brief Helper function to print out the name of the Variable.
