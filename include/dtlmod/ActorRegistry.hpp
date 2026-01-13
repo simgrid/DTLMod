@@ -9,7 +9,9 @@
 #include <simgrid/s4u/Actor.hpp>
 #include <simgrid/s4u/Barrier.hpp>
 #include <simgrid/s4u/Mutex.hpp>
+#include <xbt/asserts.h>
 
+#include <limits>
 #include <set>
 
 namespace sg4 = simgrid::s4u;
@@ -30,16 +32,34 @@ class ActorRegistry {
 public:
   ActorRegistry() = default;
 
-  void add(sg4::ActorPtr actor) { actors_.insert(actor); }
-  void remove(sg4::ActorPtr actor) { actors_.erase(actor); }
-  [[nodiscard]] bool contains(sg4::ActorPtr actor) const noexcept { return actors_.find(actor) != actors_.end(); }
+  void add(sg4::ActorPtr actor)
+  {
+    xbt_assert(actor != nullptr, "Cannot add null actor to registry");
+    actors_.insert(actor);
+  }
+
+  void remove(sg4::ActorPtr actor)
+  {
+    xbt_assert(actor != nullptr, "Cannot remove null actor from registry");
+    actors_.erase(actor);
+  }
+
+  [[nodiscard]] bool contains(sg4::ActorPtr actor) const noexcept
+  {
+    if (!actor)
+      return false; // Safe handling for noexcept
+    return actors_.find(actor) != actors_.end();
+  }
+
   [[nodiscard]] size_t count() const noexcept { return actors_.size(); }
   [[nodiscard]] const std::set<sg4::ActorPtr>& get_actors() const noexcept { return actors_; }
   [[nodiscard]] bool is_empty() const noexcept { return actors_.empty(); }
   [[nodiscard]] sg4::BarrierPtr get_or_create_barrier()
   {
-    if (!barrier_)
+    if (!barrier_) {
+      // Assume that nobody will create a system with more than UINT_MAX actors
       barrier_ = sg4::Barrier::create(static_cast<unsigned int>(actors_.size()));
+    }
     return barrier_;
   }
   [[nodiscard]] bool is_last_at_barrier() { return barrier_ && barrier_->wait(); }
