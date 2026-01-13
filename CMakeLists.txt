@@ -269,6 +269,21 @@ if(GTEST_LIBRARY)
   set_target_properties(unit_tests PROPERTIES LINK_FLAGS "--coverage")
   #add_custom_command(TARGET unit_tests COMMAND find . -name *.gcda -delete)
 
+  # Python test - copy test scripts
+  add_custom_target(copy_python_tests
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/test/python
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+              ${CMAKE_SOURCE_DIR}/test/python
+              ${CMAKE_BINARY_DIR}/test/python
+      COMMENT "Copying Python test scripts to build directory"
+  )
+  add_dependencies(unit_tests copy_python_tests)
+
+  # Build Python bindings when building unit_tests
+  if(enable_python AND TARGET python-bindings)
+    add_dependencies(unit_tests python-bindings)
+  endif()
+
   # Valgrind target
   find_program(VALGRIND_EXECUTABLE valgrind)
   if(VALGRIND_EXECUTABLE)
@@ -295,16 +310,6 @@ if(GTEST_LIBRARY)
 else()
   add_custom_target(unit_tests echo "ERROR: Cannot build unit_tests because Google Test (libgtest) was not found by cmake." COMMAND echo "       If you have installed Google Test, re-run cmake." VERBATIM)
 endif()
-
-# Python test
-add_custom_target(copy_python_tests
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/test/python
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/test/python
-            ${CMAKE_BINARY_DIR}/test/python
-    COMMENT "Copying Python test scripts to build directory"
-)
-add_dependencies(unit_tests copy_python_tests)
 
 if(pybind11_FOUND)
   message("        Compile Python bindings .....: ${enable_python}")
