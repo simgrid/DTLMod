@@ -88,12 +88,12 @@ void Variable::add_transaction_metadata(unsigned int transaction_id, sg4::ActorP
   metadata_->add_transaction(transaction_id, local_start_and_count_[publisher], location, publisher);
 }
 
-std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_block(unsigned int transaction_id,
-                                                                                    std::vector<size_t> start,
-                                                                                    std::vector<size_t> count) const
+std::vector<std::pair<std::string, sg_size_t>>
+Variable::get_sizes_to_get_per_block(unsigned int transaction_id, const std::vector<size_t>& start,
+                                     const std::vector<size_t>& count) const
 {
   // Defensive check (should never trigger due to earlier validation)
-  xbt_assert(start.size() == count.size() && start.size() == block_start.size() && start.size() == block_count.size(),
+  xbt_assert(start.size() == count.size() && start.size() == shape_.size(),
              "Internal error: dimension mismatch in get_sizes_to_get_per_block");
 
   std::vector<std::pair<std::string, sg_size_t>> get_sizes_per_block;
