@@ -99,6 +99,13 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
 
   auto blocks = metadata_->get_blocks_for_transaction(transaction_id);
   XBT_DEBUG("%zu block(s) to check for transaction %u", blocks.size(), transaction_id);
+  // For each block, compute the intersection between the requested region [start, start+count)
+  // and the available block region [block_start, block_start+block_count) in each dimension.
+  // Two cases of overlap are checked:
+  //   1. Block starts within or after the requested region: start <= block_start < start+count
+  //   2. Request starts within the block: block_start < start < block_start+block_count
+  // The size to retrieve is the product of intersection sizes across all dimensions.
+  // If any dimension has no overlap, nothing is retrieved from this block.
   for (const auto& [block_info, location] : blocks) {
     size_t size_to_get              = element_size_;
     auto [block_start, block_count] = block_info;
