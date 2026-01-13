@@ -92,6 +92,10 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
                                                                                     std::vector<size_t> start,
                                                                                     std::vector<size_t> count) const
 {
+  // Defensive check (should never trigger due to earlier validation)
+  xbt_assert(start.size() == count.size() && start.size() == block_start.size() && start.size() == block_count.size(),
+             "Internal error: dimension mismatch in get_sizes_to_get_per_block");
+
   std::vector<std::pair<std::string, sg_size_t>> get_sizes_per_block;
   // Validate transaction_id is within valid range
   if (transaction_id > metadata_->get_current_transaction())
