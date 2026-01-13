@@ -3,6 +3,7 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
+#include <array>
 #include <boost/algorithm/string/replace.hpp>
 #include <chrono>
 #include <fstream>
@@ -18,17 +19,28 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_stream, dtlmod, "DTL logging about Stream
 
 namespace dtlmod {
 
+// Constexpr lookup table for Engine::Type to string conversion
+constexpr std::array<std::pair<Engine::Type, const char*>, 3> engine_type_strings{{
+    {Engine::Type::File, "Engine::Type::File"},
+    {Engine::Type::Staging, "Engine::Type::Staging"},
+    {Engine::Type::Undefined, "Engine::Type::Undefined"},
+}};
+
+// Constexpr lookup table for Transport::Method to string conversion
+constexpr std::array<std::pair<Transport::Method, const char*>, 4> transport_method_strings{{
+    {Transport::Method::File, "Transport::Method::File"},
+    {Transport::Method::Mailbox, "Transport::Method::Mailbox"},
+    {Transport::Method::MQ, "Transport::Method::MQ"},
+    {Transport::Method::Undefined, "Transport::Method::Undefined"},
+}};
+
 std::optional<const char*> Stream::get_engine_type_str() const noexcept
 {
-  const std::map<Engine::Type, const char*> EnumStrings{
-      {Engine::Type::File, "Engine::Type::File"},
-      {Engine::Type::Staging, "Engine::Type::Staging"},
-      {Engine::Type::Undefined, "Engine::Type::Undefined"},
-  };
-  auto it = EnumStrings.find(engine_type_);
-  if (it == EnumStrings.end())
-    return std::nullopt;
-  return it->second;
+  for (const auto& [type, str] : engine_type_strings) {
+    if (type == engine_type_)
+      return str;
+  }
+  return std::nullopt;
 }
 
 Stream& Stream::set_engine_type(const Engine::Type& engine_type)
@@ -64,16 +76,11 @@ Stream& Stream::set_engine_type(const Engine::Type& engine_type)
 
 std::optional<const char*> Stream::get_transport_method_str() const noexcept
 {
-  const std::map<Transport::Method, const char*> EnumStrings{
-      {Transport::Method::File, "Transport::Method::File"},
-      {Transport::Method::Mailbox, "Transport::Method::Mailbox"},
-      {Transport::Method::MQ, "Transport::Method::MQ"},
-      {Transport::Method::Undefined, "Transport::Method::Undefined"},
-  };
-  auto it = EnumStrings.find(transport_method_);
-  if (it == EnumStrings.end())
-    return std::nullopt;
-  return it->second;
+  for (const auto& [method, str] : transport_method_strings) {
+    if (method == transport_method_)
+      return str;
+  }
+  return std::nullopt;
 }
 
 Stream& Stream::set_transport_method(const Transport::Method& transport_method)
