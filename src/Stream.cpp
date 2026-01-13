@@ -306,7 +306,7 @@ std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const s
       return var->second;
     }
   } else {
-    auto new_var = std::make_shared<Variable>(name_str, element_size, shape, shared_from_this());
+    auto new_var = std::make_shared<Variable>(name_str, element_size, shape);
     new_var->set_local_start_and_count(publisher, std::make_pair(start, count));
     variables_.try_emplace(name_str, new_var);
     return new_var;
@@ -333,8 +333,7 @@ std::shared_ptr<Variable> Stream::inquire_variable(std::string_view name) const
   if (not engine_ || engine_->get_publishers().contains(actor))
     return var->second;
   else {
-    auto new_var = std::make_shared<Variable>(name_str, var->second->get_element_size(), var->second->get_shape(),
-                                              shared_from_this());
+    auto new_var = std::make_shared<Variable>(name_str, var->second->get_element_size(), var->second->get_shape());
     new_var->set_local_start_and_count(actor, std::make_pair(std::vector<size_t>(var->second->get_shape().size(), 0),
                                                              std::vector<size_t>(var->second->get_shape().size(), 0)));
     new_var->set_metadata(var->second->get_metadata());

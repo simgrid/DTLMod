@@ -28,8 +28,6 @@ class Variable {
   unsigned int transaction_start_ = 0;
   unsigned int transaction_count_ = 0;
 
-  std::weak_ptr<const Stream> defined_in_stream_;
-
   std::shared_ptr<Metadata> metadata_;
 
   std::map<sg4::ActorPtr, std::pair<std::vector<size_t>, std::vector<size_t>>, std::less<>> subscriber_selections_;
@@ -70,13 +68,8 @@ public:
   /// \endcond
 
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  Variable(const std::string& name, size_t element_size, const std::vector<size_t>& shape,
-           std::shared_ptr<const Stream> stream)
-      : name_(name)
-      , element_size_(element_size)
-      , shape_(shape)
-      , defined_in_stream_(stream)
-      , metadata_(std::make_shared<Metadata>(this))
+  Variable(const std::string& name, size_t element_size, const std::vector<size_t>& shape)
+      : name_(name), element_size_(element_size), shape_(shape), metadata_(std::make_shared<Metadata>(this))
 
   {
   }
