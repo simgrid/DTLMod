@@ -218,14 +218,11 @@ std::shared_ptr<Variable> Stream::define_variable(std::string_view name, size_t 
   return define_variable(name, {1}, {0}, {1}, element_size);
 }
 
-/// This function creates a new Variable and the corresponding entry in the internal directory of the Stream that
-/// stores all the known variables. This definition does not refer to the data carried by the Variable but provides
-/// information about its shape (here a multi-dimensional array) and element type.
-std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const std::vector<size_t>& shape,
-                                                  const std::vector<size_t>& start, const std::vector<size_t>& count,
-                                                  size_t element_size)
+/// Validate variable parameters for shape, start, count, and element_size.
+/// Checks for empty vectors, size mismatches, zero dimensions, and wrapped negative numbers.
+void Stream::validate_variable_parameters(const std::vector<size_t>& shape, const std::vector<size_t>& start,
+                                          const std::vector<size_t>& count, size_t element_size)
 {
-  // Sanity checks
   // Check for empty vectors
   if (shape.empty())
     throw InconsistentVariableDefinitionException(XBT_THROW_POINT, "Shape vector cannot be empty");
@@ -285,6 +282,17 @@ std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const s
           XBT_THROW_POINT, std::string("start + count is greater than the number of elements in shape for dimension") +
                                std::to_string(i));
   }
+}
+
+/// This function creates a new Variable and the corresponding entry in the internal directory of the Stream that
+/// stores all the known variables. This definition does not refer to the data carried by the Variable but provides
+/// information about its shape (here a multi-dimensional array) and element type.
+std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const std::vector<size_t>& shape,
+                                                  const std::vector<size_t>& start, const std::vector<size_t>& count,
+                                                  size_t element_size)
+{
+  // Validate parameters
+  validate_variable_parameters(shape, start, count, element_size);
 
   std::unique_lock lock(*mutex_);
   auto publisher = sg4::Actor::self();
