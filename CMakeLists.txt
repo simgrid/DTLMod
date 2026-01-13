@@ -267,7 +267,6 @@ if(GTEST_LIBRARY)
   target_link_libraries(unit_tests ${GTEST_LIBRARY} ${SimGrid_LIBRARY} ${FSMOD_LIBRARY} dtlmod -lpthread -lm)
   set_target_properties(unit_tests PROPERTIES COMPILE_FLAGS "-g -O0 --coverage")
   set_target_properties(unit_tests PROPERTIES LINK_FLAGS "--coverage")
-  #add_custom_command(TARGET unit_tests COMMAND find . -name *.gcda -delete)
 
   # Python test - copy test scripts
   add_custom_target(copy_python_tests
