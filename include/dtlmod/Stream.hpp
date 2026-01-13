@@ -57,7 +57,7 @@ protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   [[nodiscard]] const Transport::Method& get_transport_method() const noexcept { return transport_method_; }
 
-  [[nodiscard]] const char* mode_to_str(Mode mode) const noexcept
+  [[nodiscard]] static constexpr const char* mode_to_str(Mode mode) noexcept
   {
     return (mode == Mode::Publish) ? "Mode::Publish" : "Mode::Subscribe";
   }

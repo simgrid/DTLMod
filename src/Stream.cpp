@@ -34,6 +34,24 @@ constexpr std::array<std::pair<Transport::Method, const char*>, 4> transport_met
     {Transport::Method::Undefined, "Transport::Method::Undefined"},
 }};
 
+// Constexpr validators for compile-time checking
+namespace {
+constexpr bool is_valid_engine_type(Engine::Type type) noexcept
+{
+  return type == Engine::Type::File || type == Engine::Type::Staging;
+}
+
+constexpr bool is_valid_transport_method(Transport::Method method) noexcept
+{
+  return method == Transport::Method::File || method == Transport::Method::Mailbox || method == Transport::Method::MQ;
+}
+
+constexpr bool is_valid_mode(Stream::Mode mode) noexcept
+{
+  return mode == Stream::Mode::Publish || mode == Stream::Mode::Subscribe;
+}
+} // namespace
+
 std::optional<const char*> Stream::get_engine_type_str() const noexcept
 {
   for (const auto& [type, str] : engine_type_strings) {
@@ -49,7 +67,7 @@ Stream& Stream::set_engine_type(const Engine::Type& engine_type)
     return *this;
 
   // Check if this engine type is known
-  if (engine_type != Engine::Type::File && engine_type != Engine::Type::Staging)
+  if (!is_valid_engine_type(engine_type))
     throw UnknownEngineTypeException(XBT_THROW_POINT, "");
 
   // Check is one tries to redefine the engine type
@@ -89,8 +107,7 @@ Stream& Stream::set_transport_method(const Transport::Method& transport_method)
     return *this;
 
   // Check if this transport method is known
-  if (transport_method != Transport::Method::File && transport_method != Transport::Method::Mailbox &&
-      transport_method != Transport::Method::MQ)
+  if (!is_valid_transport_method(transport_method))
     throw UnknownTransportMethodException(XBT_THROW_POINT, "");
 
   // Check is one tries to redefine the transport method
@@ -145,7 +162,7 @@ void Stream::validate_open_parameters(std::string_view name, Mode mode) const
     throw UndefinedEngineTypeException(XBT_THROW_POINT, std::string(name));
   if (transport_method_ == Transport::Method::Undefined)
     throw UndefinedTransportMethodException(XBT_THROW_POINT, std::string(name));
-  if (mode != Mode::Publish && mode != Mode::Subscribe)
+  if (!is_valid_mode(mode))
     throw UnknownOpenModeException(XBT_THROW_POINT, mode_to_str(mode));
 }
 

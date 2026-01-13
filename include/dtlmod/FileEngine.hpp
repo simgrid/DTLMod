@@ -41,8 +41,8 @@ class FileEngine : public Engine {
   bool sub_transaction_in_progress_        = false;
 
   void create_transport(const Transport::Method& transport_method) override;
-  const std::shared_ptr<sgfs::FileSystem>& get_file_system() const { return file_system_; }
-  std::string get_path_to_dataset() const;
+  [[nodiscard]] const std::shared_ptr<sgfs::FileSystem>& get_file_system() const noexcept { return file_system_; }
+  [[nodiscard]] std::string get_path_to_dataset() const;
   void begin_pub_transaction() override;
   void end_pub_transaction() override;
   void pub_close() override;
