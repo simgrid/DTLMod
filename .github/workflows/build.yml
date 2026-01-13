@@ -18,88 +18,121 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Install prereqs
+
+      - name: Install system prerequisites
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgraphviz-dev libboost-all-dev nlohmann-json3-dev pybind11-dev
+          sudo apt-get install -y \
+            libgraphviz-dev \
+            libboost-all-dev \
+            nlohmann-json3-dev \
+            pybind11-dev \
+            lcov \
+            gcovr \
+            python3-breathe \
+            python3-sphinx \
+            python3-sphinx-rtd-theme \
+            python3-sphinx-copybutton \
+            python3-sphinx-tabs \
+            doxygen
+
+      - name: Cache SimGrid
+        uses: actions/cache@v4
+        id: cache-simgrid
+        with:
+          path: /opt/simgrid
+          key: ${{ runner.os }}-simgrid-python-v2
 
       - name: Install SimGrid
+        if: steps.cache-simgrid.outputs.cache-hit != 'true'
         run: |
-          git clone https://framagit.org/simgrid/simgrid.git
+          git clone --depth 1 https://framagit.org/simgrid/simgrid.git
           cd simgrid
-          mkdir build
-          cd build
-          cmake -Denable_smpi=OFF -Denable_model-checking=OFF ..
-          make -j4
-          sudo make install
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/simgrid
+          cmake --build build -j$(nproc)
+          sudo cmake --install build
+
+      - name: Cache FSMod
+        uses: actions/cache@v4
+        id: cache-fsmod
+        with:
+          path: /opt/fsmod
+          key: ${{ runner.os }}-fsmod-python-v2
 
       - name: Install FSMod
+        if: steps.cache-fsmod.outputs.cache-hit != 'true'
         run: |
-          git clone https://github.com/simgrid/file-system-module.git
+          git clone --depth 1 https://github.com/simgrid/file-system-module.git
           cd file-system-module
-          mkdir build
-          cd build
-          cmake .. -Denable_lib_in_jar=OFF -Denable_sthread=OFF
-          make -j4
-          sudo make install
+          cmake -B build -Denable_lib_in_jar=OFF -Denable_sthread=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/fsmod -DCMAKE_PREFIX_PATH=/opt/simgrid
+          cmake --build build -j$(nproc)
+          sudo cmake --install build
 
-      - name: Install Google Tests
+      - name: Cache Google Test
+        uses: actions/cache@v4
+        id: cache-gtest
+        with:
+          path: /opt/gtest
+          key: ${{ runner.os }}-gtest-v1
+
+      - name: Install Google Test
+        if: steps.cache-gtest.outputs.cache-hit != 'true'
         run: |
-          wget https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz
+          wget -q https://github.com/google/googletest/archive/refs/tags/release-1.11.0.tar.gz
           tar xf release-1.11.0.tar.gz
           cd googletest-release-1.11.0
-          cmake .
-          make -j4
-          sudo make install
+          cmake -B build -DCMAKE_INSTALL_PREFIX=/opt/gtest
+          cmake --build build -j$(nproc)
+          sudo cmake --install build
 
-      - name: Install lcov and gcovr
+      - name: Build and test with coverage
         run: |
-          sudo apt-get -y install lcov gcovr
+          # Dynamically find SimGrid Python path
+          SIMGRID_PYTHON_PATH=$(find /opt/simgrid/lib -type d -path "*/python*/site-packages" 2>/dev/null | head -1)
+          if [ -z "$SIMGRID_PYTHON_PATH" ]; then
+            SIMGRID_PYTHON_PATH=$(find /opt/simgrid/lib -type d -path "*/python*/dist-packages" 2>/dev/null | head -1)
+          fi
+          echo "Using SimGrid Python path: $SIMGRID_PYTHON_PATH"
 
-      - name: Run tests, compute coverage
-        env:
-          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-        run: |
-          git clone https://github.com/simgrid/DTLMod.git
-          cd DTLMod
-          mkdir build
+          # Dynamically find FSMod Python path
+          FSMOD_PYTHON_PATH=$(find /opt/fsmod/lib -type d -path "*/python*/site-packages" 2>/dev/null | head -1)
+          if [ -z "$FSMOD_PYTHON_PATH" ]; then
+            FSMOD_PYTHON_PATH=$(find /opt/fsmod/lib -type d -path "*/python*/dist-packages" 2>/dev/null | head -1)
+          fi
+          echo "Using FSMod Python path: $FSMOD_PYTHON_PATH"
+
+          export LD_LIBRARY_PATH=/opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
+          export PYTHONPATH="$SIMGRID_PYTHON_PATH:$FSMOD_PYTHON_PATH:/usr/local/lib/python3.12/dist-packages"
+          export CMAKE_PREFIX_PATH=/opt/simgrid:/opt/fsmod:/opt/gtest
+
+          cmake -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Debug
+          cmake --build build -j$(nproc)
+          sudo cmake --install build
+          cmake --build build --target unit_tests -j$(nproc)
           cd build
-          cmake ..
-          make -j4
-          sudo make install
-          make -j4 unit_tests
           ./unit_tests
-          export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-          export PYTHONPATH="/usr/local/lib/python3.12/dist-packages/"
           cd test/python
-          python ./unit_tests_python.py
+          python3 ./unit_tests_python.py
           cd ../..
+
+      - name: Generate coverage report
+        run: |
+          cd build
           lcov --keep-going --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '*/test/*' '*/include/*'
-          bash <(curl -s https://codecov.io/bash) -f coverage.info -t ${CODECOV_TOKEN}
-
-
-      - name: Build with CMake
-        run: |
-          mkdir build
-          cmake -S . -B build -DCMAKE_EXPORT_COMPILE_COMMANDS=ON
-          cmake --build build/ --config Release -j4
-      - name: Run tests to generate coverage statistics
-        run: |
-          cd build
-          make -j4 unit_tests 
-          ./unit_tests
-          export LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-          export PYTHONPATH="/usr/local/lib/python3.12/dist-packages/"
-          cd test/python
-          python ./unit_tests_python.py
-          cd ../..
-      - name: Collect coverage into one XML report
-        run: |
+          lcov --remove coverage.info '*/test/*' '*/include/*' -o coverage.info
+          cd ..
           gcovr -e test -e examples --sonarqube -u -o coverage.xml --exclude-throw-branches \
                 --gcov-ignore-parse-errors --exclude-unreachable-branches
 
-      - name: Sonar Scan
+      - name: Upload coverage to Codecov
+        if: env.CODECOV_TOKEN != ''
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+        run: |
+          bash <(curl -s https://codecov.io/bash) -f build/coverage.info -t ${CODECOV_TOKEN}
+
+      - name: SonarQube Scan
+        if: env.SONAR_TOKEN != ''
         uses: SonarSource/sonarqube-scan-action@v7
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -109,33 +142,24 @@ jobs:
             -Dsonar.organization=simgrid
             -Dsonar.cfamily.compile-commands=build/compile_commands.json
             -Dsonar.coverageReportPaths=coverage.xml
- 
-      - name: Install Doxygen and Sphinx
-        run: |
-          sudo apt-get install -y python3-breathe python3-sphinx python3-sphinx-rtd-theme python3-sphinx-copybutton python3-sphinx-tabs
-          sudo apt-get -y install doxygen
 
-      - name: Build and Deploy Documentation
+      - name: Build and deploy documentation
+        if: github.ref == 'refs/heads/main' && env.TOKEN_GITHUB != ''
         env:
           TOKEN_GITHUB: ${{ secrets.TOKEN_GITHUB }}
         run: |
-          cd DTLMod/build
-          cmake ..
-          echo "Building documentation..."
-          cd ../doc
+          cd doc
           LC_ALL=C.UTF-8 ./Build.sh
-          mkdir $HOME/gh-pages-to-deploy
+          mkdir -p $HOME/gh-pages-to-deploy
           cp -r build/html/* $HOME/gh-pages-to-deploy/
           cd ..
-          echo "Updating gh-pages branch..."
           git config --global user.email "actions@github.com"
           git config --global user.name "GitHub Actions"
-          echo "git clone -q -b gh-pages https://${TOKEN_GITHUB}@github.com/simgrid/DTLMod.git gh-pages"
-          git clone -b gh-pages https://${TOKEN_GITHUB}@github.com/simgrid/DTLMod.git gh-pages > /dev/null
+          git clone -b gh-pages https://${TOKEN_GITHUB}@github.com/simgrid/DTLMod.git gh-pages
           cd gh-pages
           cp -Rf $HOME/gh-pages-to-deploy/* .
           touch .nojekyll
           git add -f .
           git diff-index --quiet HEAD || git commit -m "GitHub build $GITHUB_RUN_NUMBER"
-          git push -fq origin gh-pages > /dev/null
+          git push -fq origin gh-pages
           echo "Done updating gh-pages!"

@@ -57,6 +57,8 @@ def run_test_inconsistent_variable_definition():
     e, host = setup_platform()
 
     def inconsistent_variable_definition():
+        EXPECTED_EXCEPTION_MSG = "Expected InconsistentVariableDefinitionException was not raised"
+
         this_actor.info("Connect to the DTL")
         dtl = DTL.connect()
         this_actor.info("Create a stream")
@@ -64,19 +66,63 @@ def run_test_inconsistent_variable_definition():
         this_actor.info("Create a 1D variable with an element count bigger than the shape, should fail.")
         try:
             stream.define_variable("var", (64,), (0,), (128,), ctypes.sizeof(ctypes.c_double))
-            assert False, "Expected InconsistentVariableDefinitionException was not raised"
+            assert False, EXPECTED_EXCEPTION_MSG
         except InconsistentVariableDefinitionException:
             pass  # Test passes
         this_actor.info("Create a 3D variable with only two offsets, should fail.")
         try:
-            stream.define_variable("var3d", (64, 64, 64), (0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))                   
-            assert False, "Expected InconsistentVariableDefinitionException was not raised"
+            stream.define_variable("var3d", (64, 64, 64), (0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+            assert False, EXPECTED_EXCEPTION_MSG
         except InconsistentVariableDefinitionException:
             pass  # Test passes
         this_actor.info("Create a 3D variable with only two element counts, should fail.")
         try:
             stream.define_variable("var3d", (64, 64, 64), (0, 0, 0), (64, 64), ctypes.sizeof(ctypes.c_double))
-            assert False, "Expected InconsistentVariableDefinitionException was not raised"
+            assert False, EXPECTED_EXCEPTION_MSG
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        # Note: Empty tuples () in Python may resolve to scalar overload, so we skip that test
+        # The C++ test covers this case thoroughly
+        this_actor.info("Create a variable with zero dimension in shape, should fail.")
+        try:
+            stream.define_variable("varZeroShape", (64, 0, 64), (0, 0, 0), (64, 1, 64), ctypes.sizeof(ctypes.c_double))
+            assert False, EXPECTED_EXCEPTION_MSG
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Create a variable with zero dimension in count, should fail.")
+        try:
+            stream.define_variable("varZeroCount", (64, 64, 64), (0, 0, 0), (64, 0, 64), ctypes.sizeof(ctypes.c_double))
+            assert False, EXPECTED_EXCEPTION_MSG
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Create a variable with zero element_size, should fail.")
+        try:
+            stream.define_variable("varZeroElem", (64,), (0,), (64,), 0)
+            assert False, EXPECTED_EXCEPTION_MSG
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Create a variable with wrapped negative in shape, should fail.")
+        try:
+            stream.define_variable("varNegShape", (ctypes.c_size_t(-1).value,), (0,), (1,), ctypes.sizeof(ctypes.c_double))
+            assert False, EXPECTED_EXCEPTION_MSG
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Create a variable with wrapped negative in start, should fail.")
+        try:
+            stream.define_variable("varNegStart", (64,), (ctypes.c_size_t(-1).value,), (1,), ctypes.sizeof(ctypes.c_double))
+            assert False, EXPECTED_EXCEPTION_MSG
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Create a variable with wrapped negative in count, should fail.")
+        try:
+            stream.define_variable("varNegCount", (64,), (0,), (ctypes.c_size_t(-1).value,), ctypes.sizeof(ctypes.c_double))
+            assert False, EXPECTED_EXCEPTION_MSG
+        except InconsistentVariableDefinitionException:
+            pass  # Test passes
+        this_actor.info("Create a variable with wrapped negative in element_size, should fail.")
+        try:
+            stream.define_variable("varNegElem", (64,), (0,), (64,), ctypes.c_size_t(-1).value)
+            assert False, EXPECTED_EXCEPTION_MSG
         except InconsistentVariableDefinitionException:
             pass  # Test passes
         this_actor.info("Disconnect the actor from the DTL")

@@ -250,12 +250,57 @@ std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const s
                                                   size_t element_size)
 {
   // Sanity checks
+  // Check for empty vectors
+  if (shape.empty())
+    throw InconsistentVariableDefinitionException(XBT_THROW_POINT, "Shape vector cannot be empty");
+
   // Vectors should have the same size
   if (shape.size() != start.size() || shape.size() != count.size())
     throw InconsistentVariableDefinitionException(
         XBT_THROW_POINT, std::string("Shape, Start, and Count vectors must have the same size. Shape: ") +
                              std::to_string(shape.size()) + ", Start: " + std::to_string(start.size()) +
                              ", Count: " + std::to_string(count.size()));
+
+  // Check for zero dimensions and detect wrapped negative numbers
+  // size_t is unsigned, so negative values wrap to very large numbers (> SIZE_MAX/2)
+  constexpr size_t max_reasonable_dim = std::numeric_limits<size_t>::max() / 2;
+
+  for (unsigned int i = 0; i < shape.size(); i++) {
+    if (shape[i] == 0)
+      throw InconsistentVariableDefinitionException(XBT_THROW_POINT, std::string("Shape dimension ") +
+                                                                         std::to_string(i) + " cannot be zero");
+
+    if (shape[i] > max_reasonable_dim)
+      throw InconsistentVariableDefinitionException(
+          XBT_THROW_POINT,
+          std::string("Shape dimension ") + std::to_string(i) +
+              " has suspiciously large value (possible wrapped negative): " + std::to_string(shape[i]));
+
+    if (start[i] > max_reasonable_dim)
+      throw InconsistentVariableDefinitionException(
+          XBT_THROW_POINT,
+          std::string("Start dimension ") + std::to_string(i) +
+              " has suspiciously large value (possible wrapped negative): " + std::to_string(start[i]));
+
+    if (count[i] == 0)
+      throw InconsistentVariableDefinitionException(XBT_THROW_POINT, std::string("Count dimension ") +
+                                                                         std::to_string(i) + " cannot be zero");
+
+    if (count[i] > max_reasonable_dim)
+      throw InconsistentVariableDefinitionException(
+          XBT_THROW_POINT,
+          std::string("Count dimension ") + std::to_string(i) +
+              " has suspiciously large value (possible wrapped negative): " + std::to_string(count[i]));
+  }
+
+  // Check element_size
+  if (element_size == 0)
+    throw InconsistentVariableDefinitionException(XBT_THROW_POINT, "Element size cannot be zero");
+
+  if (element_size > max_reasonable_dim)
+    throw InconsistentVariableDefinitionException(
+        XBT_THROW_POINT, std::string("Element size has suspiciously large value (possible wrapped negative): ") +
+                             std::to_string(element_size));
 
   // The local size of the variable (start + count) cannot exceed the global size (shape) of the Variable
   for (unsigned int i = 0; i < shape.size(); i++) {

@@ -26,6 +26,44 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic")
 endif()
 
+# Sanitizer support
+option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
+option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
+option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
+option(ENABLE_VALGRIND "Build with Valgrind support (without sanitizers)" OFF)
+
+if(ENABLE_VALGRIND)
+  if(ENABLE_ASAN OR ENABLE_UBSAN OR ENABLE_TSAN)
+    message(FATAL_ERROR "Cannot enable both Valgrind and sanitizers. Please choose one.")
+  endif()
+  message(STATUS "Building with Valgrind support")
+  add_definitions(-DVALGRIND_BUILD)
+endif()
+
+if(ENABLE_ASAN)
+  message(STATUS "Building with AddressSanitizer")
+  set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -fsanitize=address -fno-omit-frame-pointer")
+  set(SANITIZER_LINK_FLAGS "${SANITIZER_LINK_FLAGS} -fsanitize=address")
+endif()
+
+if(ENABLE_UBSAN)
+  message(STATUS "Building with UndefinedBehaviorSanitizer")
+  set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -fsanitize=undefined -fno-omit-frame-pointer")
+  set(SANITIZER_LINK_FLAGS "${SANITIZER_LINK_FLAGS} -fsanitize=undefined")
+endif()
+
+if(ENABLE_TSAN)
+  message(STATUS "Building with ThreadSanitizer")
+  set(SANITIZER_FLAGS "${SANITIZER_FLAGS} -fsanitize=thread -fno-omit-frame-pointer")
+  set(SANITIZER_LINK_FLAGS "${SANITIZER_LINK_FLAGS} -fsanitize=thread")
+endif()
+
+if(SANITIZER_FLAGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${SANITIZER_FLAGS}")
+  set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} ${SANITIZER_LINK_FLAGS}")
+  set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} ${SANITIZER_LINK_FLAGS}")
+endif()
+
 # build the version number
 set(DTLMOD_VERSION_MAJOR "0")
 set(DTLMOD_VERSION_MINOR "2")
@@ -187,9 +225,8 @@ target_include_directories(dtlmod
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
     $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}/include>
     $<INSTALL_INTERFACE:include>
-  PRIVATE
     ${SimGrid_INCLUDE_DIR}
-    ${FSMod_INCLUDE_DIR}
+    ${FSMOD_INCLUDE_DIR}
 )
 target_link_libraries(dtlmod PUBLIC ${SimGrid_LIBRARY} ${FSMOD_LIBRARY})
 
@@ -208,6 +245,7 @@ install(FILES include/dtlmod.hpp DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 
 # Google test
 find_library(GTEST_LIBRARY NAMES gtest)
+find_path(GTEST_INCLUDE_DIR NAMES gtest/gtest.h PATHS /opt/gtest/include)
 if(GTEST_LIBRARY)
   set(TEST_FILES
       test/dtl_config.cpp
@@ -220,32 +258,62 @@ if(GTEST_LIBRARY)
       test/main.cpp
       test/test_util.hpp
       include/dtlmod.hpp)
-      
+
   add_definitions(-DGTEST_USED)
   add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
   target_include_directories(unit_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/include
     ${SimGrid_INCLUDE_DIR}
-    ${FSMod_INCLUDE_DIR}
+    ${FSMOD_INCLUDE_DIR}
+    ${GTEST_INCLUDE_DIR}
   )
   target_link_libraries(unit_tests ${GTEST_LIBRARY} ${SimGrid_LIBRARY} ${FSMOD_LIBRARY} dtlmod -lpthread -lm)
   set_target_properties(unit_tests PROPERTIES COMPILE_FLAGS "-g -O0 --coverage")
   set_target_properties(unit_tests PROPERTIES LINK_FLAGS "--coverage")
   #add_custom_command(TARGET unit_tests COMMAND find . -name *.gcda -delete)
+
+  # Python test - copy test scripts
+  add_custom_target(copy_python_tests
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/test/python
+      COMMAND ${CMAKE_COMMAND} -E copy_directory
+              ${CMAKE_SOURCE_DIR}/test/python
+              ${CMAKE_BINARY_DIR}/test/python
+      COMMENT "Copying Python test scripts to build directory"
+  )
+  add_dependencies(unit_tests copy_python_tests)
+
+  # Build Python bindings when building unit_tests
+  if(enable_python AND TARGET python-bindings)
+    add_dependencies(unit_tests python-bindings)
+  endif()
+
+  # Valgrind target
+  find_program(VALGRIND_EXECUTABLE valgrind)
+  if(VALGRIND_EXECUTABLE)
+    add_custom_target(valgrind
+      COMMAND ${VALGRIND_EXECUTABLE}
+        --leak-check=full
+        --show-leak-kinds=all
+        --track-origins=yes
+        --verbose
+        --log-file=valgrind-output.txt
+        --suppressions=${CMAKE_SOURCE_DIR}/test/valgrind.supp
+        $<TARGET_FILE:unit_tests>
+      DEPENDS unit_tests
+      WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
+      COMMENT "Running Valgrind memory checks"
+    )
+    message(STATUS "Valgrind found: ${VALGRIND_EXECUTABLE}")
+  else()
+    add_custom_target(valgrind
+      COMMAND ${CMAKE_COMMAND} -E echo "ERROR: Valgrind not found. Please install valgrind."
+      VERBATIM
+    )
+  endif()
 else()
   add_custom_target(unit_tests echo "ERROR: Cannot build unit_tests because Google Test (libgtest) was not found by cmake." COMMAND echo "       If you have installed Google Test, re-run cmake." VERBATIM)
 endif()
-
-# Python test
-add_custom_target(copy_python_tests
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_BINARY_DIR}/test/python
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-            ${CMAKE_SOURCE_DIR}/test/python
-            ${CMAKE_BINARY_DIR}/test/python
-    COMMENT "Copying Python test scripts to build directory"
-)
-add_dependencies(unit_tests copy_python_tests)
 
 if(pybind11_FOUND)
   message("        Compile Python bindings .....: ${enable_python}")

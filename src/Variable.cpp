@@ -6,11 +6,24 @@
 #include "dtlmod/Variable.hpp"
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/Stream.hpp"
+#include <limits>
 #include <numeric>
+#include <stdexcept>
 
 XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_variable, dtlmod, "DTL logging about Variables");
 
 namespace dtlmod {
+
+struct checked_multiply {
+  size_t operator()(size_t a, size_t b) const
+  {
+    if (b != 0 && a > std::numeric_limits<size_t>::max() / b) {
+      throw std::overflow_error("size_t overflow in multiplication");
+    }
+    return a * b;
+  }
+};
+
 ////////////////////////////////////////////
 ///////////// PUBLIC INTERFACE /////////////
 ////////////////////////////////////////////
@@ -19,7 +32,7 @@ namespace dtlmod {
 /// vector by the element size.
 size_t Variable::get_global_size() const
 {
-  return std::accumulate(shape_.begin(), shape_.end(), element_size_, std::multiplies<>{});
+  return std::accumulate(shape_.begin(), shape_.end(), element_size_, dtlmod::checked_multiply{});
 }
 
 /// The local size of a Variable corresponds to the product of the number of elements in each dimension of the count
@@ -28,7 +41,8 @@ size_t Variable::get_global_size() const
 size_t Variable::get_local_size() const
 {
   const auto& start_and_count = local_start_and_count_.at(sg4::Actor::self()).second;
-  auto total_size = std::accumulate(start_and_count.begin(), start_and_count.end(), element_size_, std::multiplies<>{});
+  auto total_size =
+      std::accumulate(start_and_count.begin(), start_and_count.end(), element_size_, dtlmod::checked_multiply{});
   if (transaction_count_ > 0)
     total_size *= transaction_count_;
   return total_size;
@@ -111,6 +125,13 @@ std::vector<std::pair<std::string, sg_size_t>> Variable::get_sizes_to_get_per_bl
 
   auto blocks = metadata_->get_blocks_for_transaction(transaction_id);
   XBT_DEBUG("%zu block(s) to check for transaction %u", blocks.size(), transaction_id);
+  // For each block, compute the intersection between the requested region [start, start+count)
+  // and the available block region [block_start, block_start+block_count) in each dimension.
+  // Two cases of overlap are checked:
+  //   1. Block starts within or after the requested region: start <= block_start < start+count
+  //   2. Request starts within the block: block_start < start < block_start+block_count
+  // The size to retrieve is the product of intersection sizes across all dimensions.
+  // If any dimension has no overlap, nothing is retrieved from this block.
   for (const auto& [block_info, location] : blocks) {
     size_t size_to_get              = element_size_;
     auto [block_start, block_count] = block_info;

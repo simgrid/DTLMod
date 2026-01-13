@@ -181,8 +181,8 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
       XBT_INFO("Open the Stream in Stream::Mode::Publish mode");
       ASSERT_NO_THROW(engine = stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish));
       XBT_INFO("Check current number of publishers and subscribers");
-      ASSERT_EQ(stream->get_num_publishers(), 1);
-      ASSERT_EQ(stream->get_num_subscribers(), 0);
+      ASSERT_EQ(stream->get_num_publishers(), 1U);
+      ASSERT_EQ(stream->get_num_subscribers(), 0U);
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
       XBT_INFO("Close the engine");
       ASSERT_NO_THROW(engine->close());
@@ -203,8 +203,8 @@ TEST_F(DTLStreamTest, PublishFileMultipleOpen)
       XBT_INFO("Open the Stream in Stream::Mode::Publish mode");
       ASSERT_NO_THROW(engine = stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish));
       XBT_INFO("Check current number of publishers and subscribers");
-      ASSERT_EQ(stream->get_num_publishers(), 2);
-      ASSERT_EQ(stream->get_num_subscribers(), 0);
+      ASSERT_EQ(stream->get_num_publishers(), 2U);
+      ASSERT_EQ(stream->get_num_subscribers(), 0U);
       XBT_INFO("Let actor %s sleep for 1 second", sg4::this_actor::get_cname());
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
       XBT_INFO("Close the engine");
