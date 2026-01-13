@@ -90,6 +90,33 @@ TEST_F(DTLVariableTest, InconsistentVariableDefinition)
       XBT_INFO("Create a 3D variable with only two element counts, should fail.");
       ASSERT_THROW((void)stream->define_variable("var3D", {64, 64, 64}, {0, 0, 0}, {64, 64}, sizeof(double)),
                    dtlmod::InconsistentVariableDefinitionException);
+      XBT_INFO("Create a variable with empty shape vector, should fail.");
+      ASSERT_THROW((void)stream->define_variable("varEmpty", {}, {}, {}, sizeof(double)),
+                   dtlmod::InconsistentVariableDefinitionException);
+      XBT_INFO("Create a variable with zero dimension in shape, should fail.");
+      ASSERT_THROW((void)stream->define_variable("varZeroShape", {64, 0, 64}, {0, 0, 0}, {64, 1, 64}, sizeof(double)),
+                   dtlmod::InconsistentVariableDefinitionException);
+      XBT_INFO("Create a variable with zero dimension in count, should fail.");
+      ASSERT_THROW((void)stream->define_variable("varZeroCount", {64, 64, 64}, {0, 0, 0}, {64, 0, 64}, sizeof(double)),
+                   dtlmod::InconsistentVariableDefinitionException);
+      XBT_INFO("Create a variable with zero element_size, should fail.");
+      ASSERT_THROW((void)stream->define_variable("varZeroElem", {64}, {0}, {64}, 0),
+                   dtlmod::InconsistentVariableDefinitionException);
+      XBT_INFO("Create a variable with wrapped negative in shape, should fail.");
+      ASSERT_THROW(
+          (void)stream->define_variable("varNegShape", {std::numeric_limits<size_t>::max()}, {0}, {1}, sizeof(double)),
+          dtlmod::InconsistentVariableDefinitionException);
+      XBT_INFO("Create a variable with wrapped negative in start, should fail.");
+      ASSERT_THROW(
+          (void)stream->define_variable("varNegStart", {64}, {std::numeric_limits<size_t>::max()}, {1}, sizeof(double)),
+          dtlmod::InconsistentVariableDefinitionException);
+      XBT_INFO("Create a variable with wrapped negative in count, should fail.");
+      ASSERT_THROW(
+          (void)stream->define_variable("varNegCount", {64}, {0}, {std::numeric_limits<size_t>::max()}, sizeof(double)),
+          dtlmod::InconsistentVariableDefinitionException);
+      XBT_INFO("Create a variable with wrapped negative in element_size, should fail.");
+      ASSERT_THROW((void)stream->define_variable("varNegElem", {64}, {0}, {64}, std::numeric_limits<size_t>::max()),
+                   dtlmod::InconsistentVariableDefinitionException);
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
