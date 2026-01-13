@@ -99,9 +99,9 @@ __attribute__((noreturn)) void DTL::connection_manager_init(std::shared_ptr<DTL>
     auto* sender = mess->get_sender();
     if (*connect_guard) { // Connection
       dtl->connection_manager_connect(sender);
-      // Allocate a copy on the heap for transfer
-      auto* dtl_copy = new std::shared_ptr<DTL>(dtl);
-      handler_mq->put_init(dtl_copy)->detach();
+      // Transfer ownership via unique_ptr for exception safety
+      auto dtl_copy = std::make_unique<std::shared_ptr<DTL>>(dtl);
+      handler_mq->put_init(dtl_copy.release())->detach();
     } else { // Disconnection
       dtl->connection_manager_disconnect(sender);
       auto payload = std::make_unique<bool>(true);
