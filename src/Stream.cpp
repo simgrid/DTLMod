@@ -284,11 +284,13 @@ void Stream::validate_variable_parameters(const std::vector<size_t>& shape, cons
                              std::to_string(element_size));
 
   // The local size of the variable (start + count) cannot exceed the global size (shape) of the Variable
+  // Check written to avoid overflow: count[i] > (shape[i] - start[i])
   for (unsigned int i = 0; i < shape.size(); i++) {
-    if (start[i] + count[i] > shape[i])
+    if (start[i] > shape[i] || count[i] > shape[i] - start[i])
       throw InconsistentVariableDefinitionException(
-          XBT_THROW_POINT, std::string("start + count is greater than the number of elements in shape for dimension") +
-                               std::to_string(i));
+          XBT_THROW_POINT, std::string("start + count exceeds shape in dimension ") + std::to_string(i) +
+                               " (start: " + std::to_string(start[i]) + ", count: " + std::to_string(count[i]) +
+                               ", shape: " + std::to_string(shape[i]) + ")");
   }
 }
 
