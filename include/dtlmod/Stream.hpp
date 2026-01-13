@@ -59,7 +59,7 @@ protected:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
   [[nodiscard]] const Transport::Method& get_transport_method() const noexcept { return transport_method_; }
 
-  [[nodiscard]] const char* mode_to_str(Mode mode) const noexcept
+  [[nodiscard]] static constexpr const char* mode_to_str(Mode mode) noexcept
   {
     return (mode == Mode::Publish) ? "Mode::Publish" : "Mode::Subscribe";
   }
@@ -72,6 +72,10 @@ protected:
   void create_engine_if_needed(std::string_view name, Mode mode);
   void wait_for_engine_creation();
   void register_actor_with_engine(Mode mode) const;
+
+  // Helper method for Stream::define_variable
+  static void validate_variable_parameters(const std::vector<size_t>& shape, const std::vector<size_t>& start,
+                                           const std::vector<size_t>& count, size_t element_size);
   /// \endcond
 
 public:

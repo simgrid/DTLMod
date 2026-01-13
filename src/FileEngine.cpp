@@ -99,8 +99,10 @@ void FileEngine::begin_pub_transaction()
     // Wait for the completion of the Publish activities from the previous transaction
     XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
               file_pub_transaction_[self].size());
-    while (file_pub_transaction_[self].size() > 0)
-      pub_activities_completed_->wait(std::unique_lock(*(get_publishers().get_mutex())));
+    while (file_pub_transaction_[self].size() > 0) {
+      std::unique_lock lock(*(get_publishers().get_mutex()));
+      pub_activities_completed_->wait(lock);
+    }
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     get_file_transport()->clear_to_write_in_transaction(self);
   }
@@ -149,8 +151,10 @@ void FileEngine::pub_close()
 
   XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
             file_pub_transaction_[self].size());
-  while (file_pub_transaction_[self].size() > 0)
-    pub_activities_completed_->wait(std::unique_lock(*get_publishers().get_mutex()));
+  while (file_pub_transaction_[self].size() > 0) {
+    std::unique_lock lock(*(get_publishers().get_mutex()));
+    pub_activities_completed_->wait(lock);
+  }
   transport->clear_to_write_in_transaction(self);
 
   get_publishers().remove(self);

@@ -99,8 +99,9 @@ __attribute__((noreturn)) void DTL::connection_manager_init(std::shared_ptr<DTL>
     auto* sender = mess->get_sender();
     if (*connect_guard) { // Connection
       dtl->connection_manager_connect(sender);
-      // Return a handler on the DTL to the newly connected actor
-      handler_mq->put_init(&dtl)->detach();
+      // Allocate a copy on the heap for transfer
+      auto* dtl_copy = new std::shared_ptr<DTL>(dtl);
+      handler_mq->put_init(dtl_copy)->detach();
     } else { // Disconnection
       dtl->connection_manager_disconnect(sender);
       auto payload = std::make_unique<bool>(true);
@@ -129,7 +130,7 @@ std::shared_ptr<DTL> DTL::connect()
 {
   auto payload = std::make_unique<bool>(true);
   sg4::MessageQueue::by_name("dtlmod::connection_manager_connect")->put(payload.release());
-  const auto* handle = sg4::MessageQueue::by_name("dtlmod::connection_manager_handle")->get<std::shared_ptr<DTL>>();
+  auto handle = sg4::MessageQueue::by_name("dtlmod::connection_manager_handle")->get_unique<std::shared_ptr<DTL>>();
   return *handle;
 }
 

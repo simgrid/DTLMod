@@ -65,8 +65,9 @@ public:
   }
 
   void add_transaction_metadata(unsigned int transaction_id, sg4::ActorPtr publisher, const std::string& location);
-  std::vector<std::pair<std::string, sg_size_t>>
-  get_sizes_to_get_per_block(unsigned int transaction_id, std::vector<size_t> start, std::vector<size_t> count) const;
+  std::vector<std::pair<std::string, sg_size_t>> get_sizes_to_get_per_block(unsigned int transaction_id,
+                                                                            const std::vector<size_t>& start,
+                                                                            const std::vector<size_t>& count) const;
 
   std::shared_ptr<Metadata> get_metadata() const { return metadata_; }
   [[nodiscard]] bool subscriber_has_a_selection(sg4::ActorPtr actor) const;
@@ -79,6 +80,7 @@ public:
   Variable(const std::string& name, size_t element_size, const std::vector<size_t>& shape,
            std::shared_ptr<const Stream> stream)
       : name_(name), element_size_(element_size), shape_(shape), defined_in_stream_(stream)
+
   {
   }
   /// \endcond
