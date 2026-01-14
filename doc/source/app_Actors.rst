@@ -5,17 +5,17 @@
 Simulated actors
 ################
 
-The simulated actors that for your in situ processing workflow and interact with the DTL can be programmed at different
-level of complexity. This allows you to quickly develop prototypes just focusing on the workflow structure and the data
-flow between its components and then complexify each individual workflow component to increase the realism of your
+The simulated actors that form your in situ processing workflow and interact with the DTL can be programmed at different
+levels of complexity. This allows you to quickly develop prototypes focusing on the workflow structure and the data
+flow between its components and then add complexity to each individual workflow component to increase the realism of your
 simulator.
 
 Pure S4U actors
 ***************
 
 The simplest way to program a simulated actor acting as a component of your in situ processing workflow is to rely
-solely on the `S4U interface of Simgrid <https://simgrid.org/doc/latest/app_s4u.html>`. The following code examples
-show you how to program simple data publisher (distributed over mutiple ranks) and subscriber (single rank).
+solely on the `S4U interface of SimGrid <https://simgrid.org/doc/latest/app_s4u.html>`_. The following code examples
+show you how to program a simple data publisher (distributed over multiple ranks) and subscriber (single rank).
 
 Data publisher
 ^^^^^^^^^^^^^^

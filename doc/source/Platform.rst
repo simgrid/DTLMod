@@ -6,10 +6,10 @@ Describing your simulated platform
 ==================================
 
 DTLMod relies on `SimGrid's C++ programmatic platform description interface
-<https://simgrid.org/doc/latest/Platform_cpp.html>`_ to allow you to describe the computing and storage resources onto
-which simulate the execution of your in situ processing workflow.
+<https://simgrid.org/doc/latest/Platform_cpp.html>`_ to allow you to describe the computing and storage resources on
+which to simulate the execution of your in situ processing workflow.
 
-To describe a platform in C++, the recommanded approach is to create a separate C++ file, compiled as a shared library,
+To describe a platform in C++, the recommended approach is to create a separate C++ file, compiled as a shared library,
 in which you will overload the definition of the :cpp:func:`simgrid::s4u::Engine::load_platform` function. This way you
 can decouple the definition of your platform from the code of your simulation. The generated shared library can then be
 passed as a command line argument of your simulator binary.
@@ -64,8 +64,8 @@ gigaflop per second.
 
 Disks
 ^^^^^
-A disk models some physical with **I/O** capabilities. They are minimally defined by a **unique name**, a
-**read bandwidth** and a **write bandwidth** (both expressed in bytes per seconds). By default, SimGrid does not keep track of the actual data being
+A disk models some physical device with **I/O** capabilities. Disks are minimally defined by a **unique name**, a
+**read bandwidth** and a **write bandwidth** (both expressed in bytes per second). By default, SimGrid does not keep track of the actual data being
 written but only computes the time taken by the corresponding data movement. The simulation of file systems is handled
 by `FSMod <https://github.com/simgrid/file-system-module>`_ (see :ref:`Platform_storage`).
 
@@ -102,9 +102,9 @@ For instance to connect each of the hosts of our four host cluster, we add the f
 Storage and file system
 ***********************
 
-DTLMod relies on the on FSMod's C++ programmatic description interface to allow you to describe storage components
-and file systems. For instance, to describe a **one disk storage** on the disk attached to host, start a **file
-system** on that storage and **mount a partition**, you have to add the following code:
+DTLMod relies on FSMod's C++ programmatic description interface to allow you to describe storage components
+and file systems. For instance, to describe a **one disk storage** on the disk attached to a host, start a **file
+system** on that storage, and **mount a partition**, you have to add the following code:
 
 .. code-block:: c++
 
@@ -131,7 +131,7 @@ Here, we present a complete example that corresponds to the platform used in the
 
    <br><br>
 
-This simulated platform composed of two homogeneous clusters. The first cluster comprises 256 96-core nodes while the
+This simulated platform is composed of two homogeneous clusters. The first cluster comprises 256 96-core nodes while the
 second cluster has 128 48-core nodes. Each core of these clusters can respectively process :math:`11 \times 10^9` and
 :math:`6 \times 10^9` floating point operations per second. These clusters have the same internal network topology:
 Nodes are connected through 1 Gb/s private network links to a 10 Gb/s crossbar switch.  The two clusters are

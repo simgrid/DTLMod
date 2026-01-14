@@ -16,11 +16,11 @@ Getting the dependencies
 ^^^^^^^^^^^^^^^^^^^^^^^^
 
 C++ compiler
- Install a version recent enough to support the C++17 standard.
+  Install a version recent enough to support the C++17 standard.
 Python 3
-  DTLMod should build without Python which is only needed by the regression tests of the python API.
+  DTLMod should build without Python, which is only needed for the regression tests of the Python API.
 cmake
-  The minimal recommended version is v3.12
+  The minimum recommended version is v3.12
 boost mandatory components (at least v1.48)
   - On Debian / Ubuntu: ``apt install libboost-dev``
   - On CentOS / Fedora: ``dnf install boost-devel``
@@ -51,7 +51,7 @@ directories to test different parameter sets or compiling toolchains.
    $ sudo make install
    $ cd ..
 
-To benefit of the latest developments, get the current git version and recompile it as with stable archives. 
+To benefit from the latest developments, get the current git version and recompile it as with stable archives. 
 
 .. code-block:: console
 
@@ -75,11 +75,11 @@ follows:
 .. code-block:: console
 
    $ cd test/python
-   $ python unit_tests_python.pymkdir build
+   $ python unit_tests_python.py
    $ cd - 
 
-We run both test suites on every commit as part of a **github action** and the results can be found 
-`there <https://github.com/simgrid/DTLMod/actions>`_.  
+We run both test suites on every commit as part of a **GitHub Action** and the results can be found
+`here <https://github.com/simgrid/DTLMod/actions>`_.  
 
 Python-specific instructions
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
