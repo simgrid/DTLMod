@@ -1,13 +1,36 @@
 ----------------------------------------------------------------------------
 
-DTLMod (0.3) not released yet (target: spring 2026)
-  - Thorough code review and important refactoring of the internals
-  - API changes:
-    - DTL::get_stream_by_name_or_null is now DTL::get_stream_by_name. The 
-      corresponding python call is now dtl.get_stream_by_name
-    - Metadata management transferred from Engine to Stream. The
-      get_metadata_file_name method (or meta_file_name property in Python)
-      must be called by a Stream instance.  
+DTLMod (0.3) January 19, 2026
+
+Major improvements:
+  - Enhanced code quality with comprehensive refactoring 
+    - Improved modern C++17 usage throughout the codebase
+    - Reduced code complexity and technical debt
+  - Memory safety and robustness improvements
+    - Fixed critical memory safety issue in DTL connection management
+    - Fixed race condition in Engine creation
+    - Plugged memory leaks
+  - Major refactoring with improved memory management, encapsulation, and move-only semantics
+  - Improved CI/CD infrastructure
+    - Added Valgrind and sanitizer checks (AddressSanitizer, UndefinedBehaviorSanitizer)
+    - Enhanced test coverage and validation
+  - Comprehensive proofread of the documentation
+
+API Changes:
+  - DTL::get_stream_by_name_or_null() renamed to DTL::get_stream_by_name()
+    Returns std::optional<std::shared_ptr<Stream>> instead of raw pointer
+    Python: dtl.get_stream_by_name() now returns None if stream not found
+  - Metadata management transferred from Engine to Stream
+    Stream::get_metadata_file_name() replaces Engine::get_metadata_file_name()
+    Python: stream.metadata_file_name replaces engine.metadata_file_name
+  - Stream method chaining improvements
+    set_engine_type() and set_transport_method() now return Stream& instead of Stream*
+    Enables cleaner fluent interface: stream.set_engine_type(...).set_transport_method(...)
+  - DTL::create() now accepts std::string_view and has empty default parameter
+  - String parameters changed to std::string_view for better performance:
+    - DTL::add_stream(), DTL::get_stream_by_name()
+    - Stream and Variable constructors and methods
+  - get_engine_type_str() and get_transport_method_str() now return std::optional<const char*>
 
 ----------------------------------------------------------------------------
 
