@@ -1,0 +1,6 @@
+{
+    "sonarlint.connectedMode.project": {
+        "connectionId": "simgrid",
+        "projectKey": "simgrid_dtlmod"
+    }
+}
