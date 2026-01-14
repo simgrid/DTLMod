@@ -74,7 +74,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#api-reference">API Reference</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#class-dtl">class DTL</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#creation">Creation</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#connection-and-deconnection">Connection and Deconnection</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#connection-and-disconnection">Connection and Disconnection</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#stream-factory">Stream factory</a></li>
 </ul>
 </li>
@@ -171,8 +171,8 @@ specific <a class="reference internal" href="#concept-engine"><strong>Engine</st
 communication or I/O subsystems in charge of the simulation of data movement or storage. DTLMod exposes two types of
 engines: <strong>file-based</strong> engines, that write and read data to and from storage and <strong>staging</strong> engines that stream data
 from the memory of publishers to that of subscribers.</p>
-<p>An <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> are attached to a <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>. A simulated actor can thus adapt the type of
-<a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> to the purpose of each individual <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>. For instance, one will create a stream with a
+<p>An <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> is attached to a <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>. A simulated actor can thus adapt the type of
+<a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> to the purpose of each individual <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>. For instance, one can create a stream with a
 file-based engine to store application checkpoints and another stream with a staging engine to transfer data from one
 analysis component to another. The type of <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> to use can be specified either at the creation of a
 <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a> or in an external configuration file passed as argument when creating the <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a>.</p>
@@ -224,7 +224,7 @@ selecting the <a class="reference internal" href="#concept-transport"><span clas
 <p>At the core of the DTLMod is the data transported from publishers to subscribers. Many in situ processing workflows
 involve parallel MPI codes as data producers. These codes manipulate <strong>multidimensional arrays</strong> distributed over
 multiple ranks. DTLMod adopts this data structure as the basis of its <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> abstraction.</p>
-<p>The figure below illustrates shows how to define a 3-dimensional array, distributed to eight MPI ranks organized in
+<p>The figure below illustrates how to define a 3-dimensional array, distributed to eight MPI ranks organized in
 a <span class="math notranslate nohighlight">\(2 \times 2 \times 2\)</span> grid, as a <strong>self-descriptive tuple</strong>.</p>
 <a class="reference internal image-reference" href="_images/3D-variable.png"><img alt="_images/3D-variable.png" class="align-center" src="_images/3D-variable.png" style="width: 60%;" /></a>
 <br><br><p>This tuple stores the <strong>name</strong> of the variable (that is unique to a given <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>), the <strong>global dimensions</strong>
@@ -287,8 +287,8 @@ Potential matches:
 </div>
 </div></div>
 </section>
-<section id="connection-and-deconnection">
-<h4>Connection and Deconnection<a class="headerlink" href="#connection-and-deconnection" title="Link to this heading"></a></h4>
+<section id="connection-and-disconnection">
+<h4>Connection and Disconnection<a class="headerlink" href="#connection-and-disconnection" title="Link to this heading"></a></h4>
 <div class="sphinx-tabs docutils container">
 <div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-1-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-1-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-1-Qysr" class="sphinx-tabs-panel group-tab" id="panel-1-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL7connectEv">

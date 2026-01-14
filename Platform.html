@@ -111,9 +111,9 @@
              
   <section id="describing-your-simulated-platform">
 <span id="platform"></span><h1>Describing your simulated platform<a class="headerlink" href="#describing-your-simulated-platform" title="Link to this heading"></a></h1>
-<p>DTLMod relies on <a class="reference external" href="https://simgrid.org/doc/latest/Platform_cpp.html">SimGrid’s C++ programmatic platform description interface</a> to allow you to describe the computing and storage resources onto
-which simulate the execution of your in situ processing workflow.</p>
-<p>To describe a platform in C++, the recommanded approach is to create a separate C++ file, compiled as a shared library,
+<p>DTLMod relies on <a class="reference external" href="https://simgrid.org/doc/latest/Platform_cpp.html">SimGrid’s C++ programmatic platform description interface</a> to allow you to describe the computing and storage resources on
+which to simulate the execution of your in situ processing workflow.</p>
+<p>To describe a platform in C++, the recommended approach is to create a separate C++ file, compiled as a shared library,
 in which you will overload the definition of the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">simgrid::s4u::Engine::load_platform()</span></code> function. This way you
 can decouple the definition of your platform from the code of your simulation. The generated shared library can then be
 passed as a command line argument of your simulator binary.</p>
@@ -157,8 +157,8 @@ gigaflop per second.</p>
 </section>
 <section id="disks">
 <h3>Disks<a class="headerlink" href="#disks" title="Link to this heading"></a></h3>
-<p>A disk models some physical with <strong>I/O</strong> capabilities. They are minimally defined by a <strong>unique name</strong>, a
-<strong>read bandwidth</strong> and a <strong>write bandwidth</strong> (both expressed in bytes per seconds). By default, SimGrid does not keep track of the actual data being
+<p>A disk models some physical device with <strong>I/O</strong> capabilities. Disks are minimally defined by a <strong>unique name</strong>, a
+<strong>read bandwidth</strong> and a <strong>write bandwidth</strong> (both expressed in bytes per second). By default, SimGrid does not keep track of the actual data being
 written but only computes the time taken by the corresponding data movement. The simulation of file systems is handled
 by <a class="reference external" href="https://github.com/simgrid/file-system-module">FSMod</a> (see <a class="reference internal" href="#platform-storage"><span class="std std-ref">Storage and file system</span></a>).</p>
 <p>Disks can be added to a host as follows:</p>
@@ -187,9 +187,9 @@ can be combined into <strong>routes</strong> to model the interconnection networ
 </section>
 <section id="storage-and-file-system">
 <span id="platform-storage"></span><h2>Storage and file system<a class="headerlink" href="#storage-and-file-system" title="Link to this heading"></a></h2>
-<p>DTLMod relies on the on FSMod’s C++ programmatic description interface to allow you to describe storage components
-and file systems. For instance, to describe a <strong>one disk storage</strong> on the disk attached to host, start a <strong>file
-system</strong> on that storage and <strong>mount a partition</strong>, you have to add the following code:</p>
+<p>DTLMod relies on FSMod’s C++ programmatic description interface to allow you to describe storage components
+and file systems. For instance, to describe a <strong>one disk storage</strong> on the disk attached to a host, start a <strong>file
+system</strong> on that storage, and <strong>mount a partition</strong>, you have to add the following code:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">auto</span><span class="w"> </span><span class="n">local_nvme</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">simgrid</span><span class="o">::</span><span class="n">fsmod</span><span class="o">::</span><span class="n">OneDiskStorage</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="n">hostname</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;_local_nvme&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">nvme</span><span class="p">);</span>
 <span class="k">auto</span><span class="w"> </span><span class="n">local_fs</span><span class="w">   </span><span class="o">=</span><span class="w"> </span><span class="n">sgfs</span><span class="o">::</span><span class="n">FileSystem</span><span class="o">::</span><span class="n">create</span><span class="p">(</span><span class="s">&quot;local_fs&quot;</span><span class="p">,</span><span class="w"> </span><span class="mi">100000000</span><span class="p">);</span>
 <span class="n">local_fs</span><span class="o">-&gt;</span><span class="n">mount_partition</span><span class="p">(</span><span class="s">&quot;/scratch/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">local_nvme</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;1TB&quot;</span><span class="p">);</span>
@@ -205,7 +205,7 @@ system</strong> on that storage and <strong>mount a partition</strong>, you have
 the definition of a small platform (of different complexity depending on the test).</p>
 <p>Here, we present a complete example that corresponds to the platform used in the research paper introducing DTLMod.</p>
 <a class="reference internal image-reference" href="_images/platform.png"><img alt="_images/platform.png" class="align-center" src="_images/platform.png" style="width: 50%;" /></a>
-<br><br><p>This simulated platform composed of two homogeneous clusters. The first cluster comprises 256 96-core nodes while the
+<br><br><p>This simulated platform is composed of two homogeneous clusters. The first cluster comprises 256 96-core nodes while the
 second cluster has 128 48-core nodes. Each core of these clusters can respectively process <span class="math notranslate nohighlight">\(11 \times 10^9\)</span> and
 <span class="math notranslate nohighlight">\(6 \times 10^9\)</span> floating point operations per second. These clusters have the same internal network topology:
 Nodes are connected through 1 Gb/s private network links to a 10 Gb/s crossbar switch.  The two clusters are

@@ -115,9 +115,9 @@
 <dl class="simple">
 <dt>C++ compiler</dt><dd><p>Install a version recent enough to support the C++17 standard.</p>
 </dd>
-<dt>Python 3</dt><dd><p>DTLMod should build without Python which is only needed by the regression tests of the python API.</p>
+<dt>Python 3</dt><dd><p>DTLMod should build without Python, which is only needed for the regression tests of the Python API.</p>
 </dd>
-<dt>cmake</dt><dd><p>The minimal recommended version is v3.12</p>
+<dt>cmake</dt><dd><p>The minimum recommended version is v3.12</p>
 </dd>
 <dt>boost mandatory components (at least v1.48)</dt><dd><ul class="simple">
 <li><p>On Debian / Ubuntu: <code class="docutils literal notranslate"><span class="pre">apt</span> <span class="pre">install</span> <span class="pre">libboost-dev</span></code></p></li>
@@ -151,7 +151,7 @@ directories to test different parameter sets or compiling toolchains.</p>
 <span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>..
 </pre></div>
 </div>
-<p>To benefit of the latest developments, get the current git version and recompile it as with stable archives.</p>
+<p>To benefit from the latest developments, get the current git version and recompile it as with stable archives.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/simgrid/DTLMod.git
 <span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>DTLMod
 <span class="gp">$ </span>mkdir<span class="w"> </span>build
@@ -170,12 +170,12 @@ install <code class="docutils literal notranslate"><span class="pre">googletest<
 <code class="docutils literal notranslate"><span class="pre">make</span> <span class="pre">unit_tests</span></code>. You can then run them with <code class="docutils literal notranslate"><span class="pre">./unit_tests</span></code>. Additionally, the Python API can also be tested as
 follows:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>test/python
-<span class="gp">$ </span>python<span class="w"> </span>unit_tests_python.pymkdir<span class="w"> </span>build
+<span class="gp">$ </span>python<span class="w"> </span>unit_tests_python.py
 <span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>-
 </pre></div>
 </div>
-<p>We run both test suites on every commit as part of a <strong>github action</strong> and the results can be found
-<a class="reference external" href="https://github.com/simgrid/DTLMod/actions">there</a>.</p>
+<p>We run both test suites on every commit as part of a <strong>GitHub Action</strong> and the results can be found
+<a class="reference external" href="https://github.com/simgrid/DTLMod/actions">here</a>.</p>
 </section>
 <section id="python-specific-instructions">
 <h3>Python-specific instructions<a class="headerlink" href="#python-specific-instructions" title="Link to this heading"></a></h3>

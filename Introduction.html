@@ -106,9 +106,9 @@
 <span id="intro-concepts"></span><h1>Introduction<a class="headerlink" href="#introduction" title="Link to this heading"></a></h1>
 <section id="what-is-dtlmod">
 <h2>What is DTLMod<a class="headerlink" href="#what-is-dtlmod" title="Link to this heading"></a></h2>
-<p>A <strong>data transport layer</strong> can is the central component in a <strong>publish-subscribe system</strong>, that connects applications
-that produce data objects to those which consume them, moves these data objects, and keeps track of metadata.</p>
-<p>The figure below shows a generic data transport layer and introduces the terminology by DTLMod.</p>
+<p>A <strong>data transport layer</strong> is the central component in a <strong>publish-subscribe system</strong> that connects applications
+that produce data objects to those that consume them, moves these data objects, and keeps track of metadata.</p>
+<p>The figure below shows a generic data transport layer and introduces the terminology used by DTLMod.</p>
 <a class="reference internal image-reference" href="_images/DTL-overview.png"><img alt="_images/DTL-overview.png" class="align-center" src="_images/DTL-overview.png" style="width: 80%;" /></a>
 <br><br><p>On the publisher side, one or more applications (e.g., large-scale physics simulations) produce data, represented by
 multiple <strong>variables</strong>, and publish them to the DTL within a <strong>transaction</strong> using a specific <strong>stream</strong>. On the
@@ -134,7 +134,7 @@ code of your application or analyses, thanks to the integration with
 <a class="reference external" href="https://simgrid.org/doc/latest/Tutorial_MPI_Applications.html">SMPI</a></p></li>
 <li><p><strong>Compare</strong> the behavior and performance, at scale, of different data transport configurations and study the
 effects of resource allocation strategies on performance.</p></li>
-<li><p><strong>Explore</strong> “what-if” scenarios in which you can scale of alter the performance your computing and storage
+<li><p><strong>Explore</strong> “what-if” scenarios in which you can scale or alter the performance of your computing and storage
 infrastructure, inject delays or failures, or modify the structure of your in situ workflow.</p></li>
 </ul>
 </dd>
@@ -148,7 +148,7 @@ infrastructure, inject delays or failures, or modify the structure of your in si
 <li><p>A set of <strong>processes</strong> that simulate the logic of each component of an in situ workflow using either the S4U API of
 SimGrid or as part of a full-fledged MPI parallel application, in combination with the API of DTLMod for everything
 related to data transport.</p></li>
-<li><p>A <strong>simulated computing and storage infrastructure</strong> which consists in a description (in either XML or C++) of the
+<li><p>A <strong>simulated computing and storage infrastructure</strong> which consists of a description (in either XML or C++) of the
 hardware (e.g., compute nodes, network links, disks) of this distributed system.</p></li>
 <li><p>A <strong>deployment</strong> of the defined processes. To simulate their execution on the simulated infrastructure, you have to
 describe how they are deployed on individual computing resources.</p></li>

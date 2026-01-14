@@ -110,7 +110,7 @@ necessary. The exact redistribution pattern is automatically determined by DTLMo
 <li><p>When a publisher <strong>puts</strong> a variable into a stream, it asynchronously waits for data requests (using
 zero-simulated-cost message queues) from any subscriber that opened that stream;</p></li>
 <li><p>When a subscriber <strong>gets</strong> (a subset of) this variable from the stream, it computes which publishers own pieces
-of its local view of the variable and send them each a request to put the corresponding pieces, defined by offsets
+of its local view of the variable and sends them each a request to put the corresponding pieces, defined by offsets
 and element counts, in dedicated mailboxes (resp. message queues);</p></li>
 <li><p>When publishers end their transaction, they asynchronously put the requested pieces in these mailboxes (resp.
 message queues). DTLMod then simulates the corresponding data exchanges, and may possibly force actors to wait for

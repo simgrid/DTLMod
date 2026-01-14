@@ -7,10 +7,10 @@ Introduction
 
 What is DTLMod
 ---------------
-A **data transport layer** can is the central component in a **publish-subscribe system**, that connects applications
-that produce data objects to those which consume them, moves these data objects, and keeps track of metadata.
+A **data transport layer** is the central component in a **publish-subscribe system** that connects applications
+that produce data objects to those that consume them, moves these data objects, and keeps track of metadata.
 
-The figure below shows a generic data transport layer and introduces the terminology by DTLMod.
+The figure below shows a generic data transport layer and introduces the terminology used by DTLMod.
 
 .. image:: img/DTL-overview.png
    :width: 80% 
@@ -44,7 +44,7 @@ Here follow some research objectives for which DTLMod is relevant:
     `SMPI <https://simgrid.org/doc/latest/Tutorial_MPI_Applications.html>`_
   - **Compare** the behavior and performance, at scale, of different data transport configurations and study the
     effects of resource allocation strategies on performance. 
-  - **Explore** "what-if" scenarios in which you can scale of alter the performance your computing and storage
+  - **Explore** "what-if" scenarios in which you can scale or alter the performance of your computing and storage
     infrastructure, inject delays or failures, or modify the structure of your in situ workflow.
 
 Anatomy of a project that uses DTLMod
@@ -56,7 +56,7 @@ As any SimGrid-based simulator, a project that uses DTLMod will rely on the foll
    SimGrid or as part of a full-fledged MPI parallel application, in combination with the API of DTLMod for everything
    related to data transport.
 
- - A **simulated computing and storage infrastructure** which consists in a description (in either XML or C++) of the
+ - A **simulated computing and storage infrastructure** which consists of a description (in either XML or C++) of the
    hardware (e.g., compute nodes, network links, disks) of this distributed system.
 
  - A **deployment** of the defined processes. To simulate their execution on the simulated infrastructure, you have to

@@ -107,15 +107,15 @@
              
   <section id="simulated-actors">
 <span id="dtlmod-actors"></span><h1>Simulated actors<a class="headerlink" href="#simulated-actors" title="Link to this heading"></a></h1>
-<p>The simulated actors that for your in situ processing workflow and interact with the DTL can be programmed at different
-level of complexity. This allows you to quickly develop prototypes just focusing on the workflow structure and the data
-flow between its components and then complexify each individual workflow component to increase the realism of your
+<p>The simulated actors that form your in situ processing workflow and interact with the DTL can be programmed at different
+levels of complexity. This allows you to quickly develop prototypes focusing on the workflow structure and the data
+flow between its components and then add complexity to each individual workflow component to increase the realism of your
 simulator.</p>
 <section id="pure-s4u-actors">
 <h2>Pure S4U actors<a class="headerlink" href="#pure-s4u-actors" title="Link to this heading"></a></h2>
 <p>The simplest way to program a simulated actor acting as a component of your in situ processing workflow is to rely
-solely on the <cite>S4U interface of Simgrid &lt;https://simgrid.org/doc/latest/app_s4u.html&gt;</cite>. The following code examples
-show you how to program simple data publisher (distributed over mutiple ranks) and subscriber (single rank).</p>
+solely on the <a class="reference external" href="https://simgrid.org/doc/latest/app_s4u.html">S4U interface of SimGrid</a>. The following code examples
+show you how to program a simple data publisher (distributed over multiple ranks) and subscriber (single rank).</p>
 <section id="data-publisher">
 <h3>Data publisher<a class="headerlink" href="#data-publisher" title="Link to this heading"></a></h3>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">distributed_publisher</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>

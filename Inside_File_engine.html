@@ -113,7 +113,7 @@ actors (i.e., publishers and/or subscribers) are currently using the File engine
 mechanisms.</p>
 <section id="on-the-publisher-side">
 <h2>On the publisher side<a class="headerlink" href="#on-the-publisher-side" title="Link to this heading"></a></h2>
-<p>The first publisher to call to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">begin_transaction()</span></code> marks that a new <a class="reference internal" href="app_API.html#concept-transaction"><span class="std std-ref">Transaction</span></a> is in progress
+<p>The first publisher to call <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">begin_transaction()</span></code> marks that a new <a class="reference internal" href="app_API.html#concept-transaction"><span class="std std-ref">Transaction</span></a> is in progress
 and increments an internal transaction counter. Then, from the second transaction using that File engine only, the
 publishers check whether the previous transaction is over. To this end, the publishers are blocked on a <strong>condition
 variable</strong>, until all the <strong>write activities</strong> from that transaction are completed. Once the publishers are unblocked,
@@ -124,7 +124,7 @@ locally owns and the <strong>selection</strong> made by the user, how many bytes
 the name of the <a class="reference internal" href="app_API.html#concept-stream"><span class="std std-ref">Stream</span></a>) to write them. With the <strong>default File transport method</strong>, each publisher
 creates and writes to a file called <code class="docutils literal notranslate"><span class="pre">data.i</span></code>, where <code class="docutils literal notranslate"><span class="pre">i</span></code> is the unique index of the publisher.</p>
 <p>The most important call is thus that to <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code> where the I/O activities are created and started.
-In this function, each publisher goes over all the write operation it registered during the different calls to the
+In this function, each publisher goes over all the write operations it registered during the different calls to the
 <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">put()</span></code> functions made in this transaction, and creates the corresponding simulated I/O activities by calling
 the <code class="docutils literal notranslate"><span class="pre">File::write_async()</span></code> function of the
 <a class="reference external" href="https://github.com/simgrid/file-system-module">FSMod file system module</a>. These calls are made in <strong>detached</strong> mode,
@@ -136,21 +136,21 @@ activities</strong> maintained by the publisher that created it.</p>
 <p>The last action performed in <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code> is only done by the <strong>last publisher</strong> to call the function.
 This actor marks the <a class="reference internal" href="app_API.html#concept-transaction"><span class="std std-ref">Transaction</span></a> as over, increments an internal counter of completed transactions, and
 most importantly, notifies subscribers to that Stream that this transaction is complete. Note that the fact that a
-transaction is complete and the subscribers are notified does not mean that the corresponding I/O actictivites (i.e.,
+transaction is complete and the subscribers are notified does not mean that the corresponding I/O activities (i.e.,
 writing into files) are complete and that the subscribers can start reading the files to get Variables. However, it
-means that the publishers have all the publishers have determined what and where to write and that the subscribers are
+means that all the publishers have determined what and where to write and that the subscribers are
 allowed to use this information to create their I/O activities (i.e., reading from files) as explained in the
 <a class="reference internal" href="#file-sub-side"><span class="std std-ref">On the subscriber side</span></a> section.</p>
 <p>To determine which publisher is the last to call the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code> function, DTLMod relies on a
-synchronization barrier for all the publishers using this Engine. This barrier is created in the very first to
+synchronization barrier for all the publishers using this Engine. This barrier is created on the very first call to
 <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">end_transaction()</span></code>.</p>
 <p>The last operation performed on the publisher side of a File Engine is to <strong>close</strong> the engine by calling the
-<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">close()</span></code> function. The publishers first have to wait for the completion of the I/O activities strated by the
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">close()</span></code> function. The publishers first have to wait for the completion of the I/O activities started by the
 last transaction performed on this engine, i.e., they are blocked on a condition variable and wait to be notified of
 the respective completion of these activities. Then the last publisher to call the <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">close()</span></code> function actually
 closes the Engine, as well as all the opened files on the simulated file system. Finally, if the
 <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">set_metadata_export()</span></code> function has been called for the <a class="reference internal" href="app_API.html#concept-stream"><span class="std std-ref">Stream</span></a> that created the Engine, this
-publisher export a summary of all the I/O operations performed during the lifetime of the Engine.</p>
+publisher exports a summary of all the I/O operations performed during the lifetime of the Engine.</p>
 </section>
 <section id="on-the-subscriber-side">
 <span id="file-sub-side"></span><h2>On the subscriber side<a class="headerlink" href="#on-the-subscriber-side" title="Link to this heading"></a></h2>

@@ -99,10 +99,10 @@
              
   <section id="connection-manager">
 <span id="id1"></span><h1>Connection Manager<a class="headerlink" href="#connection-manager" title="Link to this heading"></a></h1>
-<p>To use a data transport layer in your simulator, the first thing you have to do it to call <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code> in
+<p>To use a data transport layer in your simulator, the first thing you have to do is to call <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code> in
 the <code class="docutils literal notranslate"><span class="pre">main</span></code> function of your code. This will trigger the creation of the <strong>DTLMod connection manager</strong> and an instance
 of a <a class="reference internal" href="app_API.html#concept-dtl"><span class="std std-ref">DTL</span></a> object.</p>
-<p>The connection manager is a <strong>daemon</strong> SimGrid actor (i.e., an simulated process running in the background and
+<p>The connection manager is a <strong>daemon</strong> SimGrid actor (i.e., a simulated process running in the background and
 automatically killed when the simulation ends) that runs on the first host declared in your platform description. This
 daemon actor takes the newly created <a class="reference internal" href="app_API.html#concept-dtl"><span class="std std-ref">DTL</span></a> object as argument.</p>
 <p>Once started, the connection manager creates two SimGrid message queues (i.e., a rendez-vous point between actors
@@ -118,7 +118,7 @@ message queue, and proceeds with waiting for the next request.</p>
 <p>Conversely, if it gets a <strong>disconnection request</strong>, meaning that an actor in your simulator called
 <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::disconnect()</span></code>, the connection manager checks whether this actor was still connected. If it was not, it
 advises you to check your code logic. Otherwise, the connection manager removes the actor from the list of the active
-connections, puts an acknowlegment to the disconnecting actor in the second message queue, and waits for the next
+connections, puts an acknowledgment to the disconnecting actor in the second message queue, and waits for the next
 request.</p>
 <p>Note that if during the execution of your simulator all your actors disconnect themselves from the DTL you will receive
 a harmless message warning you that there is <strong>no active connection</strong> at the moment. However, the connection manager

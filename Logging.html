@@ -209,7 +209,7 @@ user-message only, removing any decoration such as the date or the actor pid. Fo
 we refer you to the
 <a class="reference external" href="https://simgrid.org/doc/latest/Configuring_SimGrid.html#format-configuration">SimGrid documentation</a>.</p>
 <p>Finally, <code class="docutils literal notranslate"><span class="pre">--log=no_loc</span></code> hides the source locations (file names and line numbers) from where the logs are produced.</p>
-<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>./my_simulator<span class="w"> </span>--log<span class="o">=</span>mycat.threshold:debug<span class="w"> </span>--log<span class="o">=</span>mycat.fmt:%m<span class="w"> </span>--no-loc
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>./my_simulator<span class="w"> </span>--log<span class="o">=</span>mycat.threshold:debug<span class="w"> </span>--log<span class="o">=</span>mycat.fmt:%m<span class="w"> </span>--log<span class="o">=</span>no_loc
 </pre></div>
 </div>
 <p>To configure and activate a logging category from your simulator code, use the following function (declared in

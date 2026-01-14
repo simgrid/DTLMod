@@ -126,14 +126,14 @@ data between the <code class="docutils literal notranslate"><span class="pre">MP
 </div>
 <p>This code first creates the SimGrid engine in charge of the execution of the simulation and loads a shared library that
 describes the simulated platform. Then, it assigns roles to hosts (i.e., simulated compute nodes) in that platform. The
-subscriber component is executed on <code class="docutils literal notranslate"><span class="pre">node-0</span></code> while where the MPI ranks will run is defined in a regular MPI hostfile.</p>
-<p>The DTL is created by calling <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code> (line~9). An instance of the MPI publisher and the subscriber
+subscriber component is executed on <code class="docutils literal notranslate"><span class="pre">node-0</span></code> while the locations where the MPI ranks will run are defined in a regular MPI hostfile.</p>
+<p>The DTL is created by calling <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code> (line 21). An instance of the MPI publisher and the subscriber
 actor are then created before running the simulation.</p>
 <p>In situ processing workflows involving more than two components can be simulated using the same principles:</p>
 <ol class="arabic simple">
-<li><p>each component is either an MPI code or a simulated actor;</p></li>
-<li><p>each component creates one or more streams to publish and/or subscribe to data;</p></li>
-<li><p>the streams create the flow dependencies between components and form the workflow.</p></li>
+<li><p>Each component is either an MPI code or a simulated actor.</p></li>
+<li><p>Each component creates one or more streams to publish and/or subscribe to data.</p></li>
+<li><p>The streams create the flow dependencies between components and form the workflow.</p></li>
 </ol>
 </section>
 

@@ -97,7 +97,7 @@ Finally, ``--log=no_loc`` hides the source locations (file names and line number
 
 .. code-block:: console
 
-    $ ./my_simulator --log=mycat.threshold:debug --log=mycat.fmt:%m --no-loc
+    $ ./my_simulator --log=mycat.threshold:debug --log=mycat.fmt:%m --log=no_loc
 
 To configure and activate a logging category from your simulator code, use the following function (declared in
 `xbt/log.h`).
