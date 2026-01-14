@@ -67,8 +67,8 @@ communication or I/O subsystems in charge of the simulation of data movement or 
 engines: **file-based** engines, that write and read data to and from storage and **staging** engines that stream data
 from the memory of publishers to that of subscribers.
 
-An |Concept_Engine|_ are attached to a |Concept_Stream|_. A simulated actor can thus adapt the type of
-|Concept_Engine|_ to the purpose of each individual |Concept_Stream|_. For instance, one will create a stream with a
+An |Concept_Engine|_ is attached to a |Concept_Stream|_. A simulated actor can thus adapt the type of
+|Concept_Engine|_ to the purpose of each individual |Concept_Stream|_. For instance, one can create a stream with a
 file-based engine to store application checkpoints and another stream with a staging engine to transfer data from one
 analysis component to another. The type of |Concept_Engine|_ to use can be specified either at the creation of a
 |Concept_Stream|_ or in an external configuration file passed as argument when creating the |Concept_DTL|_.
@@ -140,7 +140,7 @@ At the core of the DTLMod is the data transported from publishers to subscribers
 involve parallel MPI codes as data producers. These codes manipulate **multidimensional arrays** distributed over
 multiple ranks. DTLMod adopts this data structure as the basis of its |Concept_Variable|_ abstraction.
 
-The figure below illustrates shows how to define a 3-dimensional array, distributed to eight MPI ranks organized in 
+The figure below illustrates how to define a 3-dimensional array, distributed to eight MPI ranks organized in
 a :math:`2 \times 2 \times 2` grid, as a **self-descriptive tuple**.
 
 .. image:: img/3D-variable.png
@@ -229,8 +229,8 @@ Creation
 
       .. automethod:: dtlmod.DTL.create   
 
-Connection and Deconnection
----------------------------
+Connection and Disconnection
+-----------------------------
 .. tabs::
 
    .. group-tab:: C++

@@ -7,7 +7,7 @@ Start a new project
 
 It is not advised to modify the source code of DTLMod directly, as it would make it difficult to upgrade to the next
 version of the library. Instead, you should create your own working directory somewhere on your disk (e.g.,
-``~home/MySimulator/``), and develop your simulate in there.
+``~/MySimulator/``), and develop your simulator there.
 
 
 Building your project with CMake
