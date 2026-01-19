@@ -126,7 +126,8 @@ jobs:
 
       - name: Check for sanitizer errors
         run: |
-          if grep -E "ERROR:|WARNING:" build/sanitizer-output.txt; then
+          # Filter out known benign warnings from SimGrid's context switching
+          if grep -E "ERROR:|WARNING:" build/sanitizer-output.txt | grep -v "ASan is ignoring requested __asan_handle_no_return"; then
             echo "::error::${{ matrix.sanitizer.name }} detected issues!"
             exit 1
           fi
