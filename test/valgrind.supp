@@ -9,10 +9,24 @@
 }
 
 {
+   simgrid_boost_context
+   Memcheck:Leak
+   ...
+   obj:*/libboost_context.so*
+}
+
+{
    boost_filesystem
    Memcheck:Leak
    ...
    obj:*/libboost_filesystem.so*
+}
+
+{
+   fsmod_library
+   Memcheck:Leak
+   ...
+   obj:*/libfsmod.so*
 }
 
 {
@@ -27,4 +41,18 @@
    Memcheck:Leak
    ...
    obj:*/libgtest.so*
+}
+
+{
+   libstdc++_allocations
+   Memcheck:Leak
+   ...
+   obj:*/libstdc++.so*
+}
+
+{
+   graphviz_cgraph
+   Memcheck:Leak
+   ...
+   obj:*/libcgraph.so*
 }

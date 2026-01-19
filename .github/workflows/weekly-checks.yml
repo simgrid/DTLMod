@@ -107,9 +107,17 @@ jobs:
       - name: Run tests with ${{ matrix.sanitizer.name }}
         env:
           LD_LIBRARY_PATH: /opt/simgrid/lib:/opt/fsmod/lib:/usr/local/lib
-          PYTHONPATH: /opt/simgrid/lib/python3.12/site-packages:/usr/local/lib/python3.12/dist-packages
         run: |
           export ${{ matrix.sanitizer.env_options }}
+          # Dynamically find Python paths for SimGrid, FSMod, and DTLMod
+          SIMGRID_PYTHON_PATH=$(find /opt/simgrid/lib -type d -path "*/python*/site-packages" 2>/dev/null | head -1)
+          [ -z "$SIMGRID_PYTHON_PATH" ] && SIMGRID_PYTHON_PATH=$(find /opt/simgrid/lib -type d -path "*/python*/dist-packages" 2>/dev/null | head -1)
+          FSMOD_PYTHON_PATH=$(find /opt/fsmod/lib -type d -path "*/python*/site-packages" 2>/dev/null | head -1)
+          [ -z "$FSMOD_PYTHON_PATH" ] && FSMOD_PYTHON_PATH=$(find /opt/fsmod/lib -type d -path "*/python*/dist-packages" 2>/dev/null | head -1)
+          DTLMOD_PYTHON_PATH=$(find /usr/local/lib -type d -path "*/python*/dist-packages" 2>/dev/null | head -1)
+          [ -z "$DTLMOD_PYTHON_PATH" ] && DTLMOD_PYTHON_PATH=$(find /usr/local/lib -type d -path "*/python*/site-packages" 2>/dev/null | head -1)
+          export PYTHONPATH="$SIMGRID_PYTHON_PATH:$FSMOD_PYTHON_PATH:$DTLMOD_PYTHON_PATH"
+          echo "PYTHONPATH=$PYTHONPATH"
           cd build
           ./unit_tests 2>&1 | tee sanitizer-output.txt
           cd test/python
@@ -298,7 +306,8 @@ jobs:
             for report in reports/*-report/*.txt; do
               if [ -f "$report" ]; then
                 echo "### $(basename $(dirname $report))" >> weekly-report.md
-                if grep -q "ERROR:\|WARNING:" "$report" 2>/dev/null; then
+                # Filter out benign warnings from SimGrid context switching and Valgrind redirections
+                if grep -E "ERROR:|WARNING:" "$report" 2>/dev/null | grep -v "ASan is ignoring requested __asan_handle_no_return" | grep -v "new redirection conflicts" | grep -q .; then
                   echo "❌ Issues detected" >> weekly-report.md
                 else
                   echo "✅ No issues detected" >> weekly-report.md
