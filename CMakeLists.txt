@@ -255,12 +255,10 @@ if(GTEST_LIBRARY)
       test/dtl_staging_engine.cpp
       test/dtl_stream.cpp
       test/dtl_variable.cpp
-      test/main.cpp
-      test/test_util.hpp
-      include/dtlmod.hpp)
+      test/main.cpp)
 
   add_definitions(-DGTEST_USED)
-  add_executable(unit_tests EXCLUDE_FROM_ALL ${SOURCE_FILES} ${HEADER_FILES} ${TEST_FILES})
+  add_executable(unit_tests EXCLUDE_FROM_ALL ${TEST_FILES})
   target_include_directories(unit_tests PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_BINARY_DIR}/include
