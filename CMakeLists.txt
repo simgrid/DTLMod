@@ -220,6 +220,12 @@ set_target_properties(dtlmod PROPERTIES
   LINKER_LANGUAGE CXX
   PUBLIC_HEADER "${HEADER_FILES}")
 
+# Enable coverage for Debug builds
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+  target_compile_options(dtlmod PRIVATE -g -O0 --coverage)
+  target_link_options(dtlmod PRIVATE --coverage)
+endif()
+
 target_include_directories(dtlmod
   PUBLIC
     $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
