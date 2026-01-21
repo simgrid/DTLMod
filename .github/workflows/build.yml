@@ -118,8 +118,8 @@ jobs:
       - name: Generate coverage report
         run: |
           cd build
-          lcov --keep-going --directory . --capture --output-file coverage.info
-          lcov --remove coverage.info '*/test/*' -o coverage.info
+          lcov --keep-going --ignore-errors mismatch --directory . --capture --output-file coverage.info
+          lcov --ignore-errors mismatch --remove coverage.info '*/test/*' -o coverage.info
           gcovr --root .. -e test -e examples --sonarqube -u -o coverage.xml --exclude-throw-branches \
                 --gcov-ignore-parse-errors --exclude-unreachable-branches
 
