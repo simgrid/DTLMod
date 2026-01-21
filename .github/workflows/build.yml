@@ -120,7 +120,8 @@ jobs:
           cd build
           lcov --keep-going --ignore-errors mismatch --directory . --capture --output-file coverage.info
           lcov --ignore-errors mismatch --remove coverage.info '*/test/*' -o coverage.info
-          gcovr --root .. -f '../src/' -f '../include/' --sonarqube -u -o coverage.xml --exclude-throw-branches \
+          cd ..
+          gcovr -e test -e examples --sonarqube -u -o coverage.xml --exclude-throw-branches \
                 --gcov-ignore-parse-errors --exclude-unreachable-branches
 
       - name: Upload coverage to Codecov
@@ -140,7 +141,7 @@ jobs:
             -Dsonar.projectKey=simgrid_dtlmod
             -Dsonar.organization=simgrid
             -Dsonar.cfamily.compile-commands=build/compile_commands.json
-            -Dsonar.coverageReportPaths=build/coverage.xml
+            -Dsonar.coverageReportPaths=coverage.xml
 
       - name: Build and deploy documentation
         if: github.ref == 'refs/heads/main' && env.TOKEN_GITHUB != ''
