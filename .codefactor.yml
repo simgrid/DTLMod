@@ -1,0 +1,6 @@
+version: "1.0"
+checks:
+  duplication:
+    exclude_paths:
+      - "test/**/*.cpp"
+      - "test/**/*.py"
