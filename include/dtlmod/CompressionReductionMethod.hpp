@@ -18,6 +18,14 @@ class ParameterizedCompression {
   double compression_cost_per_element_;
   double decompression_cost_per_element_;
 
+protected:
+  [[nodiscard]] double get_accuracy() const { return accuracy_; }
+  void set_accuracy(double accuracy) { accuracy_ = accuracy; }
+  [[nodiscard]] double get_compression_cost_per_element() const { return compression_cost_per_element_; }
+  void set_compression_cost_per_element(double cost) { compression_cost_per_element_ = cost; }
+  [[nodiscard]] double get_decompression_cost_per_element() const { return decompression_cost_per_element_; }
+  void set_decompression_cost_per_element(double cost) { decompression_cost_per_element_ = cost; }
+
 public:
   ParameterizedCompression(double accuracy, double compression_cost_per_element, double decompression_cost_per_element)
       : accuracy_(accuracy)
@@ -33,26 +41,7 @@ class CompressionReductionMethod : public ReductionMethod {
 public:
   CompressionReductionMethod(const std::string& name) : ReductionMethod(name) {}
   void parameterize_for_variable(std::shared_ptr<Variable> var,
-                                 const std::map<std::string, std::string>& parameters) override
-  {
-    double accuracy;
-    double compression_cost_per_element;
-    double decompression_cost_per_element;
-
-    for (const auto& [key, value] : parameters) {
-      if (key == "accuracy") {
-        accuracy = std::stof(value);
-      } else if (key == "compression_cost_per_element") {
-        compression_cost_per_element = std::stof(value);
-      } else if (key == "decompression_cost_per_element") {
-        decompression_cost_per_element = std::stof(value);
-      } // else
-        // TODO handle invalid key
-    }
-    per_variable_parameterizations_.try_emplace(
-        var, std::make_shared<ParameterizedCompression>(accuracy, compression_cost_per_element,
-                                                        decompression_cost_per_element));
-  }
+                                 const std::map<std::string, std::string>& parameters) override;
   void reduce_variable(std::shared_ptr<Variable> /* var*/) override {}
   [[nodiscard]] size_t get_reduced_variable_global_size(std::shared_ptr<Variable> /*var*/) const override { return 0; }
   [[nodiscard]] size_t get_reduced_variable_local_size(std::shared_ptr<Variable> /*var*/) const override { return 0; }

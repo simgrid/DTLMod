@@ -66,6 +66,8 @@ DECLARE_DTLMOD_EXCEPTION(UnknownDecimationOptionException, "Unknown Decimation o
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationInterpolationException, "Unknown Decimation interpolation method");
 DECLARE_DTLMOD_EXCEPTION(DoubleReductionException, "Double reduction is forbidden");
 
+DECLARE_DTLMOD_EXCEPTION(UnknownCompressionOptionException, "Unknown Compression option");
+
 } // namespace dtlmod
 
 #endif // __DTLMOD_EXCEPTION_HPP__

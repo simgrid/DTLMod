@@ -174,6 +174,7 @@ mark_as_advanced(PYBIND11_PYTHON_VERSION)
 mark_as_advanced(pybind11_DIR)
 
 set(SOURCE_FILES
+  src/CompressionReductionMethod.cpp
   src/DecimationReductionMethod.cpp
   src/DTL.cpp
   src/Engine.cpp
@@ -192,6 +193,7 @@ set(SOURCE_FILES
 
 set(HEADER_FILES
   include/dtlmod/ActorRegistry.hpp
+  include/dtlmod/CompressionReductionMethod.hpp
   include/dtlmod/DecimationReductionMethod.hpp
   include/dtlmod/DTL.hpp
   include/dtlmod/DTLException.hpp
