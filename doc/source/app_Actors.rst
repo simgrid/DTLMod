@@ -22,7 +22,7 @@ Data publisher
 
 .. code-block:: cpp
 
- void distributed_publisher() {
+ void distributed_publisher(int num_ranks, int rank) {
    // Connect from the DTL
    auto dtl = DTL::connect()
    // Add a ``Data'' stream  using a ``File'' engine
@@ -31,7 +31,11 @@ Data publisher
                ->set_transport_method("File");
 
    // Define a 2D array of int distributed over multiple ranks
-   auto V = s->define_variable("V", {size, size}, {size*rank, size*rank}, {l_size, l_size}, sizeof(int));
+   // Each rank owns a 100 x 100 block 
+   auto V = s->define_variable("V", {l_size * num_ranks, l_size},  // global shape
+                                    {l_size * rank, 0},            // local offset
+                                    {l_size, l_size},              // local count
+                                    sizeof(int));                  // element size
 
    // Open the stream in ``Publish'' mode
    auto e = s->open("cluster:file_system:/working_dir/", Stream::Mode::Publish);
@@ -40,7 +44,6 @@ Data publisher
      // Compute 1e3 floating point operations per element
      sg4::this_actor::execute(V->get_local_size() * 1e3);
      // Then publish ``V'' to the DTL
-
      e->begin_transaction();
      e->put(V);
      e->end_transaction();
