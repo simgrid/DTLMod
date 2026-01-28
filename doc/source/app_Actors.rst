@@ -23,7 +23,7 @@ Data publisher
 .. code-block:: cpp
 
  void distributed_publisher(int num_ranks, int rank) {
-   // Connect from the DTL
+   // Connect to the DTL
    auto dtl = DTL::connect()
    // Add a ``Data'' stream  using a ``File'' engine
    auto s = dtl->add_stream("Data")
@@ -61,20 +61,19 @@ Data subscriber
 .. code-block:: cpp
 
  void subscriber() {
-   // Connect from the DTL
    auto dtl = DTL::connect()
 
-   // Add a stream
+   // Add the already defined ``Data'' stream
    auto s = dtl->add_stream("Data");
   
-   // Obtain metadata for variable ``V''
+   // Obtain information on variable ``V''
    auto V = s->inquire_variable("V");
   
    // Open the stream in ``Subscribe'' mode
    auto e = s->open("cluster:file_system:/working_dir/", Stream::Mode::Subscribe);
 
    for (int i = 0; i < 10 ; i++) {
-     // Get the latest transaction for variable ``V''
+     // Get variable ``V'' from the DTL
      e->begin_transaction();
      e->get(V);
      e->end_transaction();
@@ -82,9 +81,7 @@ Data subscriber
      sg4::this_actor::execute(V->get_local_size() * 1e3);
    }
 
-   // Close the engine
    e->close();
-   // Disconnect from the DTL
    DTL::disconnect();
  }
 
