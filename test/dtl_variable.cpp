@@ -126,6 +126,29 @@ TEST_F(DTLVariableTest, InconsistentVariableDefinition)
   });
 }
 
+TEST_F(DTLVariableTest, OverflowVariableSize)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("TestActor", [this]() {
+      XBT_INFO("Connect to the DTL");
+      auto dtl = dtlmod::DTL::connect();
+      XBT_INFO("Create a stream");
+      auto stream = dtl->add_stream("Stream");
+      XBT_INFO("Define a variable whose dimensions overflow size_t when computing global size");
+      auto var =
+          stream->define_variable("huge", {std::numeric_limits<size_t>::max() / 2, 3}, {0, 0}, {1, 1}, sizeof(double));
+      XBT_INFO("Calling get_global_size() should trigger an overflow exception");
+      ASSERT_THROW((void)var->get_global_size(), std::overflow_error);
+      XBT_INFO("Disconnect the actor from the DTL");
+      ASSERT_NO_THROW(dtlmod::DTL::disconnect());
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLVariableTest, MultiDefineVariable)
 {
   DO_TEST_WITH_FORK([this]() {
