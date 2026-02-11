@@ -139,7 +139,7 @@ TEST_F(DTLVariableTest, OverflowVariableSize)
       auto var =
           stream->define_variable("huge", {std::numeric_limits<size_t>::max() / 2, 3}, {0, 0}, {1, 1}, sizeof(double));
       XBT_INFO("Calling get_global_size() should trigger an overflow exception");
-      ASSERT_THROW(var->get_global_size(), std::overflow_error);
+      ASSERT_THROW((void)var->get_global_size(), std::overflow_error);
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
