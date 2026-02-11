@@ -74,9 +74,8 @@ void FileEngine::create_transport(const Transport::Method& /*transport_method*/)
 std::shared_ptr<FileTransport> FileEngine::get_file_transport() const
 {
   auto transport = std::dynamic_pointer_cast<FileTransport>(get_transport());
-  if (!transport) {
-    throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a FileTransport");
-  }
+  if (!transport)                                                                                // LCOV_EXCL_LINE
+    throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a FileTransport"); // LCOV_EXCL_LINE
   return transport;
 }
 

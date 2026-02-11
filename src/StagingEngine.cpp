@@ -36,8 +36,8 @@ void StagingEngine::create_transport(const Transport::Method& transport_method)
 std::shared_ptr<StagingTransport> StagingEngine::get_staging_transport() const
 {
   auto transport = std::dynamic_pointer_cast<StagingTransport>(get_transport());
-  if (!transport)
-    throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a StagingTransport");
+  if (!transport)                                                                                   // LCOV_EXCL_LINE
+    throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a StagingTransport"); // LCOV_EXCL_LINE
   return transport;
 }
 

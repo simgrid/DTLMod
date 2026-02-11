@@ -58,7 +58,7 @@ std::optional<const char*> Stream::get_engine_type_str() const noexcept
     if (type == engine_type_)
       return str;
   }
-  return std::nullopt;
+  return std::nullopt; // LCOV_EXCL_LINE
 }
 
 Stream& Stream::set_engine_type(const Engine::Type& engine_type)
@@ -98,7 +98,7 @@ std::optional<const char*> Stream::get_transport_method_str() const noexcept
     if (method == transport_method_)
       return str;
   }
-  return std::nullopt;
+  return std::nullopt; // LCOV_EXCL_LINE
 }
 
 Stream& Stream::set_transport_method(const Transport::Method& transport_method)
