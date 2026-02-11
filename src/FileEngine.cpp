@@ -219,6 +219,11 @@ void FileEngine::end_sub_transaction()
   transport->clear_to_read_in_transaction(self);
 
   XBT_DEBUG("All on-flight subscribe activities are completed.");
+
+  // This is the end of the first transaction, create a barrier
+  if (auto sub_barrier = get_subscribers().get_or_create_barrier())
+    XBT_DEBUG("Barrier created for %zu subscribers", get_subscribers().count());
+
   // Mark this transaction as over
   sub_transaction_in_progress_ = false;
 }
