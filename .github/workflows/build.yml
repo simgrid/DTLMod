@@ -122,6 +122,9 @@ jobs:
           lcov --ignore-errors mismatch --remove coverage.info '*/test/*' -o coverage.info
           gcovr --root .. -e '../test' -e '../examples' --sonarqube -o coverage.xml --exclude-throw-branches \
                 --gcov-ignore-parse-errors --exclude-unreachable-branches
+          # Strip branch attributes so SonarQube uses line coverage only
+          # (gcovr's sonarqube format includes branch data that penalizes macro-generated conditionals like XBT_DEBUG)
+          sed -i 's/ branchesToCover="[^"]*" coveredBranches="[^"]*"//g' coverage.xml
 
       - name: Upload coverage to Codecov
         if: env.CODECOV_TOKEN != ''
