@@ -175,24 +175,20 @@ void Stream::create_engine_if_needed(std::string_view name, Mode mode)
   if (not engine_) {
     std::shared_ptr<Engine> temp_engine;
 
-    try {
-      if (engine_type_ == Engine::Type::Staging) {
-        temp_engine = std::make_shared<StagingEngine>(name, shared_from_this());
-        temp_engine->create_transport(transport_method_);
-      } else if (engine_type_ == Engine::Type::File) {
-        temp_engine = std::make_shared<FileEngine>(name, shared_from_this());
-        temp_engine->create_transport(transport_method_);
-      }
-
-      // Only commit if fully initialized
-      engine_      = std::move(temp_engine);
-      access_mode_ = mode;
-      if (metadata_export_)
-        metadata_file_ = boost::replace_all_copy(engine_->get_name(), "/", "#") + "#md." +
-                         std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
-    } catch (...) {
-      throw; // Re-throw the exception
+    if (engine_type_ == Engine::Type::Staging) {
+      temp_engine = std::make_shared<StagingEngine>(name, shared_from_this());
+      temp_engine->create_transport(transport_method_);
+    } else if (engine_type_ == Engine::Type::File) {
+      temp_engine = std::make_shared<FileEngine>(name, shared_from_this());
+      temp_engine->create_transport(transport_method_);
     }
+
+    // Only commit if fully initialized
+    engine_      = std::move(temp_engine);
+    access_mode_ = mode;
+    if (metadata_export_)
+      metadata_file_ = boost::replace_all_copy(engine_->get_name(), "/", "#") + "#md." +
+                       std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
   }
 }
 
