@@ -97,9 +97,9 @@ Variable::get_sizes_to_get_per_block(unsigned int transaction_id, const std::vec
              "Internal error: dimension mismatch in get_sizes_to_get_per_block");
 
   std::vector<std::pair<std::string, sg_size_t>> get_sizes_per_block;
-  // Validate transaction_id is within valid range
-  if (transaction_id > metadata_->get_current_transaction())
-    throw InvalidTransactionIdException(XBT_THROW_POINT, std::to_string(transaction_id));
+  // Validate transaction_id is within valid range (defense-in-depth: Transport also checks this)
+  if (transaction_id > metadata_->get_current_transaction())                              // LCOV_EXCL_LINE
+    throw InvalidTransactionIdException(XBT_THROW_POINT, std::to_string(transaction_id)); // LCOV_EXCL_LINE
 
   auto blocks = metadata_->get_blocks_for_transaction(transaction_id);
   XBT_DEBUG("%zu block(s) to check for transaction %u", blocks.size(), transaction_id);

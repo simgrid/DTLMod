@@ -131,6 +131,30 @@ def run_test_inconsistent_variable_definition():
     host.add_actor("TestActor", inconsistent_variable_definition)
     e.run()
 
+def run_test_overflow_variable_size():
+    e, host = setup_platform()
+
+    def overflow_variable_size():
+        this_actor.info("Connect to the DTL")
+        dtl = DTL.connect()
+        this_actor.info("Create a stream")
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Define a variable whose dimensions overflow size_t when computing global size")
+        max_size_t = ctypes.c_size_t(-1).value
+        var = stream.define_variable("huge", (max_size_t // 2, 3), (0, 0), (1, 1),
+                                     ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Calling global_size should trigger an overflow exception")
+        try:
+            _ = var.global_size
+            assert False, "Expected overflow exception was not raised"
+        except OverflowError:
+            pass  # Test passes
+        this_actor.info("Disconnect the actor from the DTL")
+        DTL.disconnect()
+
+    host.add_actor("TestActor", overflow_variable_size)
+    e.run()
+
 def run_test_multi_define_variable():
     e, host = setup_platform()
 
@@ -337,6 +361,7 @@ if __name__ == '__main__':
     tests = [
         run_test_define_variable,
         run_test_inconsistent_variable_definition,
+        run_test_overflow_variable_size,
         run_test_multi_define_variable,
         run_test_distributed_variable,
         run_test_remove_variable,
