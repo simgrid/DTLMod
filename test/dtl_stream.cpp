@@ -164,6 +164,45 @@ TEST_F(DTLStreamTest, PublishFileStreamOpenClose)
   });
 }
 
+TEST_F(DTLStreamTest, SubscriberWaitsForEngine)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    // Publisher sleeps before opening, so subscriber arrives first and waits for engine creation
+    prod_host_->add_actor("TestProducerActor", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("Stream");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      XBT_INFO("Publisher sleeps before opening the stream");
+      sg4::this_actor::sleep_for(1);
+      XBT_INFO("Publisher opens the stream, creating the engine");
+      auto engine = stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Publish);
+      ASSERT_EQ(stream->get_num_publishers(), 1U);
+      sg4::this_actor::sleep_for(1);
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    // Subscriber opens immediately, will block in wait_for_engine_creation()
+    cons_host_->add_actor("TestSubscriberActor", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("Stream");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      XBT_INFO("Subscriber opens the stream before the publisher, should wait for engine creation");
+      auto engine = stream->open("zone:fs:/pfs/file", dtlmod::Stream::Mode::Subscribe);
+      XBT_INFO("Subscriber unblocked, engine is now available");
+      ASSERT_TRUE(engine != nullptr);
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLStreamTest, PublishFileMultipleOpen)
 {
   DO_TEST_WITH_FORK([this]() {

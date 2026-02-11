@@ -162,6 +162,39 @@ def run_test_publish_file_stream_open_close():
 
     e.run()
 
+def run_test_subscriber_waits_for_engine():
+    e, prod_host, cons_host = setup_platform()
+
+    def publisher():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("Stream")
+        stream.set_transport_method(Transport.Method.File)
+        stream.set_engine_type(DTLEngine.Type.File)
+        this_actor.info("Publisher sleeps before opening the stream")
+        this_actor.sleep_for(1)
+        this_actor.info("Publisher opens the stream, creating the engine")
+        engine = stream.open("zone:fs:/pfs/file", Stream.Mode.Publish)
+        assert stream.num_publishers == 1
+        this_actor.sleep_for(1)
+        engine.close()
+        DTL.disconnect()
+
+    def subscriber():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("Stream")
+        stream.set_transport_method(Transport.Method.File)
+        stream.set_engine_type(DTLEngine.Type.File)
+        this_actor.info("Subscriber opens the stream before the publisher, should wait for engine creation")
+        engine = stream.open("zone:fs:/pfs/file", Stream.Mode.Subscribe)
+        this_actor.info("Subscriber unblocked, engine is now available")
+        assert engine is not None
+        engine.close()
+        DTL.disconnect()
+
+    prod_host.add_actor("TestProducerActor", publisher)
+    cons_host.add_actor("TestSubscriberActor", subscriber)
+    e.run()
+
 def run_test_publish_file_muliple_open():
     e, prod_host, cons_host = setup_platform()
     def test_producer_actor():
@@ -216,6 +249,7 @@ if __name__ == '__main__':
     tests = [
         run_test_incorrect_stream_settings,
         run_test_publish_file_stream_open_close,
+        run_test_subscriber_waits_for_engine,
         run_test_publish_file_muliple_open
     ]
 
