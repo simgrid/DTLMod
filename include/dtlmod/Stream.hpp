@@ -7,7 +7,6 @@
 #define __DTLMOD_STREAM_HPP__
 
 #include <optional>
-#include <simgrid/s4u/ConditionVariable.hpp>
 
 #include "dtlmod/Engine.hpp"
 
@@ -47,8 +46,7 @@ private:
   Transport::Method transport_method_ = Transport::Method::Undefined;
   bool metadata_export_               = false;
   std::string metadata_file_;
-  sg4::MutexPtr mutex_                = sg4::Mutex::create();
-  sg4::ConditionVariablePtr engine_created_ = sg4::ConditionVariable::create();
+  sg4::MutexPtr mutex_ = sg4::Mutex::create();
   Mode access_mode_;
 
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
@@ -68,7 +66,6 @@ protected:
   // Helper methods for Stream::open
   void validate_open_parameters(std::string_view name, Mode mode) const;
   void create_engine_if_needed(std::string_view name, Mode mode);
-  void wait_for_engine_creation();
   void register_actor_with_engine(Mode mode) const;
 
   // Helper method for Stream::define_variable

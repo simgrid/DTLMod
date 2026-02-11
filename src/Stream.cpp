@@ -190,23 +190,8 @@ void Stream::create_engine_if_needed(std::string_view name, Mode mode)
       if (metadata_export_)
         metadata_file_ = boost::replace_all_copy(engine_->get_name(), "/", "#") + "#md." +
                          std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
-      engine_created_->notify_all();
     } catch (...) {
-      // Notify waiting threads even on failure so they don't deadlock
-      engine_created_->notify_all();
       throw; // Re-throw the exception
-    }
-  }
-}
-
-/// Wait for the Engine to be created by another actor if needed.
-void Stream::wait_for_engine_creation()
-{
-  if (not engine_) {
-    std::unique_lock lock(*mutex_);
-    while (not engine_) {
-      XBT_DEBUG("%s waits for the creation of the engine", sg4::this_actor::get_cname());
-      engine_created_->wait(lock);
     }
   }
 }
@@ -232,7 +217,6 @@ std::shared_ptr<Engine> Stream::open(std::string_view name, Mode mode)
 {
   validate_open_parameters(name, mode);
   create_engine_if_needed(name, mode);
-  wait_for_engine_creation();
   register_actor_with_engine(mode);
   XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(),
             get_engine_type_str().value_or("Unknown"), get_transport_method_str().value_or("Unknown"),
