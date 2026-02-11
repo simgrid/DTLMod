@@ -118,8 +118,8 @@ solely on the <a class="reference external" href="https://simgrid.org/doc/latest
 show you how to program a simple data publisher (distributed over multiple ranks) and subscriber (single rank).</p>
 <section id="data-publisher">
 <h3>Data publisher<a class="headerlink" href="#data-publisher" title="Link to this heading"></a></h3>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">distributed_publisher</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="c1">// Connect from the DTL</span>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">distributed_publisher</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">num_ranks</span><span class="p">,</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">rank</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Connect to the DTL</span>
 <span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">dtl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DTL</span><span class="o">::</span><span class="n">connect</span><span class="p">()</span>
 <span class="w">  </span><span class="c1">// Add a ``Data&#39;&#39; stream  using a ``File&#39;&#39; engine</span>
 <span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dtl</span><span class="o">-&gt;</span><span class="n">add_stream</span><span class="p">(</span><span class="s">&quot;Data&quot;</span><span class="p">)</span>
@@ -127,7 +127,11 @@ show you how to program a simple data publisher (distributed over multiple ranks
 <span class="w">              </span><span class="o">-&gt;</span><span class="n">set_transport_method</span><span class="p">(</span><span class="s">&quot;File&quot;</span><span class="p">);</span>
 
 <span class="w">  </span><span class="c1">// Define a 2D array of int distributed over multiple ranks</span>
-<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">define_variable</span><span class="p">(</span><span class="s">&quot;V&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">size</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">size</span><span class="o">*</span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="n">size</span><span class="o">*</span><span class="n">rank</span><span class="p">},</span><span class="w"> </span><span class="p">{</span><span class="n">l_size</span><span class="p">,</span><span class="w"> </span><span class="n">l_size</span><span class="p">},</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span>
+<span class="w">  </span><span class="c1">// Each rank owns a 100 x 100 block</span>
+<span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">define_variable</span><span class="p">(</span><span class="s">&quot;V&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{</span><span class="n">l_size</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">num_ranks</span><span class="p">,</span><span class="w"> </span><span class="n">l_size</span><span class="p">},</span><span class="w">  </span><span class="c1">// global shape</span>
+<span class="w">                                   </span><span class="p">{</span><span class="n">l_size</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">rank</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">},</span><span class="w">            </span><span class="c1">// local offset</span>
+<span class="w">                                   </span><span class="p">{</span><span class="n">l_size</span><span class="p">,</span><span class="w"> </span><span class="n">l_size</span><span class="p">},</span><span class="w">              </span><span class="c1">// local count</span>
+<span class="w">                                   </span><span class="k">sizeof</span><span class="p">(</span><span class="kt">int</span><span class="p">));</span><span class="w">                  </span><span class="c1">// element size</span>
 
 <span class="w">  </span><span class="c1">// Open the stream in ``Publish&#39;&#39; mode</span>
 <span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">open</span><span class="p">(</span><span class="s">&quot;cluster:file_system:/working_dir/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Stream</span><span class="o">::</span><span class="n">Mode</span><span class="o">::</span><span class="n">Publish</span><span class="p">);</span>
@@ -136,7 +140,6 @@ show you how to program a simple data publisher (distributed over multiple ranks
 <span class="w">    </span><span class="c1">// Compute 1e3 floating point operations per element</span>
 <span class="w">    </span><span class="n">sg4</span><span class="o">::</span><span class="n">this_actor</span><span class="o">::</span><span class="n">execute</span><span class="p">(</span><span class="n">V</span><span class="o">-&gt;</span><span class="n">get_local_size</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e3</span><span class="p">);</span>
 <span class="w">    </span><span class="c1">// Then publish ``V&#39;&#39; to the DTL</span>
-
 <span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">begin_transaction</span><span class="p">();</span>
 <span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">put</span><span class="p">(</span><span class="n">V</span><span class="p">);</span>
 <span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">end_transaction</span><span class="p">();</span>
@@ -153,20 +156,19 @@ show you how to program a simple data publisher (distributed over multiple ranks
 <section id="data-subscriber">
 <h3>Data subscriber<a class="headerlink" href="#data-subscriber" title="Link to this heading"></a></h3>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">subscriber</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="c1">// Connect from the DTL</span>
 <span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">dtl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">DTL</span><span class="o">::</span><span class="n">connect</span><span class="p">()</span>
 
-<span class="w">  </span><span class="c1">// Add a stream</span>
+<span class="w">  </span><span class="c1">// Add the already defined ``Data&#39;&#39; stream</span>
 <span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">s</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">dtl</span><span class="o">-&gt;</span><span class="n">add_stream</span><span class="p">(</span><span class="s">&quot;Data&quot;</span><span class="p">);</span>
 
-<span class="w">  </span><span class="c1">// Obtain metadata for variable ``V&#39;&#39;</span>
+<span class="w">  </span><span class="c1">// Obtain information on variable ``V&#39;&#39;</span>
 <span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">V</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">inquire_variable</span><span class="p">(</span><span class="s">&quot;V&quot;</span><span class="p">);</span>
 
 <span class="w">  </span><span class="c1">// Open the stream in ``Subscribe&#39;&#39; mode</span>
 <span class="w">  </span><span class="k">auto</span><span class="w"> </span><span class="n">e</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">s</span><span class="o">-&gt;</span><span class="n">open</span><span class="p">(</span><span class="s">&quot;cluster:file_system:/working_dir/&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">Stream</span><span class="o">::</span><span class="n">Mode</span><span class="o">::</span><span class="n">Subscribe</span><span class="p">);</span>
 
 <span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">10</span><span class="w"> </span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="o">++</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="c1">// Get the latest transaction for variable ``V&#39;&#39;</span>
+<span class="w">    </span><span class="c1">// Get variable ``V&#39;&#39; from the DTL</span>
 <span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">begin_transaction</span><span class="p">();</span>
 <span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">get</span><span class="p">(</span><span class="n">V</span><span class="p">);</span>
 <span class="w">    </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">end_transaction</span><span class="p">();</span>
@@ -174,9 +176,7 @@ show you how to program a simple data publisher (distributed over multiple ranks
 <span class="w">    </span><span class="n">sg4</span><span class="o">::</span><span class="n">this_actor</span><span class="o">::</span><span class="n">execute</span><span class="p">(</span><span class="n">V</span><span class="o">-&gt;</span><span class="n">get_local_size</span><span class="p">()</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mf">1e3</span><span class="p">);</span>
 <span class="w">  </span><span class="p">}</span>
 
-<span class="w">  </span><span class="c1">// Close the engine</span>
 <span class="w">  </span><span class="n">e</span><span class="o">-&gt;</span><span class="n">close</span><span class="p">();</span>
-<span class="w">  </span><span class="c1">// Disconnect from the DTL</span>
 <span class="w">  </span><span class="n">DTL</span><span class="o">::</span><span class="n">disconnect</span><span class="p">();</span>
 <span class="p">}</span>
 </pre></div>
