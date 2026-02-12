@@ -64,6 +64,13 @@ def run_test_config_file():
         this_actor.info("Close the engine")
         engine.close()
 
+        this_actor.info("Check all_streams returns both configured streams")
+        all_streams = dtl.all_streams
+        assert len(all_streams) == 3
+        assert "Stream1" in all_streams
+        assert "Stream2" in all_streams
+        assert "Stream3" in all_streams
+
         this_actor.info("Disconnect from the DTL")
         DTL.disconnect()
 

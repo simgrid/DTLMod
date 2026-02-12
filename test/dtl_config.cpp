@@ -97,6 +97,13 @@ TEST_F(DTLConfigTest, ConfigFile)
       XBT_INFO("Close the engine");
       ASSERT_NO_THROW(engine->close());
 
+      XBT_INFO("Check get_all_streams returns both configured streams");
+      const auto& all_streams = dtl->get_all_streams();
+      ASSERT_EQ(all_streams.size(), 3U);
+      ASSERT_TRUE(all_streams.find("Stream1") != all_streams.end());
+      ASSERT_TRUE(all_streams.find("Stream2") != all_streams.end());
+      ASSERT_TRUE(all_streams.find("Stream3") != all_streams.end());
+
       XBT_INFO("Disconnect the actor from the DTL");
       ASSERT_NO_THROW(dtlmod::DTL::disconnect());
     });
