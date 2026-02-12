@@ -43,6 +43,46 @@ std::string get_dtlmod_version()
   dtlmod_version_get(&major, &minor, &patch);
   return simgrid::xbt::string_printf("%i.%i.%i", major, minor, patch);
 }
+
+py::object stream_engine_type_str(const Stream& self)
+{
+  auto result = self.get_engine_type_str();
+  return result ? py::cast(*result) : py::cast<py::none>(Py_None);
+}
+
+py::object stream_transport_method_str(const Stream& self)
+{
+  auto result = self.get_transport_method_str();
+  return result ? py::cast(*result) : py::cast<py::none>(Py_None);
+}
+
+std::shared_ptr<Stream> dtl_stream_by_name(const DTL& self, std::string_view name)
+{
+  return self.get_stream_by_name(name).value_or(nullptr);
+}
+
+std::shared_ptr<Variable> stream_define_scalar_variable(Stream& self, std::string_view name, size_t element_size)
+{
+  return self.define_variable(name, element_size);
+}
+
+std::shared_ptr<Variable> stream_define_variable(Stream& self, std::string_view name, const std::vector<size_t>& shape,
+                                                 const std::vector<size_t>& start, const std::vector<size_t>& count,
+                                                 size_t element_size)
+{
+  return self.define_variable(name, shape, start, count, element_size);
+}
+
+void variable_set_transaction_selection_single(Variable& self, unsigned int transaction_id)
+{
+  self.set_transaction_selection(transaction_id);
+}
+
+void variable_set_transaction_selection_range(Variable& self, unsigned int begin, unsigned int count)
+{
+  self.set_transaction_selection(begin, count);
+}
+
 } // namespace
 
 PYBIND11_MODULE(dtlmod, m)
@@ -86,29 +126,17 @@ PYBIND11_MODULE(dtlmod, m)
            "Add a data stream to the DTL")
       .def_property_readonly("all_streams", &DTL::get_all_streams,
                              "Retrieve all streams declared in the DTL (read-only)")
-      .def(
-          "stream_by_name",
-          [](const DTL& self, std::string_view name) { return self.get_stream_by_name(name).value_or(nullptr); },
-          py::arg("name"), "Retrieve a data stream from the DTL by its name (returns None if not found)");
+      .def("stream_by_name", &dtl_stream_by_name, py::arg("name"),
+           "Retrieve a data stream from the DTL by its name (returns None if not found)");
 
   /* Class Stream */
   py::class_<Stream, std::shared_ptr<Stream>> stream(
       m, "Stream", "A Stream defines the connection between the applications that produce or consume data and the DTL");
   stream.def_property_readonly("name", &Stream::get_name, "The name of the Stream (read-only)")
-      .def_property_readonly(
-          "engine_type",
-          [](const Stream& self) {
-            auto result = self.get_engine_type_str();
-            return result ? py::cast(*result) : py::cast<py::none>(Py_None);
-          },
-          "Print out the engine type of this Stream (read-only, returns None if invalid)")
-      .def_property_readonly(
-          "transport_method",
-          [](const Stream& self) {
-            auto result = self.get_transport_method_str();
-            return result ? py::cast(*result) : py::cast<py::none>(Py_None);
-          },
-          "Print out the transport method of this Stream (read-only, returns None if invalid)")
+      .def_property_readonly("engine_type", &stream_engine_type_str,
+                             "Print out the engine type of this Stream (read-only, returns None if invalid)")
+      .def_property_readonly("transport_method", &stream_transport_method_str,
+                             "Print out the transport method of this Stream (read-only, returns None if invalid)")
       .def_property_readonly("access_mode", &Stream::get_access_mode_str,
                              "Print out the access mode of this Stream (read-only)")
       .def_property_readonly("metadata_export", &Stream::does_export_metadata,
@@ -129,20 +157,11 @@ PYBIND11_MODULE(dtlmod, m)
       .def_property_readonly("num_subscribers", &Stream::get_num_subscribers,
                              "The number of actors connected to this Stream in Mode::Subscribe (read-only)")
       // Variable factory
-      .def(
-          "define_variable",
-          [](Stream& self, std::string_view name, size_t element_size) {
-            return self.define_variable(name, element_size);
-          },
-          py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("element_size"),
-          "Define a scalar variable for this Stream")
-      .def(
-          "define_variable",
-          [](Stream& self, std::string_view name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
-             const std::vector<size_t>& count,
-             size_t element_size) { return self.define_variable(name, shape, start, count, element_size); },
-          py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("shape"), py::arg("start"),
-          py::arg("count"), py::arg("element_size"), "Define a variable for this Stream")
+      .def("define_variable", &stream_define_scalar_variable, py::call_guard<py::gil_scoped_release>(), py::arg("name"),
+           py::arg("element_size"), "Define a scalar variable for this Stream")
+      .def("define_variable", &stream_define_variable, py::call_guard<py::gil_scoped_release>(), py::arg("name"),
+           py::arg("shape"), py::arg("start"), py::arg("count"), py::arg("element_size"),
+           "Define a variable for this Stream")
       .def_property_readonly("all_variables", &Stream::get_all_variables, "Retrieve the list of Variables by names")
       .def_property_readonly("metadata_file_name", &Stream::get_metadata_file_name,
                              "The name of the file in which the stream stores metadata (read-only)")
@@ -163,14 +182,10 @@ PYBIND11_MODULE(dtlmod, m)
       .def_property_readonly("local_size", &Variable::get_local_size,
                              "The local size of the Variable for the current actor (read-only)")
       .def_property_readonly("global_size", &Variable::get_global_size, "The global size of the Variable (read-only)")
-      .def(
-          "set_transaction_selection",
-          [](Variable& self, unsigned int transaction_id) { self.set_transaction_selection(transaction_id); },
-          py::arg("transaction_id"), "Set the selection of transactions to consider for this Variable")
-      .def(
-          "set_transaction_selection",
-          [](Variable& self, unsigned int begin, unsigned int count) { self.set_transaction_selection(begin, count); },
-          py::arg("begin"), py::arg("count"), "Set the selection of transactions to consider for this Variable")
+      .def("set_transaction_selection", &variable_set_transaction_selection_single, py::arg("transaction_id"),
+           "Set the selection of transactions to consider for this Variable")
+      .def("set_transaction_selection", &variable_set_transaction_selection_range, py::arg("begin"), py::arg("count"),
+           "Set the selection of transactions to consider for this Variable")
       .def("set_selection", &Variable::set_selection, py::arg("start"), py::arg("count"),
            "Set the selection of elements to consider for this Variable");
 
