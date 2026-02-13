@@ -377,6 +377,12 @@ std::shared_ptr<Variable> Stream::inquire_variable(std::string_view name) const
                                                              std::vector<size_t>(var->second->get_shape().size(), 0)));
     new_var->set_metadata(var->second->get_metadata());
 
+    // Propagate reduction state so subscribers can detect publisher-side reduction
+    if (var->second->is_reduced()) {
+      new_var->is_reduced_with_  = var->second->get_reduction_method();
+      new_var->reduction_origin_ = var->second->reduction_origin_;
+    }
+
     return new_var;
   }
 }

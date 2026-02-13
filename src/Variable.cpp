@@ -65,6 +65,11 @@ void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
   auto stream = defined_in_stream_.lock();
   xbt_assert(stream, "Variable::set_reduction_operation called after its Stream has been destroyed");
 
+  // Compression is publisher-side only (check before double-reduction to give a more specific error)
+  if (dynamic_cast<CompressionReductionMethod*>(method.get()) && stream->get_access_mode() == Stream::Mode::Subscribe) {
+    throw SubscriberSideCompressionException(XBT_THROW_POINT);
+  }
+
   if (is_reduced_with_ && reduction_origin_ == ReductionOrigin::Publisher &&
       stream->get_access_mode() == Stream::Mode::Subscribe) {
     XBT_ERROR("Subscriber %s attempted to re-reduce Variable %s, but it was already reduced on publisher side.",
@@ -72,11 +77,6 @@ void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
     throw DoubleReductionException(
         XBT_THROW_POINT,
         "Variable has already been reduced by its producer; subscriber-side reduction is not allowed.");
-  }
-
-  // Compression is publisher-side only
-  if (dynamic_cast<CompressionReductionMethod*>(method.get()) && stream->get_access_mode() == Stream::Mode::Subscribe) {
-    throw SubscriberSideCompressionException(XBT_THROW_POINT);
   }
 
   method->parameterize_for_variable(*this, parameters);
