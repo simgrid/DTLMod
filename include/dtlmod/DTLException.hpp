@@ -49,7 +49,7 @@ DECLARE_DTLMOD_EXCEPTION(UnknownOpenModeException, "Unknown open mode. Should be
 
 DECLARE_DTLMOD_EXCEPTION(UnknownVariableException, "Unknown Variable");
 DECLARE_DTLMOD_EXCEPTION(MultipleVariableDefinitionException, "Multiple Variable Definition");
-DECLARE_DTLMOD_EXCEPTION(InconsistentVariableDefinitionException, "Insconsistent Variable Definition");
+DECLARE_DTLMOD_EXCEPTION(InconsistentVariableDefinitionException, "Inconsistent Variable Definition");
 DECLARE_DTLMOD_EXCEPTION(IncorrectPathDefinitionException, "Fullpath must be structured as follows: "
                                                            "netzone_name:file_system_name:/path/to/file_name");
 
@@ -58,10 +58,10 @@ DECLARE_DTLMOD_EXCEPTION(InvalidTransactionIdException,
 DECLARE_DTLMOD_EXCEPTION(GetWhenNoTransactionException, "Impossible to get. No transaction exists for variable");
 
 DECLARE_DTLMOD_EXCEPTION(UnknownReductionMethodException,
-                         "Unkown Reduction Method. Options are 'decimation' and 'compression'");
+                         "Unknown Reduction Method. Options are 'decimation' and 'compression'");
 DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationInterpolationException,
-                         "Insconsistent Decimation Interpolation definition");
-DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationStrideException, "Insconsistent Decimation Stride definition");
+                         "Inconsistent Decimation Interpolation definition");
+DECLARE_DTLMOD_EXCEPTION(InconsistentDecimationStrideException, "Inconsistent Decimation Stride definition");
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationOptionException, "Unknown Decimation option");
 DECLARE_DTLMOD_EXCEPTION(UnknownDecimationInterpolationException, "Unknown Decimation interpolation method");
 DECLARE_DTLMOD_EXCEPTION(DoubleReductionException, "Double reduction is forbidden");

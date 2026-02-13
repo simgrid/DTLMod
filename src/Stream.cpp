@@ -9,7 +9,6 @@
 #include <fstream>
 
 #include "dtlmod/CompressionReductionMethod.hpp"
-#include "dtlmod/DecimationReductionMethod.hpp"
 #include "dtlmod/DTL.hpp"
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/DecimationReductionMethod.hpp"
@@ -332,6 +331,7 @@ std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const s
   // Validate parameters
   validate_variable_parameters(shape, start, count, element_size);
 
+  std::unique_lock lock(*mutex_);
   auto publisher = sg4::Actor::self();
   std::string name_str(name);
   auto var = variables_.find(name_str);

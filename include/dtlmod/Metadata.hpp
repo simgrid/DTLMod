@@ -20,7 +20,7 @@ class Variable;
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 class Metadata {
   friend Variable;
-  std::shared_ptr<Variable> variable_;
+  std::weak_ptr<Variable> variable_;
 
   std::map<unsigned int,                                                 // Transaction id
            std::map<std::pair<std::vector<size_t>, std::vector<size_t>>, // starts and counts

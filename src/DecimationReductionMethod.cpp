@@ -49,11 +49,11 @@ double ParameterizedDecimation::get_flop_amount_to_decimate() const
   return amount;
 }
 
-void DecimationReductionMethod::parameterize_for_variable(std::shared_ptr<Variable> var,
+void DecimationReductionMethod::parameterize_for_variable(const std::shared_ptr<Variable>& var,
                                                           const std::map<std::string, std::string>& parameters)
 {
   std::vector<size_t> new_stride;
-  std::string new_interpolation_method = "";
+  std::string new_interpolation_method;
   double new_cost_per_element          = 1.0;
 
   // Detect existing parameterization (if any).
@@ -126,7 +126,7 @@ void DecimationReductionMethod::parameterize_for_variable(std::shared_ptr<Variab
     existing->set_cost_per_element(new_cost_per_element);
 }
 
-void DecimationReductionMethod::reduce_variable(std::shared_ptr<Variable> var)
+void DecimationReductionMethod::reduce_variable(const std::shared_ptr<Variable>& var)
 {
   auto parameterization = per_variable_parameterizations_[var];
   auto original_shape   = var->get_shape();
@@ -148,7 +148,7 @@ void DecimationReductionMethod::reduce_variable(std::shared_ptr<Variable> var)
     size_t r_start = std::ceil(start[i] / (stride[i] * 1.0));
     size_t r_next_start =
         std::min(original_shape[i], static_cast<size_t>(std::ceil((start[i] + count[i]) / (stride[i] * 1.0))));
-    XBT_DEBUG("Dim %lu: stride = %lu, Start = %lu, r_start = %lu, Count = %lu, r_count = %lu", i, stride[i], start[i],
+    XBT_DEBUG("Dim %zu: stride = %zu, Start = %zu, r_start = %zu, Count = %zu, r_count = %zu", i, stride[i], start[i],
               r_start, count[i], r_next_start - r_start);
     reduced_start.push_back(r_start);
     reduced_count.push_back(r_next_start - r_start);

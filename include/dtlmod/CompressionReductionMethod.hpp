@@ -40,22 +40,29 @@ class CompressionReductionMethod : public ReductionMethod {
 
 public:
   CompressionReductionMethod(const std::string& name) : ReductionMethod(name) {}
-  void parameterize_for_variable(std::shared_ptr<Variable> var,
+  void parameterize_for_variable(const std::shared_ptr<Variable>& var,
                                  const std::map<std::string, std::string>& parameters) override;
-  void reduce_variable(std::shared_ptr<Variable> /* var*/) override {}
-  [[nodiscard]] size_t get_reduced_variable_global_size(std::shared_ptr<Variable> /*var*/) const override { return 0; }
-  [[nodiscard]] size_t get_reduced_variable_local_size(std::shared_ptr<Variable> /*var*/) const override { return 0; }
-  [[nodiscard]] const std::vector<size_t>& get_reduced_variable_shape(std::shared_ptr<Variable> var) const override
+  void reduce_variable(const std::shared_ptr<Variable>& /* var*/) override {}
+  [[nodiscard]] size_t get_reduced_variable_global_size(const std::shared_ptr<Variable>& /*var*/) const override
+  {
+    return 0;
+  }
+  [[nodiscard]] size_t get_reduced_variable_local_size(const std::shared_ptr<Variable>& /*var*/) const override
+  {
+    return 0;
+  }
+  [[nodiscard]] const std::vector<size_t>&
+  get_reduced_variable_shape(const std::shared_ptr<Variable>& var) const override
   {
     return var->get_shape();
   }
   [[nodiscard]] const std::pair<std::vector<size_t>, std::vector<size_t>>&
-  get_reduced_start_and_count_for(std::shared_ptr<Variable> /*var*/, sg4::ActorPtr /*publisher*/) const override
+  get_reduced_start_and_count_for(const std::shared_ptr<Variable>& /*var*/, sg4::ActorPtr /*publisher*/) const override
   {
     throw std::runtime_error("not implemented");
     // return;// std::make_pair(std::vector<size_t>(), std::vector<size_t>());
   }
-  [[nodiscard]] double get_flop_amount_to_reduce_variable(std::shared_ptr<Variable> /*var*/) const override
+  [[nodiscard]] double get_flop_amount_to_reduce_variable(const std::shared_ptr<Variable>& /*var*/) const override
   {
     return 0.0;
   }

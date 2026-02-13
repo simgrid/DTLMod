@@ -61,8 +61,11 @@ void Variable::set_transaction_selection(unsigned int begin, unsigned int count)
 void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
                                        std::map<std::string, std::string> parameters)
 {
+  auto stream = defined_in_stream_.lock();
+  xbt_assert(stream, "Variable::set_reduction_operation called after its Stream has been destroyed");
+
   if (is_reduced_with_ && reduction_origin_ == ReductionOrigin::Publisher &&
-      defined_in_stream_.lock()->get_access_mode() == Stream::Mode::Subscribe) {
+      stream->get_access_mode() == Stream::Mode::Subscribe) {
     XBT_ERROR("Subscriber %s attempted to re-reduce Variable %s, but it was already reduced on publisher side.",
               sg4::Actor::self()->get_cname(), this->get_cname());
     throw DoubleReductionException(
@@ -73,7 +76,7 @@ void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
   method->parameterize_for_variable(shared_from_this(), parameters);
   method->reduce_variable(shared_from_this());
   is_reduced_with_ = method;
-  if (defined_in_stream_.lock()->get_access_mode() == Stream::Mode::Publish)
+  if (stream->get_access_mode() == Stream::Mode::Publish)
     reduction_origin_ = ReductionOrigin::Publisher;
   else
     reduction_origin_ = ReductionOrigin::Subscriber;

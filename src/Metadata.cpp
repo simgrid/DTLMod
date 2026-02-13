@@ -20,10 +20,12 @@ void Metadata::add_transaction(unsigned int id,
 
 void Metadata::export_to_file(std::ofstream& ostream) const
 {
-  XBT_DEBUG("Variable %s:", variable_->get_cname());
-  ostream << variable_->get_element_size() << "\t" << variable_->get_cname() << "\t" << transaction_infos_.size();
+  auto var = variable_.lock();
+  xbt_assert(var, "Metadata::export_to_file called after its Variable has been destroyed");
+  XBT_DEBUG("Variable %s:", var->get_cname());
+  ostream << var->get_element_size() << "\t" << var->get_cname() << "\t" << transaction_infos_.size();
   ostream << "*{";
-  auto shape            = variable_->get_shape();
+  auto shape            = var->get_shape();
   const auto last_index = shape.size() - 1;
   for (unsigned int i = 0; i < last_index; i++)
     ostream << shape[i] << ",";

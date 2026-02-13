@@ -19,7 +19,7 @@ class ParameterizedDecimation {
   std::shared_ptr<Variable> var_; // The variable to which this parameterized decimation is applied
 
   std::vector<size_t> stride_;
-  std::string interpolation_method_ = "";
+  std::string interpolation_method_;
   double cost_per_element_;
 
   std::vector<size_t> reduced_shape_;
@@ -49,8 +49,8 @@ protected:
   [[nodiscard]] double get_flop_amount_to_decimate() const;
 
 public:
-  ParameterizedDecimation(std::shared_ptr<Variable> var, const std::vector<size_t> stride,
-                          const std::string interpolation_method, double cost_per_element)
+  ParameterizedDecimation(const std::shared_ptr<Variable>& var, const std::vector<size_t>& stride,
+                          const std::string& interpolation_method, double cost_per_element)
       : var_(var), stride_(stride), interpolation_method_(interpolation_method), cost_per_element_(cost_per_element)
   {
   }
@@ -60,33 +60,34 @@ class DecimationReductionMethod : public ReductionMethod {
   std::map<std::shared_ptr<Variable>, std::shared_ptr<ParameterizedDecimation>> per_variable_parameterizations_;
 
 protected:
-  void parameterize_for_variable(std::shared_ptr<Variable> var,
+  void parameterize_for_variable(const std::shared_ptr<Variable>& var,
                                  const std::map<std::string, std::string>& parameters) override;
 
-  void reduce_variable(std::shared_ptr<Variable> var);
+  void reduce_variable(const std::shared_ptr<Variable>& var) override;
 
-  [[nodiscard]] size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const override
+  [[nodiscard]] size_t get_reduced_variable_global_size(const std::shared_ptr<Variable>& var) const override
   {
     return per_variable_parameterizations_.at(var)->get_global_reduced_size();
   }
 
-  [[nodiscard]] size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const override
+  [[nodiscard]] size_t get_reduced_variable_local_size(const std::shared_ptr<Variable>& var) const override
   {
     return per_variable_parameterizations_.at(var)->get_local_reduced_size();
   }
 
-  [[nodiscard]] double get_flop_amount_to_reduce_variable(std::shared_ptr<Variable> var) const override
+  [[nodiscard]] double get_flop_amount_to_reduce_variable(const std::shared_ptr<Variable>& var) const override
   {
     return per_variable_parameterizations_.at(var)->get_flop_amount_to_decimate();
   }
 
-  [[nodiscard]] const std::vector<size_t>& get_reduced_variable_shape(std::shared_ptr<Variable> var) const override
+  [[nodiscard]] const std::vector<size_t>&
+  get_reduced_variable_shape(const std::shared_ptr<Variable>& var) const override
   {
     return per_variable_parameterizations_.at(var)->get_reduced_shape();
   }
 
   [[nodiscard]] const std::pair<std::vector<size_t>, std::vector<size_t>>&
-  get_reduced_start_and_count_for(std::shared_ptr<Variable> var, sg4::ActorPtr publisher) const override
+  get_reduced_start_and_count_for(const std::shared_ptr<Variable>& var, sg4::ActorPtr publisher) const override
   {
     return per_variable_parameterizations_.at(var)->get_reduced_start_and_count_for(publisher);
   }

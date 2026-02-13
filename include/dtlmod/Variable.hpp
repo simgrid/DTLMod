@@ -83,6 +83,11 @@ public:
 
   {
   }
+
+  Variable(const Variable&)            = delete;
+  Variable& operator=(const Variable&) = delete;
+  Variable(Variable&&)                 = delete;
+  Variable& operator=(Variable&&)      = delete;
   /// \endcond
 
   /// @brief Helper function to print out the name of the Variable.

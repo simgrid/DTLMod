@@ -13,7 +13,7 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_compression_reduction, dtlmod, "DTL loggi
 
 namespace dtlmod {
 
-void CompressionReductionMethod::parameterize_for_variable(std::shared_ptr<Variable> var,
+void CompressionReductionMethod::parameterize_for_variable(const std::shared_ptr<Variable>& var,
                                                            const std::map<std::string, std::string>& parameters)
 {
   double new_accuracy                       = 1.0;

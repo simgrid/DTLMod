@@ -27,15 +27,15 @@ class ReductionMethod {
 
 public:
   ReductionMethod(const std::string& name) : name_(name) {}
-  virtual void parameterize_for_variable(std::shared_ptr<Variable> var,
-                                         const std::map<std::string, std::string>& parameters)       = 0;
-  virtual void reduce_variable(std::shared_ptr<Variable> var)                                        = 0;
-  virtual size_t get_reduced_variable_global_size(std::shared_ptr<Variable> var) const               = 0;
-  virtual size_t get_reduced_variable_local_size(std::shared_ptr<Variable> var) const                = 0;
-  virtual const std::vector<size_t>& get_reduced_variable_shape(std::shared_ptr<Variable> var) const = 0;
+  virtual void parameterize_for_variable(const std::shared_ptr<Variable>& var,
+                                         const std::map<std::string, std::string>& parameters)              = 0;
+  virtual void reduce_variable(const std::shared_ptr<Variable>& var)                                        = 0;
+  virtual size_t get_reduced_variable_global_size(const std::shared_ptr<Variable>& var) const               = 0;
+  virtual size_t get_reduced_variable_local_size(const std::shared_ptr<Variable>& var) const                = 0;
+  virtual const std::vector<size_t>& get_reduced_variable_shape(const std::shared_ptr<Variable>& var) const = 0;
   virtual const std::pair<std::vector<size_t>, std::vector<size_t>>&
-  get_reduced_start_and_count_for(std::shared_ptr<Variable> var, simgrid::s4u::ActorPtr publisher) const = 0;
-  virtual double get_flop_amount_to_reduce_variable(std::shared_ptr<Variable> var) const                 = 0;
+  get_reduced_start_and_count_for(const std::shared_ptr<Variable>& var, simgrid::s4u::ActorPtr publisher) const = 0;
+  virtual double get_flop_amount_to_reduce_variable(const std::shared_ptr<Variable>& var) const                 = 0;
 
   /// @brief Helper function to print out the name of the ReductionMethod.
   /// @return The corresponding string

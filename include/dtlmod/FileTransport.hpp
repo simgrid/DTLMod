@@ -31,7 +31,7 @@ protected:
   void close_pub_files() const;
   void close_sub_files(sg4::ActorPtr self);
   const std::vector<std::pair<std::shared_ptr<sgfs::File>, sg_size_t>>&
-  get_to_write_in_transaction_by_actor(sg4::ActorPtr actor) noexcept
+  get_to_write_in_transaction_by_actor(sg4::ActorPtr actor)
   {
     return to_write_in_transaction_[actor];
   }
