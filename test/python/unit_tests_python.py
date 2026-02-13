@@ -8,7 +8,8 @@ scripts = [
     "dtl_file_engine.py",
     "dtl_staging_engine.py",
     "dtl_stream.py",
-    "dtl_variable.py"
+    "dtl_variable.py",
+    "dtl_reduction.py"
     ]
                         
 def run_script(script):
