@@ -334,7 +334,7 @@ std::vector<std::string> Stream::get_all_variables() const
   for (const auto& [name, var] : variables_)
     variable_names.push_back(name);
   return variable_names;
-}
+} // LCOV_EXCL_LINE
 
 std::shared_ptr<Variable> Stream::inquire_variable(std::string_view name) const
 {

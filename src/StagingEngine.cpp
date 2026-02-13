@@ -39,7 +39,7 @@ std::shared_ptr<StagingTransport> StagingEngine::get_staging_transport() const
   if (!transport)                                                                                   // LCOV_EXCL_LINE
     throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a StagingTransport"); // LCOV_EXCL_LINE
   return transport;
-}
+} // LCOV_EXCL_LINE
 
 void StagingEngine::begin_pub_transaction()
 {
