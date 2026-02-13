@@ -157,6 +157,12 @@ if(enable_python)
     set_property(TARGET python-bindings
                  APPEND PROPERTY INCLUDE_DIRECTORIES "${INTERNAL_INCLUDES}")
 
+    # Enable coverage for Debug builds
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+      target_compile_options(python-bindings PRIVATE -g -O0 --coverage)
+      target_link_options(python-bindings PRIVATE --coverage)
+    endif()
+
     if("${DTLMOD_PYTHON_LIBDIR}" STREQUAL "") # value not manually set
       if("${CMAKE_INSTALL_PREFIX}" STREQUAL "/usr")
         set(DTLMOD_PYTHON_LIBDIR ${Python3_SITEARCH})

@@ -77,7 +77,7 @@ std::shared_ptr<FileTransport> FileEngine::get_file_transport() const
   if (!transport)                                                                                // LCOV_EXCL_LINE
     throw TransportEngineMismatchException(XBT_THROW_POINT, "Transport is not a FileTransport"); // LCOV_EXCL_LINE
   return transport;
-}
+} // LCOV_EXCL_LINE
 
 std::string FileEngine::get_path_to_dataset() const
 {

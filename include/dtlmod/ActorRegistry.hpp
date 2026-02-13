@@ -46,8 +46,8 @@ public:
 
   [[nodiscard]] bool contains(sg4::ActorPtr actor) const noexcept
   {
-    if (!actor)
-      return false; // Safe handling for noexcept
+    if (!actor)     // LCOV_EXCL_LINE
+      return false; // LCOV_EXCL_LINE
     return actors_.find(actor) != actors_.end();
   }
 
