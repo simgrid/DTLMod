@@ -35,12 +35,12 @@ void Engine::put(const std::shared_ptr<Variable>& var) const
 {
   if (var->is_reduced()) {
     // Perform an Exec activity before putting the variable into the DTL to account for the time needed to reduce it.
-    sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(var));
+    sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(*var));
     XBT_DEBUG("Variable %s has been reduced!", var->get_cname());
     // Now put the reduced version of the variable into the DTL, i.e., using its reduced local size.
     XBT_DEBUG("Put this reduced version of %s (initial size = %zu, reduced size = %zu)", var->get_cname(),
-              var->get_local_size(), var->get_reduction_method()->get_reduced_variable_local_size(var));
-    transport_->put(var, var->get_reduction_method()->get_reduced_variable_local_size(var));
+              var->get_local_size(), var->get_reduction_method()->get_reduced_variable_local_size(*var));
+    transport_->put(var, var->get_reduction_method()->get_reduced_variable_local_size(*var));
   } else
     transport_->put(var, var->get_local_size());
 }
@@ -54,9 +54,9 @@ void Engine::put(const std::shared_ptr<Variable>& var, size_t simulated_size_in_
 void Engine::get(const std::shared_ptr<Variable>& var) const
 {
   if (var->is_reduced() && var->is_reduced_by_subscriber()) {
-    var->get_reduction_method()->reduce_variable(var);
+    var->get_reduction_method()->reduce_variable(*var);
     // Perform an Exec activity before putting the variable into the DTL to account for the time needed to reduce it.
-    sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(var));
+    sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(*var));
   }
 
   transport_->get(var);

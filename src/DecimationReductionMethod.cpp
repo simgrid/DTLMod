@@ -15,24 +15,24 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_decimation_reduction, dtlmod, "DTL loggin
 
 namespace dtlmod {
 
-size_t ParameterizedDecimation::get_global_reduced_size() const
+size_t DecimationReductionMethod::ParameterizedDecimation::get_global_reduced_size() const
 {
   return std::accumulate(reduced_shape_.begin(), reduced_shape_.end(), var_->get_element_size(), std::multiplies<>{});
 }
 
-size_t ParameterizedDecimation::get_local_reduced_size() const
+size_t DecimationReductionMethod::ParameterizedDecimation::get_local_reduced_size() const
 {
   auto start_and_count = reduced_local_start_and_count_.at(sg4::Actor::self()).second;
   return std::accumulate(start_and_count.begin(), start_and_count.end(), var_->get_element_size(), std::multiplies<>{});
 }
 
 const std::pair<std::vector<size_t>, std::vector<size_t>>&
-ParameterizedDecimation::get_reduced_start_and_count_for(sg4::ActorPtr publisher) const
+DecimationReductionMethod::ParameterizedDecimation::get_reduced_start_and_count_for(sg4::ActorPtr publisher) const
 {
   return reduced_local_start_and_count_.at(publisher);
 }
 
-double ParameterizedDecimation::get_flop_amount_to_decimate() const
+double DecimationReductionMethod::ParameterizedDecimation::get_flop_amount_to_decimate() const
 {
   XBT_DEBUG("Compute decimation cost with: cost_per_element = %.2f and interpolation_method = %s", cost_per_element_,
             interpolation_method_.c_str());
@@ -49,7 +49,7 @@ double ParameterizedDecimation::get_flop_amount_to_decimate() const
   return amount;
 }
 
-void DecimationReductionMethod::parameterize_for_variable(const std::shared_ptr<Variable>& var,
+void DecimationReductionMethod::parameterize_for_variable(const Variable& var,
                                                           const std::map<std::string, std::string>& parameters)
 {
   std::vector<size_t> new_stride;
@@ -57,7 +57,7 @@ void DecimationReductionMethod::parameterize_for_variable(const std::shared_ptr<
   double new_cost_per_element          = 1.0;
 
   // Detect existing parameterization (if any).
-  auto it           = per_variable_parameterizations_.find(var);
+  auto it           = per_variable_parameterizations_.find(&var);
   const bool exists = (it != per_variable_parameterizations_.end());
 
   // Initialize from existing values (if present) to support partial updates.
@@ -74,10 +74,10 @@ void DecimationReductionMethod::parameterize_for_variable(const std::shared_ptr<
       std::vector<std::string> tokens;
       boost::split(tokens, value, boost::is_any_of(","), boost::token_compress_on);
 
-      if (var->get_shape().size() != tokens.size())
+      if (var.get_shape().size() != tokens.size())
         throw InconsistentDecimationStrideException(
             XBT_THROW_POINT, "Decimation Stride and Variable Shape vectors must have the same size. Stride: " +
-                                 std::to_string(tokens.size()) + ", Shape: " + std::to_string(var->get_shape().size()));
+                                 std::to_string(tokens.size()) + ", Shape: " + std::to_string(var.get_shape().size()));
 
       std::vector<size_t> parsed_stride;
       parsed_stride.reserve(tokens.size());
@@ -97,7 +97,7 @@ void DecimationReductionMethod::parameterize_for_variable(const std::shared_ptr<
                                                       std::string("Unknown interpolation method: ") + value +
                                                           " (options are: linear, cubic, or quadratic).");
 
-      if ((value == "quadratic" && var->get_shape().size() < 2) || (value == "cubic" && var->get_shape().size() < 3))
+      if ((value == "quadratic" && var.get_shape().size() < 2) || (value == "cubic" && var.get_shape().size() < 3))
         throw InconsistentDecimationInterpolationException(
             XBT_THROW_POINT, "Variable has not enough dimensions to apply this interpolation method");
     } else if (key == "cost_per_element")
@@ -109,7 +109,7 @@ void DecimationReductionMethod::parameterize_for_variable(const std::shared_ptr<
   if (!exists) {
     // First-time parameterization
     per_variable_parameterizations_.try_emplace(
-        var,
+        &var,
         std::make_shared<ParameterizedDecimation>(var, new_stride, new_interpolation_method, new_cost_per_element));
     return;
   }
@@ -126,10 +126,10 @@ void DecimationReductionMethod::parameterize_for_variable(const std::shared_ptr<
     existing->set_cost_per_element(new_cost_per_element);
 }
 
-void DecimationReductionMethod::reduce_variable(const std::shared_ptr<Variable>& var)
+void DecimationReductionMethod::reduce_variable(const Variable& var)
 {
-  auto parameterization = per_variable_parameterizations_[var];
-  auto original_shape   = var->get_shape();
+  auto parameterization = per_variable_parameterizations_[&var];
+  auto original_shape   = var.get_shape();
   auto stride           = parameterization->get_stride();
 
   std::vector<size_t> reduced_shape;
@@ -139,7 +139,7 @@ void DecimationReductionMethod::reduce_variable(const std::shared_ptr<Variable>&
   parameterization->set_reduced_shape(reduced_shape);
 
   auto self           = sg4::Actor::self();
-  auto [start, count] = var->get_local_start_and_count(self);
+  auto [start, count] = var.get_local_start_and_count(self);
   std::vector<size_t> reduced_start;
   std::vector<size_t> reduced_count;
 

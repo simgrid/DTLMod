@@ -24,7 +24,7 @@ Transport::check_selection_and_get_blocks_to_get(std::shared_ptr<Variable> var) 
 
   std::vector<size_t> count;
   if (var->is_reduced_by_subscriber())
-    count = var->get_reduction_method()->get_reduced_variable_shape(var);
+    count = var->get_reduction_method()->get_reduced_variable_shape(*var);
   else
     count = var->get_shape();
 

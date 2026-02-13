@@ -73,13 +73,15 @@ void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
         "Variable has already been reduced by its producer; subscriber-side reduction is not allowed.");
   }
 
-  method->parameterize_for_variable(shared_from_this(), parameters);
-  method->reduce_variable(shared_from_this());
+  method->parameterize_for_variable(*this, parameters);
+  method->reduce_variable(*this);
   is_reduced_with_ = method;
-  if (stream->get_access_mode() == Stream::Mode::Publish)
-    reduction_origin_ = ReductionOrigin::Publisher;
-  else
-    reduction_origin_ = ReductionOrigin::Subscriber;
+  if (reduction_origin_ == ReductionOrigin::None) {
+    if (stream->get_access_mode() == Stream::Mode::Publish)
+      reduction_origin_ = ReductionOrigin::Publisher;
+    else
+      reduction_origin_ = ReductionOrigin::Subscriber;
+  }
 }
 
 ////////////////////////////////////////////
@@ -111,7 +113,7 @@ void Variable::add_transaction_metadata(unsigned int transaction_id, sg4::ActorP
                                         const std::string& location)
 {
   if (is_reduced_with_) {
-    auto start_and_count = is_reduced_with_->get_reduced_start_and_count_for(shared_from_this(), publisher);
+    auto start_and_count = is_reduced_with_->get_reduced_start_and_count_for(*this, publisher);
     metadata_->add_transaction(transaction_id, start_and_count, location, publisher);
   } else
     metadata_->add_transaction(transaction_id, local_start_and_count_[publisher], location, publisher);

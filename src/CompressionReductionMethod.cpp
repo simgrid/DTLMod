@@ -13,7 +13,7 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_compression_reduction, dtlmod, "DTL loggi
 
 namespace dtlmod {
 
-void CompressionReductionMethod::parameterize_for_variable(const std::shared_ptr<Variable>& var,
+void CompressionReductionMethod::parameterize_for_variable(const Variable& var,
                                                            const std::map<std::string, std::string>& parameters)
 {
   double new_accuracy                       = 1.0;
@@ -21,7 +21,7 @@ void CompressionReductionMethod::parameterize_for_variable(const std::shared_ptr
   double new_decompression_cost_per_element = 1.0;
 
   // Detect existing parameterization (if any).
-  auto it           = per_variable_parameterizations_.find(var);
+  auto it           = per_variable_parameterizations_.find(&var);
   const bool exists = (it != per_variable_parameterizations_.end());
 
   // Initialize from existing values (if present) to support partial updates.
@@ -47,8 +47,8 @@ void CompressionReductionMethod::parameterize_for_variable(const std::shared_ptr
   if (!exists) {
     // First-time parameterization
     per_variable_parameterizations_.try_emplace(
-        var, std::make_shared<ParameterizedCompression>(new_accuracy, new_compression_cost_per_element,
-                                                        new_decompression_cost_per_element));
+        &var, std::make_shared<ParameterizedCompression>(new_accuracy, new_compression_cost_per_element,
+                                                         new_decompression_cost_per_element));
     return;
   }
 
