@@ -306,3 +306,206 @@ TEST_F(DTLReductionTest, SinglePubSingleSubDecimationOnRead)
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }
+
+TEST_F(DTLReductionTest, BogusCompressionSetting)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("TestActor", [this]() {
+      std::shared_ptr<dtlmod::ReductionMethod> compressor;
+      XBT_INFO("Connect to the DTL");
+      auto dtl = dtlmod::DTL::connect();
+      XBT_INFO("Create a stream");
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      XBT_INFO("Create a 3D variable");
+      auto var = stream->define_variable("var3D", {640, 640, 640}, {0, 0, 0}, {640, 640, 640}, sizeof(double));
+      XBT_INFO("Define a Compression Reduction Method");
+      ASSERT_NO_THROW(compressor = stream->define_reduction_method("compression"));
+      XBT_INFO("Assign the compression method with a bogus option, should fail");
+      ASSERT_THROW(var->set_reduction_operation(compressor, {{"bogus", "1"}}),
+                   dtlmod::UnknownCompressionOptionException);
+      XBT_INFO("Assign the compression method with 'fixed' profile but no ratio, should fail");
+      ASSERT_THROW(var->set_reduction_operation(compressor, {{"compressor", "fixed"}}),
+                   dtlmod::InconsistentCompressionRatioException);
+      XBT_INFO("Assign the compression method with ratio < 1, should fail");
+      ASSERT_THROW(var->set_reduction_operation(compressor, {{"compression_ratio", "0.5"}}),
+                   dtlmod::InconsistentCompressionRatioException);
+      XBT_INFO("Assign the compression method with unknown compressor profile, should fail");
+      ASSERT_THROW(var->set_reduction_operation(compressor, {{"compressor", "bogus"}}),
+                   dtlmod::UnknownCompressionOptionException);
+
+      XBT_INFO("Disconnect the actor from the DTL");
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLReductionTest, SimpleCompressionFileEngine)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("Publisher", [this]() {
+      XBT_INFO("Connect to the DTL");
+      auto dtl = dtlmod::DTL::connect();
+      XBT_INFO("Create a stream");
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      XBT_INFO("Create a 2D variable with 1000x1000 doubles");
+      auto var = stream->define_variable("var2D", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      XBT_INFO("Define a Compression Reduction Method");
+      auto compressor = stream->define_reduction_method("compression");
+
+      XBT_INFO("Open the stream in Publish mode");
+      auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      sg4::this_actor::sleep_for(1);
+
+      XBT_INFO("Assign compression with fixed ratio of 10");
+      ASSERT_NO_THROW(var->set_reduction_operation(compressor, {{"compression_ratio", "10"},
+                                                                {"compression_cost_per_element", "5"},
+                                                                {"decompression_cost_per_element", "2"}}));
+      ASSERT_TRUE(var->is_reduced());
+      ASSERT_TRUE(var->is_reduced_by_publisher());
+      XBT_INFO("Verify reduced sizes");
+      size_t original_global_size = sizeof(double) * 1000 * 1000;
+      size_t expected_reduced     = static_cast<size_t>(std::ceil(original_global_size / 10.0));
+      ASSERT_EQ(compressor->get_reduced_variable_global_size(*var), expected_reduced);
+      ASSERT_EQ(compressor->get_reduced_variable_local_size(*var), expected_reduced);
+      XBT_INFO("Verify that shape is unchanged");
+      auto reduced_shape = compressor->get_reduced_variable_shape(*var);
+      ASSERT_EQ(reduced_shape.size(), 2u);
+      ASSERT_EQ(reduced_shape[0], 1000u);
+      ASSERT_EQ(reduced_shape[1], 1000u);
+      XBT_INFO("Verify compression flop cost");
+      double expected_flops = 5.0 * 1000 * 1000; // cost_per_element * num_elements
+      ASSERT_DOUBLE_EQ(compressor->get_flop_amount_to_reduce_variable(*var), expected_flops);
+      XBT_INFO("Verify decompression flop cost");
+      double expected_decomp_flops = 2.0 * 1000 * 1000;
+      ASSERT_DOUBLE_EQ(compressor->get_flop_amount_to_decompress_variable(*var), expected_decomp_flops);
+      engine->begin_transaction();
+      ASSERT_NO_THROW(engine->put(var));
+      engine->end_transaction();
+      sg4::this_actor::sleep_for(1);
+      engine->close();
+
+      XBT_INFO("Disconnect the actor from the DTL");
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLReductionTest, CompressionWithDerivedRatio)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("TestActor", [this]() {
+      XBT_INFO("Connect to the DTL");
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto var         = stream->define_variable("var2D", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      size_t orig_size = sizeof(double) * 1000 * 1000;
+
+      XBT_INFO("Test SZ profile: accuracy=1e-3, data_smoothness=0.5");
+      auto sz_compressor = stream->define_reduction_method("compression");
+      ASSERT_NO_THROW(var->set_reduction_operation(
+          sz_compressor, {{"compressor", "sz"}, {"accuracy", "1e-3"}, {"data_smoothness", "0.5"}}));
+      ASSERT_TRUE(var->is_reduced());
+      // SZ model: ratio = 3.0 * pow(3, 0.8) * 1.0 ≈ 7.22
+      size_t sz_reduced = sz_compressor->get_reduced_variable_global_size(*var);
+      ASSERT_GT(sz_reduced, 0u);
+      ASSERT_LT(sz_reduced, orig_size);
+      XBT_INFO("SZ reduced size: %zu (original: %zu, ratio: %.2f)", sz_reduced, orig_size,
+               static_cast<double>(orig_size) / sz_reduced);
+
+      XBT_INFO("Test ZFP profile: accuracy=1e-6");
+      auto stream2 = dtl->add_stream("my-output-2");
+      stream2->set_transport_method(dtlmod::Transport::Method::File);
+      stream2->set_engine_type(dtlmod::Engine::Type::File);
+      auto var2           = stream2->define_variable("var2D", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto zfp_compressor = stream2->define_reduction_method("compression");
+      ASSERT_NO_THROW(var2->set_reduction_operation(zfp_compressor, {{"compressor", "zfp"}, {"accuracy", "1e-6"}}));
+      // ZFP model: rate = max(1.0, -log2(1e-6) + 1.0) ≈ 20.93, ratio = 64.0 / 20.93 ≈ 3.06
+      size_t zfp_reduced = zfp_compressor->get_reduced_variable_global_size(*var2);
+      ASSERT_GT(zfp_reduced, 0u);
+      ASSERT_LT(zfp_reduced, orig_size);
+      XBT_INFO("ZFP reduced size: %zu (original: %zu, ratio: %.2f)", zfp_reduced, orig_size,
+               static_cast<double>(orig_size) / zfp_reduced);
+
+      XBT_INFO("Verify SZ gives higher compression than ZFP at these settings");
+      ASSERT_LT(sz_reduced, zfp_reduced);
+
+      XBT_INFO("Disconnect the actor from the DTL");
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLReductionTest, DoubleReductionForbidden)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("TestActor", [this]() {
+      XBT_INFO("Connect to the DTL");
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto var        = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
+      auto compressor = stream->define_reduction_method("compression");
+      auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      sg4::this_actor::sleep_for(1);
+      XBT_INFO("Apply publisher-side compression");
+      ASSERT_NO_THROW(var->set_reduction_operation(compressor, {{"compression_ratio", "5"}}));
+      ASSERT_TRUE(var->is_reduced_by_publisher());
+
+      XBT_INFO("Re-parameterize the same reduction method (allowed — updates parameters)");
+      ASSERT_NO_THROW(var->set_reduction_operation(compressor, {{"compression_ratio", "10"}}));
+      ASSERT_TRUE(var->is_reduced_by_publisher());
+
+      engine->begin_transaction();
+      ASSERT_NO_THROW(engine->put(var));
+      engine->end_transaction();
+      sg4::this_actor::sleep_for(1);
+      engine->close();
+      dtlmod::DTL::disconnect();
+
+      XBT_INFO("Wait and reconnect as subscriber");
+      sg4::this_actor::sleep_until(10);
+      dtl          = dtlmod::DTL::connect();
+      engine       = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+
+      XBT_INFO("Verify that var_sub carries publisher reduction state");
+      ASSERT_TRUE(var_sub->is_reduced());
+      ASSERT_TRUE(var_sub->is_reduced_by_publisher());
+
+      XBT_INFO("Attempt subscriber-side compression, should fail (compression is publisher-side only)");
+      auto sub_compressor = stream->define_reduction_method("compression");
+      ASSERT_THROW(var_sub->set_reduction_operation(sub_compressor, {{"compression_ratio", "2"}}),
+                   dtlmod::SubscriberSideCompressionException);
+
+      XBT_INFO("Attempt subscriber-side decimation on a publisher-reduced variable, should fail (double reduction)");
+      auto decimator = stream->define_reduction_method("decimation");
+      ASSERT_THROW(var_sub->set_reduction_operation(decimator, {{"stride", "2,2"}}), dtlmod::DoubleReductionException);
+
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
