@@ -9,12 +9,14 @@
 #include <pybind11/stl.h>
 #include <pybind11/stl_bind.h>
 
+#include <dtlmod/CompressionReductionMethod.hpp>
 #include <dtlmod/DTL.hpp>
 #include <dtlmod/DTLException.hpp>
 #include <dtlmod/Engine.hpp>
 #include <dtlmod/FileEngine.hpp>
 #include <dtlmod/FileTransport.hpp>
 #include <dtlmod/Metadata.hpp>
+#include <dtlmod/ReductionMethod.hpp>
 #include <dtlmod/StagingEngine.hpp>
 #include <dtlmod/StagingMboxTransport.hpp>
 #include <dtlmod/StagingMqTransport.hpp>
@@ -29,6 +31,7 @@
 namespace py = pybind11;
 using dtlmod::DTL;
 using dtlmod::Engine;
+using dtlmod::ReductionMethod;
 using dtlmod::Stream;
 using dtlmod::Transport;
 using dtlmod::Variable;
@@ -72,6 +75,18 @@ PYBIND11_MODULE(dtlmod, m)
   py::register_exception<dtlmod::IncorrectPathDefinitionException>(m, "IncorrectPathDefinitionException");
 
   py::register_exception<dtlmod::GetWhenNoTransactionException>(m, "GetWhenNoTransactionException");
+
+  py::register_exception<dtlmod::UnknownReductionMethodException>(m, "UnknownReductionMethodException");
+  py::register_exception<dtlmod::InconsistentDecimationStrideException>(m, "InconsistentDecimationStrideException");
+  py::register_exception<dtlmod::InconsistentDecimationInterpolationException>(
+      m, "InconsistentDecimationInterpolationException");
+  py::register_exception<dtlmod::UnknownDecimationOptionException>(m, "UnknownDecimationOptionException");
+  py::register_exception<dtlmod::UnknownDecimationInterpolationException>(m, "UnknownDecimationInterpolationException");
+  py::register_exception<dtlmod::DoubleReductionException>(m, "DoubleReductionException");
+
+  py::register_exception<dtlmod::UnknownCompressionOptionException>(m, "UnknownCompressionOptionException");
+  py::register_exception<dtlmod::InconsistentCompressionRatioException>(m, "InconsistentCompressionRatioException");
+  py::register_exception<dtlmod::SubscriberSideCompressionException>(m, "SubscriberSideCompressionException");
 
   /* Class DTL */
   py::class_<DTL, std::shared_ptr<DTL>>(m, "DTL", "Data Transport Layer")
@@ -147,7 +162,9 @@ PYBIND11_MODULE(dtlmod, m)
       .def_property_readonly("metadata_file_name", &Stream::get_metadata_file_name,
                              "The name of the file in which the stream stores metadata (read-only)")
       .def("inquire_variable", &Stream::inquire_variable, py::arg("name"), "Retrieve a Variable information by name")
-      .def("remove_variable", &Stream::remove_variable, py::arg("name"), "Remove a Variable from this Stream");
+      .def("remove_variable", &Stream::remove_variable, py::arg("name"), "Remove a Variable from this Stream")
+      .def("define_reduction_method", &Stream::define_reduction_method, py::arg("name"),
+           "Define a reduction method for this Stream (e.g. 'decimation' or 'compression')");
 
   py::enum_<Stream::Mode>(stream, "Mode", "The access mode for a Stream")
       .value("Publish", Stream::Mode::Publish)
@@ -172,7 +189,32 @@ PYBIND11_MODULE(dtlmod, m)
           [](Variable& self, unsigned int begin, unsigned int count) { self.set_transaction_selection(begin, count); },
           py::arg("begin"), py::arg("count"), "Set the selection of transactions to consider for this Variable")
       .def("set_selection", &Variable::set_selection, py::arg("start"), py::arg("count"),
-           "Set the selection of elements to consider for this Variable");
+           "Set the selection of elements to consider for this Variable")
+      .def("set_reduction_operation", &Variable::set_reduction_operation, py::arg("method"), py::arg("parameters"),
+           "Set a reduction operation on this Variable with the given method and parameters")
+      .def_property_readonly("is_reduced", &Variable::is_reduced,
+                             "Whether this Variable has a reduction method applied (read-only)")
+      .def_property_readonly("is_reduced_by_publisher", &Variable::is_reduced_by_publisher,
+                             "Whether this Variable was reduced on the publisher side (read-only)")
+      .def_property_readonly("is_reduced_by_subscriber", &Variable::is_reduced_by_subscriber,
+                             "Whether this Variable was reduced on the subscriber side (read-only)")
+      .def_property_readonly("reduction_method", &Variable::get_reduction_method,
+                             "The reduction method applied to this Variable, or None (read-only)");
+
+  /* Class ReductionMethod */
+  py::class_<ReductionMethod, std::shared_ptr<ReductionMethod>>(m, "ReductionMethod",
+                                                                "A reduction method applied to Variables in a Stream")
+      .def_property_readonly("name", &ReductionMethod::get_name, "The name of the ReductionMethod (read-only)")
+      .def("get_reduced_variable_global_size", &ReductionMethod::get_reduced_variable_global_size, py::arg("var"),
+           "Get the reduced global size of a Variable")
+      .def("get_reduced_variable_local_size", &ReductionMethod::get_reduced_variable_local_size, py::arg("var"),
+           "Get the reduced local size of a Variable")
+      .def("get_reduced_variable_shape", &ReductionMethod::get_reduced_variable_shape, py::arg("var"),
+           "Get the reduced shape of a Variable")
+      .def("get_flop_amount_to_reduce_variable", &ReductionMethod::get_flop_amount_to_reduce_variable, py::arg("var"),
+           "Get the flop cost to reduce a Variable")
+      .def("get_flop_amount_to_decompress_variable", &ReductionMethod::get_flop_amount_to_decompress_variable,
+           py::arg("var"), "Get the flop cost to decompress a Variable");
 
   /* Class Engine */
   py::class_<Engine, std::shared_ptr<Engine>> engine(
