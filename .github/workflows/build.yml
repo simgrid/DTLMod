@@ -120,7 +120,7 @@ jobs:
           cd build
           lcov --keep-going --ignore-errors mismatch --directory . --capture --output-file coverage.info
           lcov --ignore-errors mismatch --remove coverage.info '*/test/*' '*/bindings/*' -o coverage.info
-          gcovr --root .. -e '../test' -e '../examples' -e '../src/bindings' --sonarqube -o coverage.xml --exclude-throw-branches \
+          gcovr --root .. -e '../test' -e '../src/bindings' --sonarqube -o coverage.xml --exclude-throw-branches \
                 --gcov-ignore-parse-errors --exclude-unreachable-branches
           # Strip branch attributes so SonarQube uses line coverage only
           # (gcovr's sonarqube format includes branch data that penalizes macro-generated conditionals like XBT_DEBUG)
