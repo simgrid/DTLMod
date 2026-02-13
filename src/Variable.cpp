@@ -4,6 +4,7 @@
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
 #include "dtlmod/Variable.hpp"
+#include "dtlmod/CompressionReductionMethod.hpp"
 #include "dtlmod/DTLException.hpp"
 #include "dtlmod/Stream.hpp"
 #include <limits>
@@ -71,6 +72,11 @@ void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
     throw DoubleReductionException(
         XBT_THROW_POINT,
         "Variable has already been reduced by its producer; subscriber-side reduction is not allowed.");
+  }
+
+  // Compression is publisher-side only
+  if (dynamic_cast<CompressionReductionMethod*>(method.get()) && stream->get_access_mode() == Stream::Mode::Subscribe) {
+    throw SubscriberSideCompressionException(XBT_THROW_POINT);
   }
 
   method->parameterize_for_variable(*this, parameters);

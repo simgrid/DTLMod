@@ -60,6 +60,13 @@ void Engine::get(const std::shared_ptr<Variable>& var) const
   }
 
   transport_->get(var);
+
+  // Decompression cost after receiving compressed data (e.g., publisher-side compression)
+  if (var->is_reduced()) {
+    double decompression_flops = var->get_reduction_method()->get_flop_amount_to_decompress_variable(*var);
+    if (decompression_flops > 0)
+      sg4::this_actor::execute(decompression_flops);
+  }
 }
 
 /// This function first synchronizes all the subscribers thanks to the internal barrier. When the last subscriber

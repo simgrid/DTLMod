@@ -67,6 +67,8 @@ DECLARE_DTLMOD_EXCEPTION(UnknownDecimationInterpolationException, "Unknown Decim
 DECLARE_DTLMOD_EXCEPTION(DoubleReductionException, "Double reduction is forbidden");
 
 DECLARE_DTLMOD_EXCEPTION(UnknownCompressionOptionException, "Unknown Compression option");
+DECLARE_DTLMOD_EXCEPTION(InconsistentCompressionRatioException, "Inconsistent Compression ratio");
+DECLARE_DTLMOD_EXCEPTION(SubscriberSideCompressionException, "Compression can only be applied on the publisher side");
 
 } // namespace dtlmod
 
