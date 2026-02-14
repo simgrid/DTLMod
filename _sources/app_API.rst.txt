@@ -130,6 +130,29 @@ selecting the :ref:`Concept_Transport` **method** of the Stream to either ``Tran
 :ref:`Inside_staging_engine` section of the documentation.
 
 
+.. |Concept_Reduction| replace:: **Reduction**
+.. _Concept_Reduction:
+
+Data Reduction
+^^^^^^^^^^^^^^
+
+In situ workflows that produce large volumes of data can benefit from **data reduction** to decrease the amount of
+data transported through the DTL. DTLMod exposes reduction as an optional operation that can be applied to individual
+|Concept_Variable| objects within a |Concept_Stream|_.
+
+A reduction method is first created on a |Concept_Stream|_ by specifying its type (``"decimation"`` or
+``"compression"``). It is then applied to a |Concept_Variable|_ with a set of parameters that control the reduction
+behavior---for instance, a stride vector for decimation or a compression ratio and compressor profile for compression.
+
+When a publisher puts a reduced variable into the DTL, the simulation accounts for the computational overhead of the
+reduction and transports only the reduced volume. On the subscriber side, a decompression cost may be incurred when
+the data is retrieved. The reduction state of a variable is automatically propagated to subscribers: when a subscriber
+inquires a variable that has been reduced by its publisher, this information is preserved and prevents conflicting
+double reductions.
+
+A complete description of the reduction mechanisms, their parameters, and their internal cost models is given in the
+:ref:`Reduction` section.
+
 .. |Concept_Variable| replace:: **Variable**
 .. _Concept_Variable:
 

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Compression &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="Decimation" href="Decimation.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Reduction.html">   Data Reduction Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Decimation.html">      Decimation</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">      Compression</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-compression-works-in-dtlmod">How compression works in DTLMod</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compressor-profiles">Compressor profiles</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compression-and-decompression-costs">Compression and decompression costs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#per-transaction-variability">Per-transaction variability</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#re-parameterization">Re-parameterization</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Compression</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Compression.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="compression">
+<span id="id1"></span><h1>Compression<a class="headerlink" href="#compression" title="Link to this heading"></a></h1>
+<p>Lossy compression is a widely used data reduction technique in scientific computing. By accepting a controlled loss
+of precision, compressors such as SZ and ZFP can achieve significant reductions in data volume while preserving the
+features that matter for downstream analysis. DTLMod models the performance impact of compression on in situ
+workflows without actually compressing any data: it simulates the computational cost of compression and
+decompression and adjusts the volume of data transported through the DTL according to a compression ratio.</p>
+<section id="how-compression-works-in-dtlmod">
+<h2>How compression works in DTLMod<a class="headerlink" href="#how-compression-works-in-dtlmod" title="Link to this heading"></a></h2>
+<p>Unlike decimation, compression does not change the <strong>shape</strong> of a variable. A <span class="math notranslate nohighlight">\(1000 \times 1000\)</span> array remains
+a <span class="math notranslate nohighlight">\(1000 \times 1000\)</span> array after compression. What changes is the <strong>byte-size</strong> of the variable: the number
+of bytes transported through the DTL is divided by the compression ratio. This reflects the fact that real-world
+lossy compressors produce a bitstream that is smaller than the original data but still represents all the elements
+of the array.</p>
+<p>Compression is a <strong>publisher-side only</strong> operation. Applying compression on the subscriber side is not meaningful
+because compression aims to reduce the volume of data that needs to be transported—which requires intervention
+before the data leaves the publisher.</p>
+</section>
+<section id="compressor-profiles">
+<h2>Compressor profiles<a class="headerlink" href="#compressor-profiles" title="Link to this heading"></a></h2>
+<p>DTLMod provides three ways to determine the compression ratio for a variable:</p>
+<p><strong>Fixed ratio.</strong> The simplest option: you directly specify the desired compression ratio. This is useful when you
+already know, from experiments or from the literature, the compression ratio achieved by a particular compressor
+on data similar to yours. The ratio must be at least 1.0 (a ratio of 1 means no size reduction).</p>
+<p><strong>SZ profile.</strong> This profile is inspired by the <a class="reference external" href="https://szcompressor.org/">SZ lossy compressor</a>, a
+prediction-based algorithm. SZ achieves high compression ratios on smooth scientific data because it can accurately
+predict neighboring values and only store the (small) prediction errors. The compression ratio is derived from two
+user-specified parameters:</p>
+<ul class="simple">
+<li><p><strong>accuracy</strong> (or error bound): the maximum acceptable pointwise error. Tighter accuracy requirements reduce the
+compression ratio because more bits are needed to represent the prediction residuals.</p></li>
+<li><p><strong>data smoothness</strong>: a value between 0 and 1 that characterizes how regular the data is. Smooth data
+(e.g., temperature fields) yields higher compression ratios because predictions are more accurate. Noisy or
+turbulent data yields lower ratios.</p></li>
+</ul>
+<p>The model computes the ratio as:</p>
+<div class="math notranslate nohighlight">
+\[r = \max\!\Big(1,\;\alpha \cdot \left(-\log_{10} \varepsilon\right)^{\beta} \cdot (0.5 + \sigma)\Big)\]</div>
+<p>where <span class="math notranslate nohighlight">\(\varepsilon\)</span> is the accuracy, <span class="math notranslate nohighlight">\(\sigma\)</span> is the data smoothness, and <span class="math notranslate nohighlight">\(\alpha = 3.0\)</span>,
+<span class="math notranslate nohighlight">\(\beta = 0.8\)</span> are empirical parameters fitted from published benchmarks on scientific datasets.</p>
+<p><strong>ZFP profile.</strong> This profile is inspired by the <a class="reference external" href="https://computing.llnl.gov/projects/zfp">ZFP compressor</a>,
+a transform-based algorithm. ZFP organizes data into small blocks, applies a near-orthogonal transform, and
+encodes the resulting coefficients with a fixed number of bits per value. The compression ratio depends primarily
+on the requested accuracy:</p>
+<div class="math notranslate nohighlight">
+\[\text{rate} = \max(1,\;-\log_2 \varepsilon + 1) \quad;\quad r = \frac{64}{\text{rate}}\]</div>
+<p>where the rate represents the number of bits per double-precision value after compression. Higher accuracy
+requirements increase the rate and therefore decrease the compression ratio.</p>
+</section>
+<section id="compression-and-decompression-costs">
+<h2>Compression and decompression costs<a class="headerlink" href="#compression-and-decompression-costs" title="Link to this heading"></a></h2>
+<p>Two independent cost parameters control the simulated computational overhead of compression:</p>
+<ul class="simple">
+<li><p><strong>compression cost per element</strong>: the number of floating-point operations incurred per array element when
+compressing the data on the publisher side.</p></li>
+<li><p><strong>decompression cost per element</strong>: the number of floating-point operations incurred per array element when
+decompressing the data on the subscriber side, after it has been received.</p></li>
+</ul>
+<p>Both parameters default to 1.0. The total compression cost for a variable is computed as:</p>
+<div class="math notranslate nohighlight">
+\[C_{\text{compress}} = c_{\text{comp}} \times \frac{N_{\text{local}}}{\text{element\_size}}\]</div>
+<div class="math notranslate nohighlight">
+\[C_{\text{decompress}} = c_{\text{decomp}} \times \frac{N_{\text{local}}}{\text{element\_size}}\]</div>
+<p>where <span class="math notranslate nohighlight">\(N_{\text{local}}\)</span> is the local size of the variable in bytes and <span class="math notranslate nohighlight">\(\text{element\_size}\)</span> is the
+size of one array element. The compression cost is incurred by the publisher right before putting the variable into
+the DTL, and the decompression cost is incurred by the subscriber right after receiving it.</p>
+</section>
+<section id="per-transaction-variability">
+<h2>Per-transaction variability<a class="headerlink" href="#per-transaction-variability" title="Link to this heading"></a></h2>
+<p>In practice, the compression ratio achieved on a given variable varies from one time step to the next as the data
+evolves. DTLMod can model this variability through an optional <strong>ratio variability</strong> parameter that introduces a
+bounded, deterministic perturbation around the nominal compression ratio at each transaction. This enables the
+simulation of realistic scenarios in which the effectiveness of compression fluctuates over the course of a run.</p>
+</section>
+<section id="re-parameterization">
+<h2>Re-parameterization<a class="headerlink" href="#re-parameterization" title="Link to this heading"></a></h2>
+<p>As with decimation, compression parameters can be updated between transactions. You can change the compression
+ratio, switch compressor profiles, adjust accuracy or smoothness, or modify the cost parameters for a variable that
+is already being compressed. Only the parameters that are explicitly provided in the update are modified; the
+others retain their previous values. This supports the simulation of adaptive compression strategies that adjust
+their settings in response to changes in the data.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Decimation.html" class="btn btn-neutral float-left" title="Decimation" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2026, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

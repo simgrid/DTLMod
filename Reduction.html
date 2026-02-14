@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Data Reduction Operations &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Decimation" href="Decimation.html" />
+    <link rel="prev" title="Inside the Staging engine" href="Inside_Staging_engine.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">   Data Reduction Operations</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#where-and-when-reduction-is-applied">Where and when reduction is applied</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#simulated-costs">Simulated costs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Decimation.html">      Decimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Compression.html">      Compression</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Data Reduction Operations</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Reduction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="data-reduction-operations">
+<span id="reduction"></span><h1>Data Reduction Operations<a class="headerlink" href="#data-reduction-operations" title="Link to this heading"></a></h1>
+<p>Scientific simulations and in situ processing workflows produce ever-increasing volumes of data. Even with fast
+networks and storage systems, the sheer amount of data transported through the DTL can become a bottleneck.
+<strong>Data reduction</strong> techniques alleviate this pressure by decreasing the volume of data that must be moved between
+publishers and subscribers, at the cost of some additional computation and, depending on the method, a controlled
+loss of information.</p>
+<p>DTLMod allows you to study the impact of data reduction on the performance of in situ workflows by attaching a
+<strong>reduction method</strong> to a <a class="reference internal" href="app_API.html#concept-stream"><span class="std std-ref">Stream</span></a> and then applying it, with specific parameters, to individual
+<a class="reference internal" href="app_API.html#concept-variable"><span class="std std-ref">Variable</span></a> objects. When a publisher puts a reduced variable into the DTL, the simulation accounts for
+the computational cost of the reduction operation and transports a smaller volume of data. On the subscriber side,
+the simulation may account for a corresponding decompression or reconstruction cost when retrieving the variable.</p>
+<p>DTLMod currently exposes two families of reduction methods:</p>
+<p><strong>Decimation</strong> selectively retains a subset of elements from a multidimensional array by applying a per-dimension
+stride. The result is a smaller array whose shape reflects the subsampling factor in each dimension. This approach
+is common in visualization pipelines where only every <em>n</em>-th data point is needed. Since decimation preserves the
+original values of the retained elements, it is by nature a lossless operation on the selected subset. Optionally,
+an interpolation step can be used to reconstruct missing values. More details are given in the
+<a class="reference internal" href="Decimation.html#decimation"><span class="std std-ref">Decimation</span></a> section.</p>
+<p><strong>Compression</strong> reduces the byte-size of a variable without altering its shape. The compressed variable retains the
+same number of elements but each element occupies fewer bytes, according to a <strong>compression ratio</strong> that can be
+specified directly or derived from a compressor model. DTLMod provides built-in models inspired by the SZ and ZFP
+lossy compressors to derive realistic compression ratios from data characteristics. More details are given in the
+<a class="reference internal" href="Compression.html#compression"><span class="std std-ref">Compression</span></a> section.</p>
+<section id="where-and-when-reduction-is-applied">
+<h2>Where and when reduction is applied<a class="headerlink" href="#where-and-when-reduction-is-applied" title="Link to this heading"></a></h2>
+<p>Reduction methods can be applied on either side of the data flow:</p>
+<ul class="simple">
+<li><p><strong>Publisher-side reduction</strong> is the most common scenario. The publisher compresses or decimates data before putting
+it into the DTL, reducing the volume of data that has to be transported and stored. Both decimation and compression
+support this mode.</p></li>
+<li><p><strong>Subscriber-side reduction</strong> is only available for decimation. A subscriber can choose to retrieve a subsampled
+version of a variable it receives from the DTL, reducing the volume of data it has to process. Compression on the
+subscriber side is not supported because its purpose is precisely to reduce what has to be transported, which
+requires intervention before the data leaves the publisher.</p></li>
+</ul>
+<p>When a publisher applies a reduction, the information is propagated to subscribers: any variable obtained through
+<code class="docutils literal notranslate"><span class="pre">inquire_variable</span></code> on the subscriber side carries the reduction state set by the publisher. This allows DTLMod to
+prevent conflicting reduction operations. In particular, a subscriber cannot apply a second reduction to a variable
+that was already reduced by its publisher.</p>
+</section>
+<section id="simulated-costs">
+<h2>Simulated costs<a class="headerlink" href="#simulated-costs" title="Link to this heading"></a></h2>
+<p>A reduction operation in DTLMod introduces two potential costs:</p>
+<ol class="arabic simple">
+<li><p>A <strong>reduction cost</strong> (in simulated floating-point operations) is incurred by the actor that applies the reduction,
+right before it puts or gets the variable. This cost models the computational overhead of running a compressor or
+a decimation kernel.</p></li>
+<li><p>A <strong>decompression cost</strong> (for compression only) is incurred on the subscriber side after it receives compressed
+data. This cost models the time needed to decompress the data before it can be used by the analysis component.</p></li>
+</ol>
+<p>These costs are fully configurable through the parameters of each reduction method, enabling you to explore tradeoffs
+between data movement savings and computational overhead for different reduction strategies.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Inside_Staging_engine.html" class="btn btn-neutral float-left" title="Inside the Staging engine" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Decimation.html" class="btn btn-neutral float-right" title="Decimation" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2026, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

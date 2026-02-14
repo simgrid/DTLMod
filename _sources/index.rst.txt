@@ -47,7 +47,10 @@ effects of resource allocation strategies.
       Engines <Engines.rst>
          Inside the File engine <Inside_File_engine.rst>
          Inside the Staging engine <Inside_Staging_engine.rst>
-
+      Data Reduction Operations <Reduction.rst>
+         Decimation <Decimation.rst>
+         Compression <Compression.rst>
+      
 .. Cheat Sheet on the sublevels
 ..
 ..   # with overline, for parts

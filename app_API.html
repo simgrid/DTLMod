@@ -67,6 +67,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#stream">Stream</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#engine">Engine</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#transport-method">Transport method</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#data-reduction">Data Reduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#variable">Variable</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#transaction">Transaction</a></li>
 </ul>
@@ -110,6 +111,9 @@
 <li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
 <li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Reduction.html">   Data Reduction Operations</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Decimation.html">      Decimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Compression.html">      Compression</a></li>
 </ul>
 
         </div>
@@ -218,6 +222,22 @@ purpose as <strong>mailboxes</strong>, ensuring the respect of control and flow 
 selecting the <a class="reference internal" href="#concept-transport"><span class="std std-ref">Transport method</span></a> <strong>method</strong> of the Stream to either <code class="docutils literal notranslate"><span class="pre">Transport::Method::Mailbox</span></code> or
 <code class="docutils literal notranslate"><span class="pre">Transport::Method::MQ</span></code>. More details on the internals of Staging engines can be found in the
 <a class="reference internal" href="Inside_Staging_engine.html#inside-staging-engine"><span class="std std-ref">Inside the Staging engine</span></a> section of the documentation.</p>
+</section>
+<section id="data-reduction">
+<span id="concept-reduction"></span><h3>Data Reduction<a class="headerlink" href="#data-reduction" title="Link to this heading"></a></h3>
+<p>In situ workflows that produce large volumes of data can benefit from <strong>data reduction</strong> to decrease the amount of
+data transported through the DTL. DTLMod exposes reduction as an optional operation that can be applied to individual
+<strong>Variable</strong> objects within a <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a>.</p>
+<p>A reduction method is first created on a <a class="reference internal" href="#concept-stream"><strong>Stream</strong></a> by specifying its type (<code class="docutils literal notranslate"><span class="pre">&quot;decimation&quot;</span></code> or
+<code class="docutils literal notranslate"><span class="pre">&quot;compression&quot;</span></code>). It is then applied to a <a class="reference internal" href="#concept-variable"><strong>Variable</strong></a> with a set of parameters that control the reduction
+behavior—for instance, a stride vector for decimation or a compression ratio and compressor profile for compression.</p>
+<p>When a publisher puts a reduced variable into the DTL, the simulation accounts for the computational overhead of the
+reduction and transports only the reduced volume. On the subscriber side, a decompression cost may be incurred when
+the data is retrieved. The reduction state of a variable is automatically propagated to subscribers: when a subscriber
+inquires a variable that has been reduced by its publisher, this information is preserved and prevents conflicting
+double reductions.</p>
+<p>A complete description of the reduction mechanisms, their parameters, and their internal cost models is given in the
+<a class="reference internal" href="Reduction.html#reduction"><span class="std std-ref">Data Reduction Operations</span></a> section.</p>
 </section>
 <section id="variable">
 <span id="concept-variable"></span><h3>Variable<a class="headerlink" href="#variable" title="Link to this heading"></a></h3>

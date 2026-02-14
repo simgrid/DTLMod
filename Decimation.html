@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Decimation &mdash; DTLMod  documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=fa44fd50" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=86f27845" />
+      <link rel="stylesheet" type="text/css" href="_static/copybutton.css?v=8f9e6779" />
+      <link rel="stylesheet" type="text/css" href="_static/tabs.css?v=a5c4661c" />
+      <link rel="stylesheet" type="text/css" href="_static/showfile.css" />
+      <link rel="stylesheet" type="text/css" href="_static/css/custom.css?v=ff761f78" />
+
+  
+    <link rel="shortcut icon" href="_static/favicon.png"/>
+  
+        <script src="_static/jquery.js?v=8dae8fb0"></script>
+        <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+        <script src="_static/documentation_options.js?v=5929fcd5"></script>
+        <script src="_static/doctools.js?v=888ff710"></script>
+        <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+        <script src="_static/clipboard.min.js?v=66b4909c"></script>
+        <script src="_static/copybutton.js?v=d509b16f"></script>
+        <script src="_static/showfile.js"></script>
+        <script async="async" src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Compression" href="Compression.html" />
+    <link rel="prev" title="Data Reduction Operations" href="Reduction.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html">
+            
+              <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
+          </a>
+              <div class="version">
+                0.2.0
+              </div>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Manual:</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="Introduction.html">   Introduction</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Installing_DTLMod.html">      Installing DTLMod</a></li>
+<li class="toctree-l1"><a class="reference internal" href="New_project.html">      Start your own project</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Workflow.html">   Designing your simulated in situ processing workflow</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_API.html">      The DTLMod programming interface</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Actors.html">      Simulated actors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="app_Main.html">      Composing simulated actors and    running the simulation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Platform.html">   Describing your simulated platform</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Logging.html">   Logging and Debugging</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">DTLMod's Internals:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="Connection_manager.html">   Connection manager</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Engines.html">   Engines</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_File_engine.html">      Inside the File engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Inside_Staging_engine.html">      Inside the Staging engine</a></li>
+<li class="toctree-l1"><a class="reference internal" href="Reduction.html">   Data Reduction Operations</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">      Decimation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#how-decimation-works">How decimation works</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#publisher-side-and-subscriber-side-decimation">Publisher-side and subscriber-side decimation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#interpolation">Interpolation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#computational-cost-model">Computational cost model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#re-parameterization">Re-parameterization</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="Compression.html">      Compression</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">DTLMod</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Decimation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/Decimation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="decimation">
+<span id="id1"></span><h1>Decimation<a class="headerlink" href="#decimation" title="Link to this heading"></a></h1>
+<p>Decimation is a spatial subsampling technique that reduces the size of a multidimensional array by keeping only every
+<em>n</em>-th element along each dimension. It is the method of choice when a workflow component does not need the full
+resolution of the data produced upstream—a common situation in visualization or coarse-grained analysis pipelines.</p>
+<section id="how-decimation-works">
+<h2>How decimation works<a class="headerlink" href="#how-decimation-works" title="Link to this heading"></a></h2>
+<p>A decimation operation is controlled by a <strong>stride vector</strong> that specifies, for each dimension of a
+<a class="reference internal" href="app_API.html#concept-variable"><span class="std std-ref">Variable</span></a>, how many elements to skip between two retained samples. For a variable of shape
+<span class="math notranslate nohighlight">\((D_1, D_2, \ldots, D_k)\)</span> and a stride <span class="math notranslate nohighlight">\((s_1, s_2, \ldots, s_k)\)</span>, the shape of the reduced variable
+becomes <span class="math notranslate nohighlight">\((\lceil D_1/s_1 \rceil, \lceil D_2/s_2 \rceil, \ldots, \lceil D_k/s_k \rceil)\)</span>.</p>
+<p>For instance, applying a stride of <span class="math notranslate nohighlight">\((1, 2, 4)\)</span> to a <span class="math notranslate nohighlight">\(640 \times 640 \times 640\)</span> variable produces a
+<span class="math notranslate nohighlight">\(640 \times 320 \times 160\)</span> reduced variable—an 8x reduction in data volume.</p>
+<p>The stride vector must have the same number of dimensions as the variable it applies to and all stride values must
+be strictly positive. A stride of 1 along a given dimension means no subsampling in that dimension.</p>
+<p>Decimation is applied <strong>per variable</strong>: within the same <a class="reference internal" href="app_API.html#concept-stream"><span class="std std-ref">Stream</span></a>, different variables can be decimated
+with different strides, or not be decimated at all.</p>
+</section>
+<section id="publisher-side-and-subscriber-side-decimation">
+<h2>Publisher-side and subscriber-side decimation<a class="headerlink" href="#publisher-side-and-subscriber-side-decimation" title="Link to this heading"></a></h2>
+<p>Unlike compression, decimation can be applied on <strong>both sides</strong> of the data flow:</p>
+<ul class="simple">
+<li><p>When applied by a <strong>publisher</strong>, decimation reduces the volume of data that leaves the publisher. The simulated
+cost of the decimation kernel is incurred before the data is transported. Only the decimated version of the variable
+is put into the DTL, which directly reduces I/O or network costs.</p></li>
+<li><p>When applied by a <strong>subscriber</strong>, decimation reduces the volume of data that the subscriber has to process after
+receiving it. The subscriber first retrieves the full variable and then applies decimation locally. This can be
+useful when the subscriber only needs a coarse view of the data, but the full-resolution version must still be
+transported because other subscribers or a checkpoint mechanism may need it.</p></li>
+</ul>
+</section>
+<section id="interpolation">
+<h2>Interpolation<a class="headerlink" href="#interpolation" title="Link to this heading"></a></h2>
+<p>In some workflows, the subsampled data must be smoothed or reconstructed to better approximate the original field.
+DTLMod models this by allowing an optional <strong>interpolation method</strong> to be specified alongside the stride. The
+supported interpolation methods are:</p>
+<ul class="simple">
+<li><p><strong>linear</strong>: suitable for piecewise-linear fields (variables with at least 1 dimension).</p></li>
+<li><p><strong>quadratic</strong>: suitable for smoother fields (variables with at least 2 dimensions).</p></li>
+<li><p><strong>cubic</strong>: suitable for highly smooth fields (variables with at least 3 dimensions).</p></li>
+</ul>
+<p>The choice of interpolation method does not affect the size of the reduced variable: it only affects the
+<strong>computational cost</strong> of the decimation operation. Higher-order interpolation is more expensive: the cost
+multiplier is 2x for linear, 4x for quadratic, and 8x for cubic interpolation relative to simple subsampling
+without interpolation. This allows you to study the tradeoff between the quality of the reconstructed data and the
+computational overhead introduced by the interpolation step.</p>
+</section>
+<section id="computational-cost-model">
+<h2>Computational cost model<a class="headerlink" href="#computational-cost-model" title="Link to this heading"></a></h2>
+<p>The simulated cost of a decimation operation, in floating-point operations, is determined by:</p>
+<div class="math notranslate nohighlight">
+\[C = m \times c \times N\]</div>
+<p>where <span class="math notranslate nohighlight">\(N\)</span> is the number of elements in the <strong>local</strong> (non-decimated) portion of the variable,
+<span class="math notranslate nohighlight">\(c\)</span> is a configurable <strong>cost per element</strong> (defaulting to 1.0), and <span class="math notranslate nohighlight">\(m\)</span> is the interpolation
+multiplier (1 for no interpolation, 2 for linear, 4 for quadratic, 8 for cubic).</p>
+<p>The cost per element can be adjusted to match the observed or estimated computational cost of a specific decimation
+implementation in the real-world application being simulated.</p>
+</section>
+<section id="re-parameterization">
+<h2>Re-parameterization<a class="headerlink" href="#re-parameterization" title="Link to this heading"></a></h2>
+<p>A decimation operation can be re-parameterized between transactions. For instance, you can change the stride, the
+interpolation method, or the cost per element of a variable that has already been decimated. This enables the
+simulation of adaptive workflows in which the level of subsampling changes over time in response to features detected
+in the data.</p>
+<p>When re-parameterizing, only the parameters that are explicitly provided are updated; the others retain their
+previous values.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="Reduction.html" class="btn btn-neutral float-left" title="Data Reduction Operations" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="Compression.html" class="btn btn-neutral float-right" title="Compression" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2022-2026, The SWAT Team.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
