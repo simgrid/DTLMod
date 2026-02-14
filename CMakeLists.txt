@@ -7,7 +7,7 @@ if(POLICY CMP0167)
   cmake_policy(SET CMP0167 NEW)
 endif()
 
-project(dtlmod VERSION 0.2 DESCRIPTION "Data Transport Layer Module")
+project(dtlmod VERSION 0.4 DESCRIPTION "Data Transport Layer Module")
 
 include(GNUInstallDirs)
 find_package(Boost 1.48)
@@ -66,9 +66,9 @@ endif()
 
 # build the version number
 set(DTLMOD_VERSION_MAJOR "0")
-set(DTLMOD_VERSION_MINOR "2")
+set(DTLMOD_VERSION_MINOR "4")
 set(DTLMOD_VERSION_PATCH "0")
-set(DTLMOD_VERSION_EXTRA "dev")
+set(DTLMOD_VERSION_EXTRA "")
 
 ## GIT version check
 ####################
