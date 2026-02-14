@@ -50,7 +50,7 @@ double CompressionReductionMethod::get_flop_amount_to_decompress_variable(const 
   return param->get_decompression_cost_per_element() * num_elements;
 }
 
-double CompressionReductionMethod::derive_compression_ratio(double accuracy, const std::string& profile,
+double CompressionReductionMethod::derive_compression_ratio(double accuracy, std::string_view profile,
                                                             double data_smoothness)
 {
   if (profile == "sz") {

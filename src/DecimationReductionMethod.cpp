@@ -134,10 +134,12 @@ void DecimationReductionMethod::reduce_variable(const Variable& var)
   auto stride           = parameterization->get_stride();
 
   std::vector<size_t> reduced_shape;
-  size_t i = 0;
-  for (auto dim_size : original_shape)
+  size_t idx = 0;
+  for (auto dim_size : original_shape) {
     reduced_shape.push_back(
-        static_cast<size_t>(std::ceil(static_cast<double>(dim_size) / static_cast<double>(stride[i++]))));
+        static_cast<size_t>(std::ceil(static_cast<double>(dim_size) / static_cast<double>(stride[idx]))));
+    idx++;
+  }
   parameterization->set_reduced_shape(reduced_shape);
 
   auto self           = sg4::Actor::self();
@@ -147,7 +149,7 @@ void DecimationReductionMethod::reduce_variable(const Variable& var)
 
   for (size_t i = 0; i < original_shape.size(); i++) {
     // Sanity checks that shape, start, and count have the same size have already been done
-    size_t r_start = static_cast<size_t>(std::ceil(static_cast<double>(start[i]) / static_cast<double>(stride[i])));
+    auto r_start = static_cast<size_t>(std::ceil(static_cast<double>(start[i]) / static_cast<double>(stride[i])));
     size_t r_next_start = std::min(
         original_shape[i],
         static_cast<size_t>(std::ceil(static_cast<double>(start[i] + count[i]) / static_cast<double>(stride[i]))));

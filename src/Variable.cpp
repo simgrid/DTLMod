@@ -60,7 +60,7 @@ void Variable::set_transaction_selection(unsigned int begin, unsigned int count)
 }
 
 void Variable::set_reduction_operation(std::shared_ptr<ReductionMethod> method,
-                                       std::map<std::string, std::string, std::less<>> parameters)
+                                       const std::map<std::string, std::string, std::less<>>& parameters)
 {
   auto stream = defined_in_stream_.lock();
   xbt_assert(stream, "Variable::set_reduction_operation called after its Stream has been destroyed");

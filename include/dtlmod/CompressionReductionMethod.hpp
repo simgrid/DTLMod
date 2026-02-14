@@ -61,7 +61,7 @@ class CompressionReductionMethod : public ReductionMethod {
   std::map<const Variable*, std::shared_ptr<ParameterizedCompression>> per_variable_parameterizations_;
 
   /// @brief Derive the compression ratio from accuracy and compressor profile.
-  static double derive_compression_ratio(double accuracy, const std::string& profile, double data_smoothness);
+  static double derive_compression_ratio(double accuracy, std::string_view profile, double data_smoothness);
 
 public:
   using ReductionMethod::ReductionMethod;
