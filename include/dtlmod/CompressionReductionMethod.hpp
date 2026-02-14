@@ -48,7 +48,7 @@ class CompressionReductionMethod : public ReductionMethod {
     [[nodiscard]] double get_compression_ratio() const { return compression_ratio_; }
     void set_compression_ratio(double ratio) { compression_ratio_ = ratio; }
     [[nodiscard]] const std::string& get_compressor_profile() const { return compressor_profile_; }
-    void set_compressor_profile(const std::string& profile) { compressor_profile_ = profile; }
+    void set_compressor_profile(std::string_view profile) { compressor_profile_ = profile; }
     [[nodiscard]] double get_data_smoothness() const { return data_smoothness_; }
     void set_data_smoothness(double smoothness) { data_smoothness_ = smoothness; }
     [[nodiscard]] double get_ratio_variability() const { return ratio_variability_; }
@@ -64,9 +64,11 @@ class CompressionReductionMethod : public ReductionMethod {
   static double derive_compression_ratio(double accuracy, const std::string& profile, double data_smoothness);
 
 public:
-  CompressionReductionMethod(const std::string& name) : ReductionMethod(name) {}
-  void parameterize_for_variable(const Variable& var, const std::map<std::string, std::string>& parameters) override;
-  void reduce_variable(const Variable& /* var*/) override {}
+  using ReductionMethod::ReductionMethod;
+  void parameterize_for_variable(const Variable& var,
+                                 const std::map<std::string, std::string, std::less<>>& parameters) override;
+  void reduce_variable(const Variable& /* var*/) override
+  { /* Variable metadata are not modfied when using compression */ }
 
   [[nodiscard]] size_t get_reduced_variable_global_size(const Variable& var) const override;
   [[nodiscard]] size_t get_reduced_variable_local_size(const Variable& var) const override;

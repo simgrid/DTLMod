@@ -37,20 +37,21 @@ double DecimationReductionMethod::ParameterizedDecimation::get_flop_amount_to_de
   XBT_DEBUG("Compute decimation cost with: cost_per_element = %.2f and interpolation_method = %s", cost_per_element_,
             interpolation_method_.c_str());
   double amount = cost_per_element_;
+  auto local_size = static_cast<double>(var_->get_local_size());
   if (interpolation_method_.empty()) {
-    amount *= var_->get_local_size();
+    amount *= local_size;
   } else if (interpolation_method_ == "linear") {
-    amount = 2 * amount * var_->get_local_size();
+    amount = 2 * amount * local_size;
   } else if (interpolation_method_ == "quadratic") {
-    amount = 4 * amount * var_->get_local_size();
+    amount = 4 * amount * local_size;
   } else if (interpolation_method_ == "cubic") {
-    amount = 8 * amount * var_->get_local_size();
+    amount = 8 * amount * local_size;
   } // Sanity check done when parameterizing the reduction method for this variable
   return amount;
 }
 
-void DecimationReductionMethod::parameterize_for_variable(const Variable& var,
-                                                          const std::map<std::string, std::string>& parameters)
+void DecimationReductionMethod::parameterize_for_variable(
+    const Variable& var, const std::map<std::string, std::string, std::less<>>& parameters)
 {
   std::vector<size_t> new_stride;
   std::string new_interpolation_method;
@@ -103,7 +104,7 @@ void DecimationReductionMethod::parameterize_for_variable(const Variable& var,
     } else if (key == "cost_per_element")
       new_cost_per_element = std::stod(value);
     else
-      throw UnknownDecimationOptionException(XBT_THROW_POINT, key.c_str());
+      throw UnknownDecimationOptionException(XBT_THROW_POINT, key);
   }
 
   if (!exists) {
@@ -135,7 +136,8 @@ void DecimationReductionMethod::reduce_variable(const Variable& var)
   std::vector<size_t> reduced_shape;
   size_t i = 0;
   for (auto dim_size : original_shape)
-    reduced_shape.push_back(std::ceil(dim_size / (stride[i++] * 1.0)));
+    reduced_shape.push_back(
+        static_cast<size_t>(std::ceil(static_cast<double>(dim_size) / static_cast<double>(stride[i++]))));
   parameterization->set_reduced_shape(reduced_shape);
 
   auto self           = sg4::Actor::self();
@@ -145,9 +147,10 @@ void DecimationReductionMethod::reduce_variable(const Variable& var)
 
   for (size_t i = 0; i < original_shape.size(); i++) {
     // Sanity checks that shape, start, and count have the same size have already been done
-    size_t r_start = std::ceil(start[i] / (stride[i] * 1.0));
-    size_t r_next_start =
-        std::min(original_shape[i], static_cast<size_t>(std::ceil((start[i] + count[i]) / (stride[i] * 1.0))));
+    size_t r_start = static_cast<size_t>(std::ceil(static_cast<double>(start[i]) / static_cast<double>(stride[i])));
+    size_t r_next_start = std::min(
+        original_shape[i],
+        static_cast<size_t>(std::ceil(static_cast<double>(start[i] + count[i]) / static_cast<double>(stride[i]))));
     XBT_DEBUG("Dim %zu: stride = %zu, Start = %zu, r_start = %zu, Count = %zu, r_count = %zu", i, stride[i], start[i],
               r_start, count[i], r_next_start - r_start);
     reduced_start.push_back(r_start);

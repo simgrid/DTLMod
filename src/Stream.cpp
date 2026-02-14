@@ -158,8 +158,7 @@ void Stream::export_metadata_to_file() const
 
 std::shared_ptr<ReductionMethod> Stream::define_reduction_method(const std::string& name)
 {
-  auto it = reduction_methods_.find(name);
-  if (it != reduction_methods_.end())
+  if (auto it = reduction_methods_.find(name); it != reduction_methods_.end())
     return it->second;
 
   std::shared_ptr<ReductionMethod> reduction_method;

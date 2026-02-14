@@ -37,13 +37,13 @@ class DecimationReductionMethod : public ReductionMethod {
     void set_reduced_local_start_and_count(sg4::ActorPtr actor, const std::vector<size_t>& reduced_local_start,
                                            const std::vector<size_t>& reduced_local_count)
     {
-      reduced_local_start_and_count_.try_emplace(actor, std::make_pair(reduced_local_start, reduced_local_count));
+      reduced_local_start_and_count_.try_emplace(actor, reduced_local_start, reduced_local_count);
     }
 
     [[nodiscard]] const std::vector<size_t>& get_stride() const { return stride_; }
     void set_stride(const std::vector<size_t>& stride) { stride_ = stride; }
     [[nodiscard]] const std::string& get_interpolation_method() const { return interpolation_method_; }
-    void set_interpolation_method(const std::string& method) { interpolation_method_ = method; }
+    void set_interpolation_method(std::string_view method) { interpolation_method_ = method; }
     [[nodiscard]] double get_cost_per_element() const { return cost_per_element_; }
     void set_cost_per_element(double cost) { cost_per_element_ = cost; }
 
@@ -59,7 +59,8 @@ class DecimationReductionMethod : public ReductionMethod {
   std::map<const Variable*, std::shared_ptr<ParameterizedDecimation>> per_variable_parameterizations_;
 
 protected:
-  void parameterize_for_variable(const Variable& var, const std::map<std::string, std::string>& parameters) override;
+  void parameterize_for_variable(const Variable& var,
+                                 const std::map<std::string, std::string, std::less<>>& parameters) override;
 
   void reduce_variable(const Variable& var) override;
 
@@ -90,7 +91,7 @@ protected:
   }
 
 public:
-  DecimationReductionMethod(const std::string& name) : ReductionMethod(name) {}
+  using ReductionMethod::ReductionMethod;
 };
 ///\endcond
 } // namespace dtlmod

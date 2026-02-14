@@ -27,26 +27,26 @@ double CompressionReductionMethod::ParameterizedCompression::get_effective_ratio
 size_t CompressionReductionMethod::get_reduced_variable_global_size(const Variable& var) const
 {
   auto ratio = per_variable_parameterizations_.at(&var)->get_compression_ratio();
-  return static_cast<size_t>(std::ceil(var.get_global_size() / ratio));
+  return static_cast<size_t>(std::ceil(static_cast<double>(var.get_global_size()) / ratio));
 }
 
 size_t CompressionReductionMethod::get_reduced_variable_local_size(const Variable& var) const
 {
   auto ratio = per_variable_parameterizations_.at(&var)->get_compression_ratio();
-  return static_cast<size_t>(std::ceil(var.get_local_size() / ratio));
+  return static_cast<size_t>(std::ceil(static_cast<double>(var.get_local_size()) / ratio));
 }
 
 double CompressionReductionMethod::get_flop_amount_to_reduce_variable(const Variable& var) const
 {
   auto param        = per_variable_parameterizations_.at(&var);
-  auto num_elements = var.get_local_size() / var.get_element_size();
+  auto num_elements = static_cast<double>(var.get_local_size() / var.get_element_size());
   return param->get_compression_cost_per_element() * num_elements;
 }
 
 double CompressionReductionMethod::get_flop_amount_to_decompress_variable(const Variable& var) const
 {
   auto param        = per_variable_parameterizations_.at(&var);
-  auto num_elements = var.get_local_size() / var.get_element_size();
+  auto num_elements = static_cast<double>(var.get_local_size() / var.get_element_size());
   return param->get_decompression_cost_per_element() * num_elements;
 }
 
@@ -69,8 +69,8 @@ double CompressionReductionMethod::derive_compression_ratio(double accuracy, con
   return 1.0;
 }
 
-void CompressionReductionMethod::parameterize_for_variable(const Variable& var,
-                                                           const std::map<std::string, std::string>& parameters)
+void CompressionReductionMethod::parameterize_for_variable(
+    const Variable& var, const std::map<std::string, std::string, std::less<>>& parameters)
 {
   double new_accuracy                       = 1e-3;
   double new_compression_cost_per_element   = 1.0;
@@ -119,7 +119,7 @@ void CompressionReductionMethod::parameterize_for_variable(const Variable& var,
     } else if (key == "ratio_variability") {
       new_ratio_variability = std::stod(value);
     } else {
-      throw UnknownCompressionOptionException(XBT_THROW_POINT, key.c_str());
+      throw UnknownCompressionOptionException(XBT_THROW_POINT, key);
     }
   }
 
@@ -129,9 +129,8 @@ void CompressionReductionMethod::parameterize_for_variable(const Variable& var,
       throw InconsistentCompressionRatioException(
           XBT_THROW_POINT, "Compressor profile 'fixed' requires an explicit 'compression_ratio' parameter.");
     new_compression_ratio = derive_compression_ratio(new_accuracy, new_compressor_profile, new_data_smoothness);
-  } else if (ratio_explicitly_set) {
-    if (new_compression_ratio < 1.0)
-      throw InconsistentCompressionRatioException(XBT_THROW_POINT, "Compression ratio must be >= 1.0");
+  } else if (ratio_explicitly_set && new_compression_ratio < 1.0) {
+    throw InconsistentCompressionRatioException(XBT_THROW_POINT, "Compression ratio must be >= 1.0");
   }
 
   XBT_DEBUG("Compression parameterization for Variable %s: profile=%s, accuracy=%.2e, ratio=%.2f, "

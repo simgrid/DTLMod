@@ -28,7 +28,8 @@ public:
   ReductionMethod(const std::string& name) : name_(name) {}
   virtual ~ReductionMethod() = default;
 
-  virtual void parameterize_for_variable(const Variable& var, const std::map<std::string, std::string>& parameters) = 0;
+  virtual void parameterize_for_variable(const Variable& var,
+                                         const std::map<std::string, std::string, std::less<>>& parameters)         = 0;
   virtual void reduce_variable(const Variable& var)                                                                 = 0;
   virtual size_t get_reduced_variable_global_size(const Variable& var) const                                        = 0;
   virtual size_t get_reduced_variable_local_size(const Variable& var) const                                         = 0;

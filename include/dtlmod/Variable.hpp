@@ -126,7 +126,8 @@ public:
   /// @brief Assign a parameterized reduction method to the Variable.
   /// @param method a ReductionMethod (already defined).
   /// @param paramaters specific parameters in key-value form to apply the reduction method to the Variable.
-  void set_reduction_operation(std::shared_ptr<ReductionMethod> method, std::map<std::string, std::string> parameters);
+  void set_reduction_operation(std::shared_ptr<ReductionMethod> method,
+                               std::map<std::string, std::string, std::less<>> parameters);
 
   [[nodiscard]] bool is_reduced() const { return is_reduced_with_ != nullptr; }
 
