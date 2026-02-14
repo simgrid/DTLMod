@@ -1,5 +1,57 @@
 ----------------------------------------------------------------------------
 
+DTLMod (0.4) February 16, 2026
+
+Major improvements:
+  - Data Reduction framework
+    - New abstract ReductionMethod interface for extensible data reduction strategies
+    - Decimation method: spatial subsampling with per-dimension stride, optional
+      interpolation (linear, quadratic, cubic), configurable computational cost,
+      and support for both publisher-side and subscriber-side application
+    - Compression method: size reduction with preserved shape, supporting three
+      compressor profiles (fixed ratio, SZ-inspired, and ZFP-inspired models),
+      separate compression and decompression costs, and per-transaction ratio
+      variability
+    - Publisher-side reduction state is propagated to subscribers through
+      inquire_variable, enabling detection and prevention of conflicting
+      double reductions
+    - Reduction operations work with both File and Staging engines
+  - New documentation pages for the reduction feature (Reduction, Decimation,
+    and Compression) and updated Main Concepts page
+  - Improved test coverage
+    - Comprehensive C++ and Python tests for both reduction methods
+    - Coverage of error handling, parameter validation, re-parameterization,
+      and publisher-subscriber workflows for each reduction method
+    - New test for subscriber-first arrival pattern in File engine
+  - Code quality and CI improvements
+    - Improved coverage reporting with SonarQube and CodeFactor integration
+    - Added subscriber synchronization barrier in File engine
+    - Removed unnecessary defensive guards and race condition checks that
+      cannot occur under SimGrid's maestro orchestration
+
+API Changes:
+  - New Stream method:
+    - Stream::define_reduction_method(name) creates a named reduction method
+      ("decimation" or "compression") for the stream
+  - New Variable methods and properties:
+    - Variable::set_reduction_operation(method, parameters) applies a reduction
+      with key-value parameters to a variable
+    - Variable::is_reduced(), is_reduced_by_publisher(), is_reduced_by_subscriber()
+      query the reduction state
+    - Variable::get_reduction_method() retrieves the applied ReductionMethod
+  - New ReductionMethod class with query methods:
+    - get_reduced_variable_global_size(), get_reduced_variable_local_size()
+    - get_reduced_variable_shape()
+    - get_flop_amount_to_reduce_variable(), get_flop_amount_to_decompress_variable()
+  - Full Python bindings for all reduction operations, including nine new
+    exception types for parameter validation errors
+  - Engine::put() now automatically simulates reduction cost and transports the
+    reduced data size when the variable is reduced
+  - Engine::get() now automatically simulates decompression cost after receiving
+    compressed data
+
+----------------------------------------------------------------------------
+
 DTLMod (0.3) January 19, 2026
 
 Major improvements:
