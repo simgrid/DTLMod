@@ -8,7 +8,7 @@ import math
 import sys
 import multiprocessing
 
-from simgrid import Engine, this_actor
+from simgrid import Engine, Host, this_actor
 from fsmod import FileSystem, OneDiskStorage
 from dtlmod import (DTL, Engine as DTLEngine, Stream, Transport,
                     UnknownReductionMethodException,
@@ -429,6 +429,137 @@ def run_test_double_reduction_forbidden():
     e.run()
 
 
+def setup_staging_platform():
+    """Set up a two-host platform with network links for staging engine tests."""
+    e = Engine(sys.argv)
+    e.set_log_control("no_loc")
+    e.set_log_control("root.thresh:critical")
+
+    zone = e.netzone_root.add_netzone_star("zone")
+    pub_host = zone.add_host("pub_host", "6Gf")
+    sub_host = zone.add_host("sub_host", "6Gf")
+    backbone = zone.add_link("backbone", "10Gbps").set_latency("10us")
+    link_pub = zone.add_link("link_pub", "10Gbps").set_latency("10us")
+    link_sub = zone.add_link("link_sub", "10Gbps").set_latency("10us")
+    zone.add_route(pub_host, None, [link_pub, backbone])
+    zone.add_route(sub_host, None, [link_sub, backbone])
+    zone.seal()
+
+    DTL.create()
+    return e
+
+
+def run_test_decimation_staging_engine():
+    e = setup_staging_platform()
+    pub_host = Host.by_name("pub_host")
+    sub_host = Host.by_name("sub_host")
+
+    def publisher():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        stream.set_engine_type(DTLEngine.Type.Staging)
+        stream.set_transport_method(Transport.Method.MQ)
+        this_actor.info("Create a 2D variable with 10kx10k doubles")
+        var = stream.define_variable("var", (10000, 10000), (0, 0), (10000, 10000), ctypes.sizeof(ctypes.c_double))
+        decimator = stream.define_reduction_method("decimation")
+        engine = stream.open("my-output", Stream.Mode.Publish)
+        this_actor.sleep_for(0.5)
+
+        this_actor.info("Assign decimation with stride 2,2")
+        var.set_reduction_operation(decimator, {"stride": "2,2"})
+        assert var.is_reduced
+        assert var.is_reduced_by_publisher
+
+        this_actor.info("Verify reduced shape: 5000x5000")
+        shape = decimator.get_reduced_variable_shape(var)
+        assert shape[0] == 5000
+        assert shape[1] == 5000
+
+        engine.begin_transaction()
+        engine.put(var)
+        engine.end_transaction()
+        this_actor.sleep_for(1)
+        engine.close()
+        DTL.disconnect()
+
+    def subscriber():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        engine = stream.open("my-output", Stream.Mode.Subscribe)
+        var = stream.inquire_variable("var")
+
+        this_actor.info("Get the decimated variable")
+        engine.begin_transaction()
+        engine.get(var)
+        engine.end_transaction()
+
+        engine.close()
+        DTL.disconnect()
+
+    pub_host.add_actor("Publisher", publisher)
+    sub_host.add_actor("Subscriber", subscriber)
+    e.run()
+
+
+def run_test_compression_staging_engine():
+    e = setup_staging_platform()
+    pub_host = Host.by_name("pub_host")
+    sub_host = Host.by_name("sub_host")
+
+    def publisher():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        stream.set_engine_type(DTLEngine.Type.Staging)
+        stream.set_transport_method(Transport.Method.MQ)
+        this_actor.info("Create a 2D variable with 10kx10k doubles")
+        var = stream.define_variable("var", (10000, 10000), (0, 0), (10000, 10000), ctypes.sizeof(ctypes.c_double))
+        compressor = stream.define_reduction_method("compression")
+        engine = stream.open("my-output", Stream.Mode.Publish)
+        this_actor.sleep_for(0.5)
+
+        this_actor.info("Assign compression with ratio 5 and explicit costs")
+        var.set_reduction_operation(compressor, {"compression_ratio": "5",
+                                                 "compression_cost_per_element": "3",
+                                                 "decompression_cost_per_element": "1"})
+        assert var.is_reduced
+        assert var.is_reduced_by_publisher
+
+        this_actor.info("Verify compressed sizes")
+        expected_reduced = math.ceil(ctypes.sizeof(ctypes.c_double) * 10000.0 * 10000.0 / 5.0)
+        assert compressor.get_reduced_variable_global_size(var) == expected_reduced
+        assert compressor.get_reduced_variable_local_size(var) == expected_reduced
+
+        this_actor.info("Verify shape is unchanged")
+        shape = compressor.get_reduced_variable_shape(var)
+        assert shape[0] == 10000
+        assert shape[1] == 10000
+
+        engine.begin_transaction()
+        engine.put(var)
+        engine.end_transaction()
+        this_actor.sleep_for(1)
+        engine.close()
+        DTL.disconnect()
+
+    def subscriber():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        engine = stream.open("my-output", Stream.Mode.Subscribe)
+        var = stream.inquire_variable("var")
+
+        this_actor.info("Get the compressed variable (decompression cost should be applied)")
+        engine.begin_transaction()
+        engine.get(var)
+        engine.end_transaction()
+
+        engine.close()
+        DTL.disconnect()
+
+    pub_host.add_actor("Publisher", publisher)
+    sub_host.add_actor("Subscriber", subscriber)
+    e.run()
+
+
 if __name__ == '__main__':
     tests = [
         run_test_bogus_decimation_setting,
@@ -438,6 +569,8 @@ if __name__ == '__main__':
         run_test_simple_compression_file_engine,
         run_test_compression_with_derived_ratio,
         run_test_double_reduction_forbidden,
+        run_test_decimation_staging_engine,
+        run_test_compression_staging_engine,
     ]
 
     for test in tests:

@@ -453,6 +453,139 @@ TEST_F(DTLReductionTest, CompressionWithDerivedRatio)
   });
 }
 
+TEST_F(DTLReductionTest, DecimationStagingEngine)
+{
+  DO_TEST_WITH_FORK([this]() {
+    // Build a two-host platform with a network link (required for staging transport)
+    auto* zone     = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_star("zone");
+    auto* pub_host = zone->add_host("pub_host", "6Gf");
+    auto* sub_host = zone->add_host("sub_host", "6Gf");
+    auto* backbone = zone->add_link("backbone", "10Gbps")->set_latency("10us");
+    auto* link_pub = zone->add_link("link_pub", "10Gbps")->set_latency("10us");
+    auto* link_sub = zone->add_link("link_sub", "10Gbps")->set_latency("10us");
+    zone->add_route(pub_host, nullptr, std::vector<const sg4::Link*>{link_pub, backbone});
+    zone->add_route(sub_host, nullptr, std::vector<const sg4::Link*>{link_sub, backbone});
+    zone->seal();
+    dtlmod::DTL::create();
+
+    pub_host->add_actor("Publisher", []() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::MQ);
+      XBT_INFO("Create a 2D variable with 10kx10k doubles");
+      auto var       = stream->define_variable("var", {10000, 10000}, {0, 0}, {10000, 10000}, sizeof(double));
+      auto decimator = stream->define_reduction_method("decimation");
+      auto engine    = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+      sg4::this_actor::sleep_for(0.5);
+
+      XBT_INFO("Assign decimation with stride 2,2");
+      ASSERT_NO_THROW(var->set_reduction_operation(decimator, {{"stride", "2,2"}}));
+      ASSERT_TRUE(var->is_reduced());
+      ASSERT_TRUE(var->is_reduced_by_publisher());
+
+      XBT_INFO("Verify reduced shape: 5000x5000");
+      auto shape = decimator->get_reduced_variable_shape(*var);
+      ASSERT_EQ(shape[0], 5000u);
+      ASSERT_EQ(shape[1], 5000u);
+
+      engine->begin_transaction();
+      ASSERT_NO_THROW(engine->put(var));
+      engine->end_transaction();
+      sg4::this_actor::sleep_for(1);
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("Subscriber", []() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var    = stream->inquire_variable("var");
+
+      XBT_INFO("Get the decimated variable");
+      engine->begin_transaction();
+      ASSERT_NO_THROW(engine->get(var));
+      engine->end_transaction();
+
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLReductionTest, CompressionStagingEngine)
+{
+  DO_TEST_WITH_FORK([this]() {
+    // Build a two-host platform with a network link (required for staging transport)
+    auto* zone     = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_star("zone");
+    auto* pub_host = zone->add_host("pub_host", "6Gf");
+    auto* sub_host = zone->add_host("sub_host", "6Gf");
+    auto* backbone = zone->add_link("backbone", "10Gbps")->set_latency("10us");
+    auto* link_pub = zone->add_link("link_pub", "10Gbps")->set_latency("10us");
+    auto* link_sub = zone->add_link("link_sub", "10Gbps")->set_latency("10us");
+    zone->add_route(pub_host, nullptr, std::vector<const sg4::Link*>{link_pub, backbone});
+    zone->add_route(sub_host, nullptr, std::vector<const sg4::Link*>{link_sub, backbone});
+    zone->seal();
+    dtlmod::DTL::create();
+
+    pub_host->add_actor("Publisher", []() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::MQ);
+      XBT_INFO("Create a 2D variable with 10kx10k doubles");
+      auto var        = stream->define_variable("var", {10000, 10000}, {0, 0}, {10000, 10000}, sizeof(double));
+      auto compressor = stream->define_reduction_method("compression");
+      auto engine     = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+      sg4::this_actor::sleep_for(0.5);
+
+      XBT_INFO("Assign compression with ratio 5 and explicit costs");
+      ASSERT_NO_THROW(var->set_reduction_operation(compressor, {{"compression_ratio", "5"},
+                                                                {"compression_cost_per_element", "3"},
+                                                                {"decompression_cost_per_element", "1"}}));
+      ASSERT_TRUE(var->is_reduced());
+      ASSERT_TRUE(var->is_reduced_by_publisher());
+
+      XBT_INFO("Verify compressed sizes");
+      size_t expected_reduced = static_cast<size_t>(std::ceil(sizeof(double) * 10000.0 * 10000.0 / 5.0));
+      ASSERT_EQ(compressor->get_reduced_variable_global_size(*var), expected_reduced);
+      ASSERT_EQ(compressor->get_reduced_variable_local_size(*var), expected_reduced);
+
+      XBT_INFO("Verify shape is unchanged (compression preserves shape)");
+      auto shape = compressor->get_reduced_variable_shape(*var);
+      ASSERT_EQ(shape[0], 10000u);
+      ASSERT_EQ(shape[1], 10000u);
+
+      engine->begin_transaction();
+      ASSERT_NO_THROW(engine->put(var));
+      engine->end_transaction();
+      sg4::this_actor::sleep_for(1);
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("Subscriber", []() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var    = stream->inquire_variable("var");
+
+      XBT_INFO("Get the compressed variable (decompression cost should be applied on subscriber)");
+      engine->begin_transaction();
+      ASSERT_NO_THROW(engine->get(var));
+      engine->end_transaction();
+
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLReductionTest, DoubleReductionForbidden)
 {
   DO_TEST_WITH_FORK([this]() {
