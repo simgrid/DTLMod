@@ -63,6 +63,13 @@ class CompressionReductionMethod : public ReductionMethod {
   /// @brief Derive the compression ratio from accuracy and compressor profile.
   static double derive_compression_ratio(double accuracy, std::string_view profile, double data_smoothness);
 
+  /// @brief Validate compressor profile string. Throws if invalid.
+  static void validate_compressor_profile(std::string_view profile);
+
+  /// @brief Validate and resolve the compression ratio from parsed parameters.
+  static double resolve_compression_ratio(double ratio, bool ratio_explicitly_set, bool is_new,
+                                          std::string_view profile, double accuracy, double data_smoothness);
+
 public:
   using ReductionMethod::ReductionMethod;
   void parameterize_for_variable(const Variable& var,

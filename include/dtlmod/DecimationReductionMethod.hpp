@@ -58,6 +58,12 @@ class DecimationReductionMethod : public ReductionMethod {
 
   std::map<const Variable*, std::shared_ptr<ParameterizedDecimation>> per_variable_parameterizations_;
 
+  /// @brief Parse and validate a comma-separated stride string against a variable's shape.
+  static std::vector<size_t> parse_stride(std::string_view value, const Variable& var);
+
+  /// @brief Validate that an interpolation method is compatible with the variable's dimensionality.
+  static void validate_interpolation(std::string_view method, const Variable& var);
+
 protected:
   void parameterize_for_variable(const Variable& var,
                                  const std::map<std::string, std::string, std::less<>>& parameters) override;

@@ -55,11 +55,12 @@ double CompressionReductionMethod::derive_compression_ratio(double accuracy, std
 {
   if (profile == "sz") {
     // SZ-like prediction-based compressor: empirical fit from published benchmarks on scientific data.
-    // Higher smoothness → better prediction → higher ratio.
+    // Higher smoothness -> better prediction -> higher ratio.
     double alpha = 3.0;
     double beta  = 0.8;
     return std::max(1.0, alpha * std::pow(-std::log10(accuracy), beta) * (0.5 + data_smoothness));
-  } else if (profile == "zfp") {
+  }
+  if (profile == "zfp") {
     // ZFP-like transform-based compressor: rate = bits-per-value derived from accuracy.
     // 64 bits (double) / rate gives the compression ratio.
     double rate = std::max(1.0, -std::log2(accuracy) + 1.0);
@@ -69,104 +70,91 @@ double CompressionReductionMethod::derive_compression_ratio(double accuracy, std
   return 1.0;
 }
 
+void CompressionReductionMethod::validate_compressor_profile(std::string_view profile)
+{
+  if (profile != "fixed" && profile != "sz" && profile != "zfp")
+    throw UnknownCompressionOptionException(XBT_THROW_POINT, "Unknown compressor profile: " + std::string(profile) +
+                                                                 " (options are: fixed, sz, or zfp).");
+}
+
+double CompressionReductionMethod::resolve_compression_ratio(double ratio, bool ratio_explicitly_set, bool is_new,
+                                                             std::string_view profile, double accuracy,
+                                                             double data_smoothness)
+{
+  if (ratio_explicitly_set) {
+    if (ratio < 1.0)
+      throw InconsistentCompressionRatioException(XBT_THROW_POINT, "Compression ratio must be >= 1.0");
+    return ratio;
+  }
+  if (is_new) {
+    if (profile == "fixed")
+      throw InconsistentCompressionRatioException(
+          XBT_THROW_POINT, "Compressor profile 'fixed' requires an explicit 'compression_ratio' parameter.");
+    return derive_compression_ratio(accuracy, profile, data_smoothness);
+  }
+  return ratio; // Keep existing ratio for partial updates without explicit ratio
+}
+
 void CompressionReductionMethod::parameterize_for_variable(
     const Variable& var, const std::map<std::string, std::string, std::less<>>& parameters)
 {
-  double new_accuracy                       = 1e-3;
-  double new_compression_cost_per_element   = 1.0;
-  double new_decompression_cost_per_element = 1.0;
-  double new_compression_ratio              = 0.0; // 0 means "not specified, must be derived"
-  std::string new_compressor_profile        = "fixed";
-  double new_data_smoothness                = 0.5;
-  double new_ratio_variability              = 0.0;
+  // Start from existing values (if any) to support partial updates.
+  auto it     = per_variable_parameterizations_.find(&var);
+  bool is_new = (it == per_variable_parameterizations_.end());
 
-  // Detect existing parameterization (if any).
-  auto it           = per_variable_parameterizations_.find(&var);
-  const bool exists = (it != per_variable_parameterizations_.end());
+  double accuracy                       = 1e-3;
+  double compression_cost_per_element   = 1.0;
+  double decompression_cost_per_element = 1.0;
+  double compression_ratio              = 0.0;
+  std::string compressor_profile        = "fixed";
+  double data_smoothness                = 0.5;
+  double ratio_variability              = 0.0;
 
-  // Initialize from existing values (if present) to support partial updates.
-  if (exists) {
+  if (!is_new) {
     const auto& existing               = it->second;
-    new_accuracy                       = existing->get_accuracy();
-    new_compression_cost_per_element   = existing->get_compression_cost_per_element();
-    new_decompression_cost_per_element = existing->get_decompression_cost_per_element();
-    new_compression_ratio              = existing->get_compression_ratio();
-    new_compressor_profile             = existing->get_compressor_profile();
-    new_data_smoothness                = existing->get_data_smoothness();
-    new_ratio_variability              = existing->get_ratio_variability();
+    accuracy                           = existing->get_accuracy();
+    compression_cost_per_element       = existing->get_compression_cost_per_element();
+    decompression_cost_per_element     = existing->get_decompression_cost_per_element();
+    compression_ratio                  = existing->get_compression_ratio();
+    compressor_profile                 = existing->get_compressor_profile();
+    data_smoothness                    = existing->get_data_smoothness();
+    ratio_variability                  = existing->get_ratio_variability();
   }
 
   bool ratio_explicitly_set = false;
 
   for (const auto& [key, value] : parameters) {
-    if (key == "accuracy") {
-      new_accuracy = std::stod(value);
-    } else if (key == "compression_cost_per_element") {
-      new_compression_cost_per_element = std::stod(value);
-    } else if (key == "decompression_cost_per_element") {
-      new_decompression_cost_per_element = std::stod(value);
-    } else if (key == "compression_ratio") {
-      new_compression_ratio = std::stod(value);
-      ratio_explicitly_set  = true;
+    if (key == "accuracy")
+      accuracy = std::stod(value);
+    else if (key == "compression_cost_per_element")
+      compression_cost_per_element = std::stod(value);
+    else if (key == "decompression_cost_per_element")
+      decompression_cost_per_element = std::stod(value);
+    else if (key == "compression_ratio") {
+      compression_ratio    = std::stod(value);
+      ratio_explicitly_set = true;
     } else if (key == "compressor") {
-      if (value == "fixed" || value == "sz" || value == "zfp")
-        new_compressor_profile = value;
-      else
-        throw UnknownCompressionOptionException(XBT_THROW_POINT, "Unknown compressor profile: " + value +
-                                                                     " (options are: fixed, sz, or zfp).");
-    } else if (key == "data_smoothness") {
-      new_data_smoothness = std::stod(value);
-    } else if (key == "ratio_variability") {
-      new_ratio_variability = std::stod(value);
-    } else {
+      validate_compressor_profile(value);
+      compressor_profile = value;
+    } else if (key == "data_smoothness")
+      data_smoothness = std::stod(value);
+    else if (key == "ratio_variability")
+      ratio_variability = std::stod(value);
+    else
       throw UnknownCompressionOptionException(XBT_THROW_POINT, key);
-    }
   }
 
-  // Derive compression ratio if not explicitly specified
-  if (!ratio_explicitly_set && !exists) {
-    if (new_compressor_profile == "fixed")
-      throw InconsistentCompressionRatioException(
-          XBT_THROW_POINT, "Compressor profile 'fixed' requires an explicit 'compression_ratio' parameter.");
-    new_compression_ratio = derive_compression_ratio(new_accuracy, new_compressor_profile, new_data_smoothness);
-  } else if (ratio_explicitly_set && new_compression_ratio < 1.0) {
-    throw InconsistentCompressionRatioException(XBT_THROW_POINT, "Compression ratio must be >= 1.0");
-  }
+  compression_ratio = resolve_compression_ratio(compression_ratio, ratio_explicitly_set, is_new, compressor_profile,
+                                                accuracy, data_smoothness);
 
   XBT_DEBUG("Compression parameterization for Variable %s: profile=%s, accuracy=%.2e, ratio=%.2f, "
             "compression_cost=%.2f, decompression_cost=%.2f, smoothness=%.2f, variability=%.2f",
-            var.get_cname(), new_compressor_profile.c_str(), new_accuracy, new_compression_ratio,
-            new_compression_cost_per_element, new_decompression_cost_per_element, new_data_smoothness,
-            new_ratio_variability);
+            var.get_cname(), compressor_profile.c_str(), accuracy, compression_ratio, compression_cost_per_element,
+            decompression_cost_per_element, data_smoothness, ratio_variability);
 
-  if (!exists) {
-    per_variable_parameterizations_.try_emplace(
-        &var, std::make_shared<ParameterizedCompression>(
-                  var, new_accuracy, new_compression_cost_per_element, new_decompression_cost_per_element,
-                  new_compression_ratio, new_compressor_profile, new_data_smoothness, new_ratio_variability));
-    return;
-  }
-
-  // If already exists, update only if changed.
-  const auto& existing = it->second;
-
-  if (existing->get_accuracy() != new_accuracy)
-    existing->set_accuracy(new_accuracy);
-  if (existing->get_compression_cost_per_element() != new_compression_cost_per_element)
-    existing->set_compression_cost_per_element(new_compression_cost_per_element);
-  if (existing->get_decompression_cost_per_element() != new_decompression_cost_per_element)
-    existing->set_decompression_cost_per_element(new_decompression_cost_per_element);
-  if (ratio_explicitly_set || new_compressor_profile != existing->get_compressor_profile()) {
-    double updated_ratio = ratio_explicitly_set
-                               ? new_compression_ratio
-                               : derive_compression_ratio(new_accuracy, new_compressor_profile, new_data_smoothness);
-    existing->set_compression_ratio(updated_ratio);
-  }
-  if (existing->get_compressor_profile() != new_compressor_profile)
-    existing->set_compressor_profile(new_compressor_profile);
-  if (existing->get_data_smoothness() != new_data_smoothness)
-    existing->set_data_smoothness(new_data_smoothness);
-  if (existing->get_ratio_variability() != new_ratio_variability)
-    existing->set_ratio_variability(new_ratio_variability);
+  // Always (re)create the parameterization — avoids field-by-field update complexity.
+  per_variable_parameterizations_[&var] = std::make_shared<ParameterizedCompression>(
+      var, accuracy, compression_cost_per_element, decompression_cost_per_element, compression_ratio,
+      compressor_profile, data_smoothness, ratio_variability);
 }
 } // namespace dtlmod
