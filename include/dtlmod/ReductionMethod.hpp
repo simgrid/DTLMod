@@ -25,7 +25,7 @@ class ReductionMethod {
   std::string name_;
 
 public:
-  ReductionMethod(const std::string& name) : name_(name) {}
+  explicit ReductionMethod(const std::string& name) : name_(name) {}
   virtual ~ReductionMethod() = default;
 
   virtual void parameterize_for_variable(const Variable& var,

@@ -15,13 +15,13 @@ namespace dtlmod {
 
 double CompressionReductionMethod::ParameterizedCompression::get_effective_ratio(unsigned int transaction_id) const
 {
-  if (ratio_variability_ <= 0.0)
-    return compression_ratio_;
+  if (cfg_.ratio_variability <= 0.0)
+    return cfg_.compression_ratio;
   // Deterministic noise from hash of (variable_name, transaction_id)
   size_t seed = std::hash<std::string>{}(var_->get_name()) ^ (std::hash<unsigned int>{}(transaction_id) << 1);
   // Map to [1 - variability, 1 + variability]
-  double noise = 1.0 + ratio_variability_ * (2.0 * (seed % 10001) / 10000.0 - 1.0);
-  return std::max(1.0, compression_ratio_ * noise);
+  double noise = 1.0 + cfg_.ratio_variability * (2.0 * (seed % 10001) / 10000.0 - 1.0);
+  return std::max(1.0, cfg_.compression_ratio * noise);
 }
 
 size_t CompressionReductionMethod::get_reduced_variable_global_size(const Variable& var) const
@@ -102,59 +102,41 @@ void CompressionReductionMethod::parameterize_for_variable(
   auto it     = per_variable_parameterizations_.find(&var);
   bool is_new = (it == per_variable_parameterizations_.end());
 
-  double accuracy                       = 1e-3;
-  double compression_cost_per_element   = 1.0;
-  double decompression_cost_per_element = 1.0;
-  double compression_ratio              = 0.0;
-  std::string compressor_profile        = "fixed";
-  double data_smoothness                = 0.5;
-  double ratio_variability              = 0.0;
-
-  if (!is_new) {
-    const auto& existing               = it->second;
-    accuracy                           = existing->get_accuracy();
-    compression_cost_per_element       = existing->get_compression_cost_per_element();
-    decompression_cost_per_element     = existing->get_decompression_cost_per_element();
-    compression_ratio                  = existing->get_compression_ratio();
-    compressor_profile                 = existing->get_compressor_profile();
-    data_smoothness                    = existing->get_data_smoothness();
-    ratio_variability                  = existing->get_ratio_variability();
-  }
+  CompressionConfig cfg = is_new ? CompressionConfig{} : it->second->get_config();
 
   bool ratio_explicitly_set = false;
 
   for (const auto& [key, value] : parameters) {
     if (key == "accuracy")
-      accuracy = std::stod(value);
+      cfg.accuracy = std::stod(value);
     else if (key == "compression_cost_per_element")
-      compression_cost_per_element = std::stod(value);
+      cfg.compression_cost_per_element = std::stod(value);
     else if (key == "decompression_cost_per_element")
-      decompression_cost_per_element = std::stod(value);
+      cfg.decompression_cost_per_element = std::stod(value);
     else if (key == "compression_ratio") {
-      compression_ratio    = std::stod(value);
-      ratio_explicitly_set = true;
+      cfg.compression_ratio = std::stod(value);
+      ratio_explicitly_set  = true;
     } else if (key == "compressor") {
       validate_compressor_profile(value);
-      compressor_profile = value;
+      cfg.compressor_profile = value;
     } else if (key == "data_smoothness")
-      data_smoothness = std::stod(value);
+      cfg.data_smoothness = std::stod(value);
     else if (key == "ratio_variability")
-      ratio_variability = std::stod(value);
+      cfg.ratio_variability = std::stod(value);
     else
       throw UnknownCompressionOptionException(XBT_THROW_POINT, key);
   }
 
-  compression_ratio = resolve_compression_ratio(compression_ratio, ratio_explicitly_set, is_new, compressor_profile,
-                                                accuracy, data_smoothness);
+  cfg.compression_ratio = resolve_compression_ratio(cfg.compression_ratio, ratio_explicitly_set, is_new,
+                                                    cfg.compressor_profile, cfg.accuracy, cfg.data_smoothness);
 
   XBT_DEBUG("Compression parameterization for Variable %s: profile=%s, accuracy=%.2e, ratio=%.2f, "
             "compression_cost=%.2f, decompression_cost=%.2f, smoothness=%.2f, variability=%.2f",
-            var.get_cname(), compressor_profile.c_str(), accuracy, compression_ratio, compression_cost_per_element,
-            decompression_cost_per_element, data_smoothness, ratio_variability);
+            var.get_cname(), cfg.compressor_profile.c_str(), cfg.accuracy, cfg.compression_ratio,
+            cfg.compression_cost_per_element, cfg.decompression_cost_per_element, cfg.data_smoothness,
+            cfg.ratio_variability);
 
   // Always (re)create the parameterization — avoids field-by-field update complexity.
-  per_variable_parameterizations_[&var] = std::make_shared<ParameterizedCompression>(
-      var, accuracy, compression_cost_per_element, decompression_cost_per_element, compression_ratio,
-      compressor_profile, data_smoothness, ratio_variability);
+  per_variable_parameterizations_[&var] = std::make_shared<ParameterizedCompression>(var, std::move(cfg));
 }
 } // namespace dtlmod

@@ -14,45 +14,31 @@ namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 
 class CompressionReductionMethod : public ReductionMethod {
+  struct CompressionConfig {
+    double accuracy                       = 1e-3;
+    double compression_cost_per_element   = 1.0;
+    double decompression_cost_per_element = 1.0;
+    double compression_ratio              = 0.0;
+    std::string compressor_profile        = "fixed";
+    double data_smoothness                = 0.5;
+    double ratio_variability              = 0.0;
+  };
+
   class ParameterizedCompression {
     const Variable* var_; // non-owning: the Variable outlives the parameterization (both owned by Stream)
-    double accuracy_;
-    double compression_cost_per_element_;
-    double decompression_cost_per_element_;
-    double compression_ratio_;
-    std::string compressor_profile_; // "fixed", "sz", "zfp"
-    double data_smoothness_;         // hint in [0,1], shifts the model curve
-    double ratio_variability_;       // per-transaction noise amplitude in [0,1]
+    CompressionConfig cfg_;
 
   public:
-    ParameterizedCompression(const Variable& var, double accuracy, double compression_cost_per_element,
-                             double decompression_cost_per_element, double compression_ratio,
-                             const std::string& compressor_profile, double data_smoothness, double ratio_variability)
-        : var_(&var)
-        , accuracy_(accuracy)
-        , compression_cost_per_element_(compression_cost_per_element)
-        , decompression_cost_per_element_(decompression_cost_per_element)
-        , compression_ratio_(compression_ratio)
-        , compressor_profile_(compressor_profile)
-        , data_smoothness_(data_smoothness)
-        , ratio_variability_(ratio_variability)
-    {
-    }
+    ParameterizedCompression(const Variable& var, CompressionConfig cfg) : var_(&var), cfg_(std::move(cfg)) {}
 
-    [[nodiscard]] double get_accuracy() const { return accuracy_; }
-    void set_accuracy(double accuracy) { accuracy_ = accuracy; }
-    [[nodiscard]] double get_compression_cost_per_element() const { return compression_cost_per_element_; }
-    void set_compression_cost_per_element(double cost) { compression_cost_per_element_ = cost; }
-    [[nodiscard]] double get_decompression_cost_per_element() const { return decompression_cost_per_element_; }
-    void set_decompression_cost_per_element(double cost) { decompression_cost_per_element_ = cost; }
-    [[nodiscard]] double get_compression_ratio() const { return compression_ratio_; }
-    void set_compression_ratio(double ratio) { compression_ratio_ = ratio; }
-    [[nodiscard]] const std::string& get_compressor_profile() const { return compressor_profile_; }
-    void set_compressor_profile(std::string_view profile) { compressor_profile_ = profile; }
-    [[nodiscard]] double get_data_smoothness() const { return data_smoothness_; }
-    void set_data_smoothness(double smoothness) { data_smoothness_ = smoothness; }
-    [[nodiscard]] double get_ratio_variability() const { return ratio_variability_; }
-    void set_ratio_variability(double variability) { ratio_variability_ = variability; }
+    [[nodiscard]] double get_accuracy() const { return cfg_.accuracy; }
+    [[nodiscard]] double get_compression_cost_per_element() const { return cfg_.compression_cost_per_element; }
+    [[nodiscard]] double get_decompression_cost_per_element() const { return cfg_.decompression_cost_per_element; }
+    [[nodiscard]] double get_compression_ratio() const { return cfg_.compression_ratio; }
+    [[nodiscard]] const std::string& get_compressor_profile() const { return cfg_.compressor_profile; }
+    [[nodiscard]] double get_data_smoothness() const { return cfg_.data_smoothness; }
+    [[nodiscard]] double get_ratio_variability() const { return cfg_.ratio_variability; }
+    [[nodiscard]] const CompressionConfig& get_config() const { return cfg_; }
 
     /// @brief Get the effective compression ratio, optionally perturbed by per-transaction noise.
     [[nodiscard]] double get_effective_ratio(unsigned int transaction_id = 0) const;
