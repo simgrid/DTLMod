@@ -112,9 +112,15 @@ void DecimationReductionMethod::parameterize_for_variable(
       throw UnknownDecimationOptionException(XBT_THROW_POINT, key);
   }
 
-  // Always (re)create the parameterization — avoids field-by-field update complexity.
-  per_variable_parameterizations_[&var] =
-      std::make_shared<ParameterizedDecimation>(var, stride, interpolation_method, cost_per_element);
+  if (it == per_variable_parameterizations_.end()) {
+    per_variable_parameterizations_.try_emplace(
+        &var, std::make_shared<ParameterizedDecimation>(var, stride, interpolation_method, cost_per_element));
+  } else {
+    // Update in-place to preserve per-actor state accumulated by reduce_variable().
+    it->second->set_stride(stride);
+    it->second->set_interpolation_method(interpolation_method);
+    it->second->set_cost_per_element(cost_per_element);
+  }
 }
 
 void DecimationReductionMethod::reduce_variable(const Variable& var)
