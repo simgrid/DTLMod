@@ -55,7 +55,7 @@ void Engine::get(const std::shared_ptr<Variable>& var) const
 {
   if (var->is_reduced() && var->is_reduced_by_subscriber()) {
     var->get_reduction_method()->reduce_variable(*var);
-    // Perform an Exec activity before putting the variable into the DTL to account for the time needed to reduce it.
+    // Perform an Exec activity before getting the variable for the DTL to account for the time needed to reduce it.
     sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(*var));
   }
 

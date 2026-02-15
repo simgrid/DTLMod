@@ -35,10 +35,8 @@ Unlike compression, decimation can be applied on **both sides** of the data flow
   cost of the decimation kernel is incurred before the data is transported. Only the decimated version of the variable
   is put into the DTL, which directly reduces I/O or network costs.
 
-- When applied by a **subscriber**, decimation reduces the volume of data that the subscriber has to process after
-  receiving it. The subscriber first retrieves the full variable and then applies decimation locally. This can be
-  useful when the subscriber only needs a coarse view of the data, but the full-resolution version must still be
-  transported because other subscribers or a checkpoint mechanism may need it.
+- When applied by a **subscriber**, decimation reduces the volume of data that the subscriber has to process before 
+  retrieving it from the DTL. 
 
 Interpolation
 -------------
