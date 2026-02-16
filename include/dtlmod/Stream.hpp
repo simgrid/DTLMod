@@ -48,7 +48,7 @@ private:
   bool metadata_export_               = false;
   std::string metadata_file_;
   sg4::MutexPtr mutex_ = sg4::Mutex::create();
-  Mode access_mode_;
+  Mode access_mode_    = Mode::Publish;
 
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
   std::unordered_map<std::string, std::shared_ptr<ReductionMethod>> reduction_methods_;
