@@ -1,15 +1,38 @@
 # Valgrind suppressions file for DTLMod
 # This file contains suppressions for known false positives and third-party library issues
 
+# SimGrid I/O activity leaks in forked test processes (DO_TEST_WITH_FORK uses _exit())
+{
+   simgrid_io_init_leak
+   Memcheck:Leak
+   ...
+   fun:*simgrid*s4u*Io*init*
+}
+
+{
+   simgrid_disk_io_init_leak
+   Memcheck:Leak
+   ...
+   fun:*simgrid*s4u*Disk*io_init*
+}
+
+# SimGrid context and engine allocations not freed in forked children
 {
    simgrid_context_factory
    Memcheck:Leak
    ...
-   obj:*/libsimgrid.so*
+   fun:*simgrid*
 }
 
 {
-   simgrid_boost_context
+   fsmod_library
+   Memcheck:Leak
+   ...
+   fun:*simgrid*fsmod*
+}
+
+{
+   boost_context
    Memcheck:Leak
    ...
    obj:*/libboost_context.so*
@@ -20,13 +43,6 @@
    Memcheck:Leak
    ...
    obj:*/libboost_filesystem.so*
-}
-
-{
-   fsmod_library
-   Memcheck:Leak
-   ...
-   obj:*/libfsmod.so*
 }
 
 {
