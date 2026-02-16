@@ -133,10 +133,8 @@ with different strides, or not be decimated at all.</p>
 <li><p>When applied by a <strong>publisher</strong>, decimation reduces the volume of data that leaves the publisher. The simulated
 cost of the decimation kernel is incurred before the data is transported. Only the decimated version of the variable
 is put into the DTL, which directly reduces I/O or network costs.</p></li>
-<li><p>When applied by a <strong>subscriber</strong>, decimation reduces the volume of data that the subscriber has to process after
-receiving it. The subscriber first retrieves the full variable and then applies decimation locally. This can be
-useful when the subscriber only needs a coarse view of the data, but the full-resolution version must still be
-transported because other subscribers or a checkpoint mechanism may need it.</p></li>
+<li><p>When applied by a <strong>subscriber</strong>, decimation reduces the volume of data that the subscriber has to process before
+retrieving it from the DTL.</p></li>
 </ul>
 </section>
 <section id="interpolation">
