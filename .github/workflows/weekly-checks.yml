@@ -258,7 +258,7 @@ jobs:
             cat valgrind-summary.txt
 
             # Check for critical errors
-            if grep -q "ERROR SUMMARY: [^0]" valgrind-output.txt; then
+            if grep -qP "ERROR SUMMARY: [1-9]" valgrind-output.txt; then
               echo "::error::Valgrind detected memory errors!"
               exit 1
             fi
