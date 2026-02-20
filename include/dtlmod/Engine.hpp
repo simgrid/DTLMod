@@ -55,6 +55,8 @@ private:
   std::shared_ptr<Transport> transport_ = nullptr;
   std::weak_ptr<Stream> stream_;
 
+  bool pub_ever_present_ = false;
+
   ActorRegistry publishers_;
   ActorRegistry subscribers_;
 
@@ -85,6 +87,8 @@ protected:
   [[nodiscard]] const ActorRegistry& get_publishers() const noexcept { return publishers_; }
   [[nodiscard]] ActorRegistry& get_subscribers() noexcept { return subscribers_; }
   [[nodiscard]] const ActorRegistry& get_subscribers() const noexcept { return subscribers_; }
+
+  [[nodiscard]] bool pub_ever_present() const noexcept { return pub_ever_present_; }
 
   // Pure virtual methods for derived classes to implement
   virtual void create_transport(const Transport::Method& transport_method) = 0;

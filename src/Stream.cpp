@@ -146,13 +146,43 @@ Stream& Stream::unset_metadata_export() noexcept
   return *this;
 }
 
-void Stream::export_metadata_to_file() const
+void Stream::export_metadata_to_file()
 {
+  metadata_exported_ = true;
   if (metadata_export_) {
     std::ofstream export_stream(metadata_file_, std::ofstream::out);
-    for (const auto& [name, v] : variables_)
-      v->get_metadata()->export_to_file(export_stream);
+    for (const auto& [name, v] : variables_) {
+      auto it          = var_prog_file_paths_.find(name);
+      std::string prog = (it != var_prog_file_paths_.end()) ? it->second : "";
+      v->get_metadata()->export_to_file(export_stream, prog);
+    }
     export_stream.close();
+    // Remove per-variable prog files now that the final file is written
+    for (const auto& [name, path] : var_prog_file_paths_)
+      std::remove(path.c_str());
+    var_prog_file_paths_.clear();
+  }
+}
+
+void Stream::flush_and_evict_transaction(unsigned int tx_id)
+{
+  if (metadata_exported_) {
+    // Sequential scenario or post-export: the metadata file is already complete; just free memory
+    for (const auto& [name, v] : variables_)
+      v->get_metadata()->evict_transaction(tx_id);
+    return;
+  }
+  if (metadata_export_) {
+    for (const auto& [name, v] : variables_) {
+      if (!var_prog_file_paths_.count(name))
+        var_prog_file_paths_[name] = metadata_file_ + "." + name + ".prog";
+      std::ofstream out(var_prog_file_paths_.at(name), std::ofstream::app);
+      v->get_metadata()->write_transaction_to_stream(tx_id, out);
+      // write_transaction_to_stream also increments flushed_count_ and evicts from transaction_infos_
+    }
+  } else {
+    for (const auto& [name, v] : variables_)
+      v->get_metadata()->evict_transaction(tx_id);
   }
 }
 

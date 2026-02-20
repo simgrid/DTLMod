@@ -224,6 +224,22 @@ void FileEngine::end_sub_transaction()
   if (auto sub_barrier = get_subscribers().get_or_create_barrier())
     XBT_DEBUG("Barrier created for %zu subscribers", get_subscribers().count());
 
+  // Evict this transaction's metadata once all subscribers have completed their reads.
+  // Only applies in the concurrent streaming scenario (pub was registered on this same engine).
+  if (pub_ever_present()) {
+    unsigned int tx_to_evict = 0;
+    {
+      std::unique_lock lock(*get_subscribers().get_mutex());
+      if (++subs_completed_current_tx_ == get_subscribers().count()) {
+        subs_completed_current_tx_ = 0;
+        tx_to_evict                = current_sub_transaction_id_;
+      }
+    }
+    if (tx_to_evict > 0)
+      if (auto s = get_stream())
+        s->flush_and_evict_transaction(tx_to_evict);
+  }
+
   // Mark this transaction as over
   sub_transaction_in_progress_ = false;
 }

@@ -39,6 +39,7 @@ class FileEngine : public Engine {
 
   unsigned int current_sub_transaction_id_ = 0;
   bool sub_transaction_in_progress_        = false;
+  unsigned int subs_completed_current_tx_  = 0;
 
   void create_transport(const Transport::Method& transport_method) override;
   [[nodiscard]] const std::shared_ptr<sgfs::FileSystem>& get_file_system() const noexcept { return file_system_; }

@@ -1,5 +1,24 @@
 ----------------------------------------------------------------------------
 
+DTLMod (0.5) not released yet (target: May 2026)
+
+Improvements:
+  - Memory efficiency: progressive eviction of metadata transaction entries
+    - Once all subscribers have consumed a transaction, its entries are evicted
+      from the in-memory Metadata::transaction_infos_ map
+    - When metadata export is enabled and publishers and subscribers coexist
+      (file streaming), evicted entries are progressively flushed to 
+      per-variable temporary files; the final metadata file is assembled at 
+      pub_close() from those files and any remaining in-memory entries, 
+      preserving the existing format and transaction count
+    - When the stream is opened by subscribers only after all publishers have
+      closed (sequential scenario), memory-only eviction is performed (the
+      metadata file has already been written by pub_close())
+    - Memory footprint of the File engine now grows as O(N_pub) instead of
+      O(N_pub × N_transactions) for long-running concurrent streaming workloads
+
+----------------------------------------------------------------------------
+
 DTLMod (0.4) February 16, 2026
 
 Major improvements:

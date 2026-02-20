@@ -93,6 +93,7 @@ void Engine::close()
 /// \cond EXCLUDE_FROM_DOCUMENTATION
 void Engine::add_publisher(sg4::ActorPtr actor)
 {
+  pub_ever_present_ = true;
   transport_->add_publisher(publishers_.count());
   publishers_.add(actor);
 }

@@ -47,6 +47,8 @@ private:
   Transport::Method transport_method_ = Transport::Method::Undefined;
   bool metadata_export_               = false;
   std::string metadata_file_;
+  std::unordered_map<std::string, std::string> var_prog_file_paths_; // variable name -> prog file path
+  bool metadata_exported_ = false; // true once export_metadata_to_file() has been called
   sg4::MutexPtr mutex_ = sg4::Mutex::create();
   Mode access_mode_    = Mode::Publish;
 
@@ -63,7 +65,8 @@ protected:
   }
   void close() noexcept { engine_ = nullptr; }
 
-  void export_metadata_to_file() const;
+  void export_metadata_to_file();
+  void flush_and_evict_transaction(unsigned int tx_id);
 
   // Helper methods for Stream::open
   void validate_open_parameters(std::string_view name, Mode mode) const;
