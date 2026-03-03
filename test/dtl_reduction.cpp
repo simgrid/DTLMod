@@ -571,7 +571,13 @@ TEST_F(DTLReductionTest, CompressionStagingEngine)
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output");
       auto engine = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      XBT_INFO("Wait for the publisher to have set the compression reduction operation");
+      sg4::this_actor::sleep_for(1);
       auto var    = stream->inquire_variable("var");
+
+      XBT_INFO("Verify that the subscriber variable carries the publisher compression state");
+      ASSERT_TRUE(var->is_reduced());
+      ASSERT_TRUE(var->is_reduced_by_publisher());
 
       XBT_INFO("Get the compressed variable (decompression cost should be applied on subscriber)");
       engine->begin_transaction();

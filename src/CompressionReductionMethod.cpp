@@ -139,4 +139,13 @@ void CompressionReductionMethod::parameterize_for_variable(
   // Always (re)create the parameterization — avoids field-by-field update complexity.
   per_variable_parameterizations_[&var] = std::make_shared<ParameterizedCompression>(var, std::move(cfg));
 }
+
+void CompressionReductionMethod::propagate_for_subscriber(const Variable& publisher_var, const Variable& subscriber_var)
+{
+  auto it = per_variable_parameterizations_.find(&publisher_var);
+  if (it != per_variable_parameterizations_.end())
+    per_variable_parameterizations_[&subscriber_var] =
+        std::make_shared<ParameterizedCompression>(subscriber_var, it->second->get_config());
+}
+
 } // namespace dtlmod

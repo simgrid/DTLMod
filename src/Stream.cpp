@@ -410,6 +410,10 @@ std::shared_ptr<Variable> Stream::inquire_variable(std::string_view name) const
     if (var->second->is_reduced()) {
       new_var->is_reduced_with_  = var->second->get_reduction_method();
       new_var->reduction_origin_ = var->second->reduction_origin_;
+      // Register the subscriber's variable in the compression method's map so that
+      // Engine::get() can compute decompression costs via get_flop_amount_to_decompress_variable.
+      if (auto compressor = std::dynamic_pointer_cast<CompressionReductionMethod>(new_var->is_reduced_with_))
+        compressor->propagate_for_subscriber(*var->second, *new_var);
     }
 
     return new_var;

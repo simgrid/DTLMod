@@ -79,6 +79,10 @@ public:
 
   [[nodiscard]] double get_flop_amount_to_reduce_variable(const Variable& var) const override;
   [[nodiscard]] double get_flop_amount_to_decompress_variable(const Variable& var) const override;
+
+  /// @brief Copy a publisher variable's parameterization to a subscriber variable.
+  ///        Called by Stream::inquire_variable so that Engine::get() can compute decompression costs.
+  void propagate_for_subscriber(const Variable& publisher_var, const Variable& subscriber_var);
 };
 /// \endcond
 } // namespace dtlmod
