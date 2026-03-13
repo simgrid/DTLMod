@@ -38,6 +38,7 @@ public:
   get_reduced_start_and_count_for(const Variable& var, simgrid::s4u::ActorPtr publisher) const = 0;
   virtual double get_flop_amount_to_reduce_variable(const Variable& var) const                 = 0;
   virtual double get_flop_amount_to_decompress_variable(const Variable& /*var*/) const { return 0.0; }
+  virtual void propagate_for_subscriber(const Variable& /*publisher_var*/, const Variable& /*subscriber_var*/) {}
 
   /// @brief Helper function to print out the name of the ReductionMethod.
   /// @return The corresponding string

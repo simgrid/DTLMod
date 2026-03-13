@@ -82,7 +82,7 @@ public:
 
   /// @brief Copy a publisher variable's parameterization to a subscriber variable.
   ///        Called by Stream::inquire_variable so that Engine::get() can compute decompression costs.
-  void propagate_for_subscriber(const Variable& publisher_var, const Variable& subscriber_var);
+  void propagate_for_subscriber(const Variable& publisher_var, const Variable& subscriber_var) override;
 };
 /// \endcond
 } // namespace dtlmod

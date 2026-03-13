@@ -98,6 +98,10 @@ protected:
 
 public:
   using ReductionMethod::ReductionMethod;
+
+  /// @brief Copy a publisher variable's parameterization to a subscriber variable.
+  ///        Called by Stream::inquire_variable so that subscribers can query reduced sizes.
+  void propagate_for_subscriber(const Variable& publisher_var, const Variable& subscriber_var) override;
 };
 ///\endcond
 } // namespace dtlmod

@@ -123,6 +123,26 @@ void DecimationReductionMethod::parameterize_for_variable(
   }
 }
 
+void DecimationReductionMethod::propagate_for_subscriber(const Variable& publisher_var, const Variable& subscriber_var)
+{
+  auto it = per_variable_parameterizations_.find(&publisher_var);
+  if (it == per_variable_parameterizations_.end())
+    return;
+
+  auto pub_param = it->second;
+  auto sub_param = std::make_shared<ParameterizedDecimation>(subscriber_var, pub_param->get_stride(),
+                                                             pub_param->get_interpolation_method(),
+                                                             pub_param->get_cost_per_element());
+  sub_param->set_reduced_shape(pub_param->get_reduced_shape());
+
+  // The subscriber receives the full reduced variable, so its local region is the entire reduced shape.
+  const auto& reduced_shape = pub_param->get_reduced_shape();
+  std::vector<size_t> reduced_start(reduced_shape.size(), 0);
+  sub_param->set_reduced_local_start_and_count(sg4::Actor::self(), reduced_start, reduced_shape);
+
+  per_variable_parameterizations_[&subscriber_var] = std::move(sub_param);
+}
+
 void DecimationReductionMethod::reduce_variable(const Variable& var)
 {
   auto parameterization = per_variable_parameterizations_[&var];

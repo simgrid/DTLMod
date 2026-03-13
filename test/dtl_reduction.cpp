@@ -501,9 +501,21 @@ TEST_F(DTLReductionTest, DecimationStagingEngine)
       auto dtl    = dtlmod::DTL::connect();
       auto stream = dtl->add_stream("my-output");
       auto engine = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      XBT_INFO("Wait for the publisher to have set the decimation reduction operation");
+      sg4::this_actor::sleep_for(0.5);
       auto var    = stream->inquire_variable("var");
 
+      ASSERT_TRUE(var->is_reduced());
+      ASSERT_TRUE(var->is_reduced_by_publisher());
+
+      XBT_INFO("Verify that the subscriber can access the reduction method set by the publisher");
+      auto reduction = var->get_reduction_method();
+      ASSERT_TRUE(reduction != nullptr);
+      XBT_INFO("Verify that the subscriber can get the reduced local size");
+      auto reduced_size = reduction->get_reduced_variable_local_size(*var);
+      ASSERT_DOUBLE_EQ(reduced_size, 5000 * 5000 * 8.0);
       XBT_INFO("Get the decimated variable");
+
       engine->begin_transaction();
       ASSERT_NO_THROW(engine->get(var));
       engine->end_transaction();
