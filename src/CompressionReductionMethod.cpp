@@ -54,11 +54,12 @@ double CompressionReductionMethod::derive_compression_ratio(double accuracy, std
                                                             double data_smoothness)
 {
   if (profile == "sz") {
-    // SZ-like prediction-based compressor: empirical fit from published benchmarks on scientific data.
-    // Higher smoothness -> better prediction -> higher ratio.
-    double alpha = 3.0;
-    double beta  = 0.8;
-    return std::max(1.0, alpha * std::pow(-std::log10(accuracy), beta) * (0.5 + data_smoothness));
+    // accuracy = absolute/relative error bound; larger = looser = more compression
+    // Empirical fit: ratio ≈ A × accuracy^B × (0.5 + data_smoothness)
+    // Calibrated to give ratio ≈ 7 at 1e-3 and ratio ≈ 2 at 1e-6.
+    double alpha = 24.4;
+    double beta  = 0.181;
+    return std::max(1.0, alpha * std::pow(accuracy, beta) * (0.5 + data_smoothness));
   }
   if (profile == "zfp") {
     // ZFP-like transform-based compressor: rate = bits-per-value derived from accuracy.
