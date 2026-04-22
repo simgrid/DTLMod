@@ -262,6 +262,7 @@ find_library(GTEST_LIBRARY NAMES gtest)
 find_path(GTEST_INCLUDE_DIR NAMES gtest/gtest.h PATHS /opt/gtest/include)
 if(GTEST_LIBRARY)
   set(TEST_FILES
+      test/dtl_cancel.cpp
       test/dtl_config.cpp
       test/dtl_connection.cpp
       test/dtl_file_engine.cpp

@@ -86,6 +86,12 @@ void Engine::close()
   publishers_.contains(sg4::Actor::self()) ? pub_close() : sub_close();
 }
 
+void Engine::cancel_transaction()
+{
+  cancelled_ = true;
+  cancel_activities();
+}
+
 ////////////////////////////////////////////
 ///////////////// INTERNALS ////////////////
 ////////////////////////////////////////////

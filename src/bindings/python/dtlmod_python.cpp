@@ -88,6 +88,8 @@ PYBIND11_MODULE(dtlmod, m)
   py::register_exception<dtlmod::InconsistentCompressionRatioException>(m, "InconsistentCompressionRatioException");
   py::register_exception<dtlmod::SubscriberSideCompressionException>(m, "SubscriberSideCompressionException");
 
+  py::register_exception<dtlmod::TransactionCancelledException>(m, "TransactionCancelledException");
+
   /* Class DTL */
   py::class_<DTL, std::shared_ptr<DTL>>(m, "DTL", "Data Transport Layer")
       .def_static("create", py::overload_cast<std::string_view>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
@@ -233,6 +235,8 @@ PYBIND11_MODULE(dtlmod, m)
            "End a transaction on this Engine")
       .def_property_readonly("current_transaction", &Engine::get_current_transaction,
                              "The id of the current transaction on this Engine (read-only)")
+      .def("cancel_transaction", &Engine::cancel_transaction, py::call_guard<py::gil_scoped_release>(),
+           "Cancel all in-flight activities of the current transaction (must be called from an external actor)")
       .def("close", &Engine::close, py::call_guard<py::gil_scoped_release>(), "Close this Engine");
 
   py::enum_<Engine::Type>(engine, "Type", "The type of Engine")

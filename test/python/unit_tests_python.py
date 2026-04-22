@@ -9,7 +9,8 @@ scripts = [
     "dtl_staging_engine.py",
     "dtl_stream.py",
     "dtl_variable.py",
-    "dtl_reduction.py"
+    "dtl_reduction.py",
+    "dtl_cancel.py"
     ]
                         
 def run_script(script):

@@ -17,6 +17,14 @@ Improvements:
     - Memory footprint of the File engine now grows as O(N_pub) instead of
       O(N_pub × N_transactions) for long-running concurrent streaming workloads
 
+API Changes:
+  - New Engine method:
+    - Engine::cancel_transaction() cancel the currently ongoing transaction 
+      performed by this engine. This method has to be called by an external 
+      actor not involved in the transaction. It will make the transaction raise
+      a DTLMod::TransactionCancelledException that must be caught if you want 
+      the publishers and subscribers to survive to the cancellation of this
+      transaction. 
 ----------------------------------------------------------------------------
 
 DTLMod (0.4) February 16, 2026

@@ -16,6 +16,7 @@
 #include <xbt/asserts.h>
 #include <xbt/log.h>
 
+#include <atomic>
 #include <string>
 
 #include "dtlmod/ActorRegistry.hpp"
@@ -56,8 +57,10 @@ private:
   std::weak_ptr<Stream> stream_;
 
   bool pub_ever_present_ = false;
+  std::atomic<bool> cancelled_{false};
 
   ActorRegistry publishers_;
+
   ActorRegistry subscribers_;
 
   sg4::ActivitySet pub_transaction_;
@@ -90,6 +93,8 @@ protected:
 
   [[nodiscard]] bool pub_ever_present() const noexcept { return pub_ever_present_; }
 
+  [[nodiscard]] bool is_cancelled() const noexcept { return cancelled_; }
+
   // Pure virtual methods for derived classes to implement
   virtual void create_transport(const Transport::Method& transport_method) = 0;
   virtual void begin_pub_transaction() = 0;
@@ -98,6 +103,7 @@ protected:
   virtual void begin_sub_transaction() = 0;
   virtual void end_sub_transaction()   = 0;
   virtual void sub_close()             = 0;
+  virtual void cancel_activities()                                         = 0;
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
@@ -137,6 +143,10 @@ public:
   /// @brief Get the id of the current transaction (on the Publish side).
   /// @return The id of the ongoing transaction.
   [[nodiscard]] unsigned int get_current_transaction() const noexcept { return get_current_transaction_impl(); }
+
+  /// @brief Cancel all in-flight activities of the current transaction, unblocking publishers and subscribers.
+  /// @note Must be called from an external actor not participating in the transaction.
+  void cancel_transaction();
 
   /// @brief Close the Engine associated to a Stream.
   void close();

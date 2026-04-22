@@ -39,6 +39,7 @@ class StagingEngine : public Engine {
   void begin_sub_transaction() override;
   void end_sub_transaction() override;
   void sub_close() override;
+  void cancel_activities() override;
   [[nodiscard]] unsigned int get_current_transaction_impl() const noexcept override
   {
     return current_pub_transaction_id_;

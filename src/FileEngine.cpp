@@ -9,6 +9,7 @@
 #include <fsmod/FileSystem.hpp>
 #include <fsmod/PathUtil.hpp>
 
+#include <simgrid/Exception.hpp>
 #include <simgrid/s4u/Actor.hpp>
 #include <simgrid/s4u/Engine.hpp>
 #include <simgrid/s4u/MessageQueue.hpp>
@@ -21,6 +22,19 @@ XBT_LOG_NEW_DEFAULT_SUBCATEGORY(dtlmod_file_engine, dtlmod_engine, "DTL logging 
 
 namespace dtlmod {
 /// \cond EXCLUDE_FROM_DOCUMENTATION
+
+void FileEngine::cancel_activities()
+{
+  // Cancelling write activities fires on_this_completion_cb, which calls notify_all() and drains the set naturally.
+  for (auto& [actor, aset] : file_pub_transaction_)
+    for (int i = 0; i < aset.size(); i++)
+      aset.at(i)->cancel();
+  for (auto& [actor, aset] : file_sub_transaction_)
+    for (int i = 0; i < aset.size(); i++)
+      aset.at(i)->cancel();
+  pub_transaction_completed_->notify_all();
+  pub_activities_completed_->notify_all();
+}
 
 // FileEngines require to know where to (virtually) write file. This information is given by fullpath which has the
 // following format: NetZone:FileSystem:PathToDirectory
@@ -86,6 +100,9 @@ std::string FileEngine::get_path_to_dataset() const
 
 void FileEngine::begin_pub_transaction()
 {
+  if (is_cancelled())
+    throw TransactionCancelledException(XBT_THROW_POINT);
+
   auto self = sg4::Actor::self();
 
   if (!pub_transaction_in_progress_) {
@@ -98,10 +115,12 @@ void FileEngine::begin_pub_transaction()
     // Wait for the completion of the Publish activities from the previous transaction
     XBT_DEBUG("Wait for the completion of %u publish activities from the previous transaction",
               file_pub_transaction_[self].size());
-    while (file_pub_transaction_[self].size() > 0) {
+    while (!is_cancelled() && file_pub_transaction_[self].size() > 0) {
       std::unique_lock lock(*(get_publishers().get_mutex()));
       pub_activities_completed_->wait(lock);
     }
+    if (is_cancelled())
+      throw TransactionCancelledException(XBT_THROW_POINT);
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     get_file_transport()->clear_to_write_in_transaction(self);
   }
@@ -150,7 +169,7 @@ void FileEngine::pub_close()
 
   XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
             file_pub_transaction_[self].size());
-  while (file_pub_transaction_[self].size() > 0) {
+  while (!is_cancelled() && file_pub_transaction_[self].size() > 0) {
     std::unique_lock lock(*(get_publishers().get_mutex()));
     pub_activities_completed_->wait(lock);
   }
@@ -172,6 +191,9 @@ void FileEngine::pub_close()
 
 void FileEngine::begin_sub_transaction()
 {
+  if (is_cancelled())
+    throw TransactionCancelledException(XBT_THROW_POINT);
+
   // Only one subscriber has to do this
   if (!sub_transaction_in_progress_) {
     sub_transaction_in_progress_ = true;
@@ -182,10 +204,12 @@ void FileEngine::begin_sub_transaction()
   // We have publishers on that stream, wait for them to complete a transaction first
   if (not get_publishers().is_empty()) {
     std::unique_lock lock(*get_subscribers().get_mutex());
-    while (completed_pub_transaction_id_ < current_sub_transaction_id_) {
+    while (!is_cancelled() && completed_pub_transaction_id_ < current_sub_transaction_id_) {
       XBT_DEBUG("Wait for publishers to end the transaction I need");
       pub_transaction_completed_->wait(lock);
     }
+    if (is_cancelled())
+      throw TransactionCancelledException(XBT_THROW_POINT);
     XBT_DEBUG("Publishers stored metadata for that transaction, proceed");
   }
 }
@@ -197,10 +221,17 @@ void FileEngine::end_sub_transaction()
 
   // The files subscribers need to read may not have been fully written. Wait to be notified completion of the publish
   // activities
-  if (current_sub_transaction_id_ == current_pub_transaction_id_ && not get_publishers().is_empty()) {
+  if (!is_cancelled() && current_sub_transaction_id_ == current_pub_transaction_id_ &&
+      not get_publishers().is_empty()) {
     XBT_DEBUG("Wait for the completion of publish activities from the current transaction");
     pub_activities_completed_->wait(std::unique_lock(*get_subscribers().get_mutex()));
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the subscribe activities.");
+  }
+  if (is_cancelled()) {
+    transport->close_sub_files(self);
+    transport->clear_to_read_in_transaction(self);
+    sub_transaction_in_progress_ = false;
+    throw TransactionCancelledException(XBT_THROW_POINT);
   }
 
   // Subscriber get the list of files and size to read that has been build during the get() operations
@@ -211,7 +242,17 @@ void FileEngine::end_sub_transaction()
     file_sub_transaction_[self].push(file->read_async(size));
 
   XBT_DEBUG("Wait for the %d subscribe activities for the transaction", file_sub_transaction_[self].size());
-  file_sub_transaction_[self].wait_all();
+  try {
+    file_sub_transaction_[self].wait_all();
+  } catch (const simgrid::CancelException&) {
+    if (!is_cancelled())
+      throw;
+    file_sub_transaction_[self].clear();
+    transport->close_sub_files(self);
+    transport->clear_to_read_in_transaction(self);
+    sub_transaction_in_progress_ = false;
+    throw TransactionCancelledException(XBT_THROW_POINT);
+  }
   file_sub_transaction_[self].clear();
   // Close files opened in this transaction
   transport->close_sub_files(self);
