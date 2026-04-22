@@ -54,9 +54,9 @@ def setup_file_platform():
         host = cluster.add_host(hostname, "1Gf")
         disk = host.add_disk(f"{hostname}_disk", "5.5GBps", "2.1GBps")
         local_storages.append(OneDiskStorage.create(f"{hostname}_local_storage", disk))
-        link_up   = cluster.add_link(f"link_{i}_UP", "1Gbps")
+        link_up = cluster.add_link(f"link_{i}_UP", "1Gbps")
         link_down = cluster.add_link(f"link_{i}_DOWN", "1Gbps")
-        loopback  = cluster.add_link(f"{hostname}_loopback", "10Gbps")
+        loopback = cluster.add_link(f"{hostname}_loopback", "10Gbps")
         cluster.add_route(host, None, [LinkInRoute(link_up)], False)
         cluster.add_route(None, host, [LinkInRoute(link_down)], False)
         cluster.add_route(host, host, [loopback])
@@ -80,7 +80,7 @@ def run_test_cancel_staging_waiting_for_subscriber_mq():
     engine_ref = [None]
 
     def pub_actor():
-        dtl    = DTL.connect()
+        dtl = DTL.connect()
         stream = dtl.add_stream("my-output")
         stream.set_engine_type(DTLEngine.Type.Staging).set_transport_method(Transport.Method.MQ)
         stream.define_variable("var", (1000, 1000), (0, 0), (1000, 1000), ctypes.sizeof(ctypes.c_double))
@@ -98,9 +98,9 @@ def run_test_cancel_staging_waiting_for_subscriber_mq():
         DTL.disconnect()
 
     def sub_actor():
-        dtl     = DTL.connect()
-        stream  = dtl.add_stream("my-output")
-        engine  = stream.open("my-output", Stream.Mode.Subscribe)
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        engine = stream.open("my-output", Stream.Mode.Subscribe)
         stream.inquire_variable("var")
         this_actor.sleep_for(2.0)
         this_actor.info("Begin transaction (cancelled_ already true)")
@@ -127,7 +127,7 @@ def run_test_cancel_staging_waiting_for_subscriber_mailbox():
     engine_ref = [None]
 
     def pub_actor():
-        dtl    = DTL.connect()
+        dtl = DTL.connect()
         stream = dtl.add_stream("my-output")
         stream.set_engine_type(DTLEngine.Type.Staging).set_transport_method(Transport.Method.Mailbox)
         stream.define_variable("var", (1000, 1000), (0, 0), (1000, 1000), ctypes.sizeof(ctypes.c_double))
@@ -145,9 +145,9 @@ def run_test_cancel_staging_waiting_for_subscriber_mailbox():
         DTL.disconnect()
 
     def sub_actor():
-        dtl     = DTL.connect()
-        stream  = dtl.add_stream("my-output")
-        engine  = stream.open("my-output", Stream.Mode.Subscribe)
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        engine = stream.open("my-output", Stream.Mode.Subscribe)
         stream.inquire_variable("var")
         this_actor.sleep_for(2.0)
         this_actor.info("Begin transaction (cancelled_ already true)")
@@ -176,7 +176,7 @@ def run_test_cancel_staging_waiting_for_publisher_mq():
     engine_ref = [None]
 
     def pub_actor():
-        dtl    = DTL.connect()
+        dtl = DTL.connect()
         stream = dtl.add_stream("my-output")
         stream.set_engine_type(DTLEngine.Type.Staging).set_transport_method(Transport.Method.MQ)
         stream.define_variable("var", (1000, 1000), (0, 0), (1000, 1000), ctypes.sizeof(ctypes.c_double))
@@ -195,9 +195,9 @@ def run_test_cancel_staging_waiting_for_publisher_mq():
         DTL.disconnect()
 
     def sub_actor():
-        dtl     = DTL.connect()
-        stream  = dtl.add_stream("my-output")
-        engine  = stream.open("my-output", Stream.Mode.Subscribe)
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        engine = stream.open("my-output", Stream.Mode.Subscribe)
         stream.inquire_variable("var")
         this_actor.info("Begin transaction (will block waiting for publisher to start a transaction)")
         try:
@@ -225,7 +225,7 @@ def run_test_cancel_file_engine_waiting_for_publisher():
     engine_ref = [None]
 
     def pub_actor():
-        dtl    = DTL.connect()
+        dtl = DTL.connect()
         stream = dtl.add_stream("my-output")
         stream.set_engine_type(DTLEngine.Type.File).set_transport_method(Transport.Method.File)
         stream.define_variable("var", (1000, 1000), (0, 0), (1000, 1000), ctypes.sizeof(ctypes.c_double))
@@ -244,9 +244,9 @@ def run_test_cancel_file_engine_waiting_for_publisher():
         DTL.disconnect()
 
     def sub_actor():
-        dtl     = DTL.connect()
-        stream  = dtl.add_stream("my-output")
-        engine  = stream.open("cluster:my_fs:/node-0/scratch/my-output", Stream.Mode.Subscribe)
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        engine = stream.open("cluster:my_fs:/node-0/scratch/my-output", Stream.Mode.Subscribe)
         stream.inquire_variable("var")
         this_actor.info("Begin transaction (will block waiting for publisher to complete a transaction)")
         try:
