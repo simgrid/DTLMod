@@ -43,7 +43,7 @@ jobs:
             pybind11-dev
 
       - name: Cache SimGrid
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         id: cache-simgrid
         with:
           path: /opt/simgrid
@@ -59,7 +59,7 @@ jobs:
           sudo cmake --install build
 
       - name: Cache FSMod
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         id: cache-fsmod
         with:
           path: /opt/fsmod
@@ -75,7 +75,7 @@ jobs:
           sudo cmake --install build
 
       - name: Cache Google Test
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         id: cache-gtest
         with:
           path: /opt/gtest
@@ -160,7 +160,7 @@ jobs:
             valgrind
 
       - name: Cache SimGrid
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         id: cache-simgrid
         with:
           path: /opt/simgrid
@@ -176,7 +176,7 @@ jobs:
           sudo cmake --install build
 
       - name: Cache FSMod
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         id: cache-fsmod
         with:
           path: /opt/fsmod
@@ -192,7 +192,7 @@ jobs:
           sudo cmake --install build
 
       - name: Cache Google Test
-        uses: actions/cache@v6
+        uses: actions/cache@v5
         id: cache-gtest
         with:
           path: /opt/gtest
