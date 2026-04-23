@@ -29,7 +29,7 @@ jobs:
             env_options: "ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=print_stacktrace=1"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -43,7 +43,7 @@ jobs:
             pybind11-dev
 
       - name: Cache SimGrid
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cache-simgrid
         with:
           path: /opt/simgrid
@@ -59,7 +59,7 @@ jobs:
           sudo cmake --install build
 
       - name: Cache FSMod
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cache-fsmod
         with:
           path: /opt/fsmod
@@ -75,7 +75,7 @@ jobs:
           sudo cmake --install build
 
       - name: Cache Google Test
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cache-gtest
         with:
           path: /opt/gtest
@@ -126,7 +126,7 @@ jobs:
           cd ../..
 
       - name: Upload sanitizer report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: ${{ matrix.sanitizer.name }}-report
@@ -145,7 +145,7 @@ jobs:
     name: Valgrind Memory Check
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -160,7 +160,7 @@ jobs:
             valgrind
 
       - name: Cache SimGrid
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cache-simgrid
         with:
           path: /opt/simgrid
@@ -176,7 +176,7 @@ jobs:
           sudo cmake --install build
 
       - name: Cache FSMod
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cache-fsmod
         with:
           path: /opt/fsmod
@@ -192,7 +192,7 @@ jobs:
           sudo cmake --install build
 
       - name: Cache Google Test
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         id: cache-gtest
         with:
           path: /opt/gtest
@@ -225,7 +225,7 @@ jobs:
           cmake --build . --target valgrind
 
       - name: Upload Valgrind report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: valgrind-report
@@ -273,7 +273,7 @@ jobs:
           fi
 
       - name: Upload summary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         if: always()
         with:
           name: valgrind-summary
@@ -287,7 +287,7 @@ jobs:
     if: always()
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           path: reports
 
@@ -321,7 +321,7 @@ jobs:
           cat weekly-report.md
 
       - name: Upload weekly report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: weekly-report
           path: weekly-report.md
