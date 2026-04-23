@@ -52,6 +52,17 @@ public:
     dtlmod::DTL::create();
   }
 
+  void setup_slow_staging_platform()
+  {
+    auto* root         = sg4::Engine::get_instance()->get_netzone_root();
+    auto* internet     = root->add_link("internet", "1MBps")->set_latency("1ms");
+    auto* prod_cluster = add_cluster(root, ".prod", 4);
+    auto* cons_cluster = add_cluster(root, ".cons", 4);
+    root->add_route(prod_cluster, cons_cluster, {internet});
+    root->seal();
+    dtlmod::DTL::create();
+  }
+
   void setup_file_platform()
   {
     sg4::NetZone* cluster = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_star("cluster");
@@ -274,6 +285,63 @@ TEST_F(DTLCancelTest, CancelFileEngineTransaction_WaitingForPublisher)
       XBT_INFO("Begin transaction (will block waiting for publisher to complete a transaction)");
       ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
       XBT_INFO("Subscriber caught TransactionCancelledException as expected");
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// Publisher and subscriber are both engaged in a long Mailbox transfer (Mailbox simulates bandwidth; MQ does not).
+// Publisher completes T1 end_transaction() (starting slow async Comms) then blocks in T2 begin_transaction()
+// waiting for T1 sends to complete. Subscriber blocks in T1 end_transaction() waiting for receives.
+// Canceller fires after 0.5s, unblocking both with TransactionCancelledException.
+TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_slow_staging_platform();
+    auto* pub_host  = sg4::Host::by_name("host-0.prod");
+    auto* sub_host  = sg4::Host::by_name("host-0.cons");
+    auto* wdog_host = sg4::Host::by_name("host-1.prod");
+
+    pub_host->add_actor("PubTestActor", [wdog_host]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::Mailbox);
+      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+
+      wdog_host->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(0.5);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction();
+      });
+
+      // T1: completes normally, starting slow async Comms over the 1MBps internet link
+      engine->begin_transaction();
+      engine->put(var);
+      engine->end_transaction();
+
+      // T2: blocks waiting for T1 Comms to drain -- cancelled mid-transfer
+      XBT_INFO("Begin T2 (will block waiting for T1 sends to complete over slow link)");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
+      XBT_INFO("Publisher caught TransactionCancelledException in T2 begin_transaction() as expected");
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", []() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+
+      // T1: blocks in end_transaction() waiting for slow receives -- cancelled mid-transfer
+      engine->begin_transaction();
+      engine->get(var_sub);
+      XBT_INFO("End T1 (will block waiting for receives over slow link)");
+      ASSERT_THROW(engine->end_transaction(), dtlmod::TransactionCancelledException);
+      XBT_INFO("Subscriber caught TransactionCancelledException in T1 end_transaction() as expected");
       dtlmod::DTL::disconnect();
     });
 

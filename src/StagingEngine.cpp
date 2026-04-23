@@ -82,6 +82,11 @@ void StagingEngine::begin_pub_transaction()
         throw;
       get_pub_transaction().clear();
       throw TransactionCancelledException(XBT_THROW_POINT);
+    } catch (const simgrid::NetworkFailureException&) {
+      if (!is_cancelled())
+        throw;
+      get_pub_transaction().clear();
+      throw TransactionCancelledException(XBT_THROW_POINT);
     }
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     XBT_DEBUG("%u sub activities pending", get_sub_transaction().size());
@@ -195,6 +200,13 @@ void StagingEngine::end_sub_transaction()
     try {
       get_sub_transaction().wait_all();
     } catch (const simgrid::CancelException&) {
+      if (!is_cancelled())
+        throw;
+      get_sub_transaction().clear();
+      sub_transaction_in_progress_ = false;
+      num_subscribers_starting_--;
+      throw TransactionCancelledException(XBT_THROW_POINT);
+    } catch (const simgrid::NetworkFailureException&) {
       if (!is_cancelled())
         throw;
       get_sub_transaction().clear();

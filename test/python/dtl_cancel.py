@@ -36,6 +36,20 @@ def setup_staging_platform():
     return e
 
 
+def setup_slow_staging_platform():
+    e = Engine(sys.argv)
+    e.set_log_control("no_loc")
+    e.set_log_control("root.thresh:critical")
+    root = e.netzone_root
+    internet = root.add_link("internet", "10Mbps").set_latency("1ms")
+    prod_cluster = add_cluster(root, ".prod", 4)
+    cons_cluster = add_cluster(root, ".cons", 4)
+    root.add_route(prod_cluster, cons_cluster, [internet])
+    root.seal()
+    DTL.create()
+    return e
+
+
 def setup_file_platform():
     e = Engine(sys.argv)
     e.set_log_control("no_loc")
@@ -266,12 +280,72 @@ def run_test_cancel_file_engine_waiting_for_publisher():
     e.run()
 
 
+# Publisher and subscriber are both engaged in a long Mailbox transfer.
+# Publisher completes T1 end_transaction() (starting slow async comms) then blocks in T2
+# begin_transaction() waiting for T1 sends to complete. Subscriber blocks in T1 end_transaction()
+# waiting for receives. Canceller fires at t=0.5s, unblocking both with TransactionCancelledException.
+def run_test_cancel_staging_mid_transaction_mailbox():
+    e = setup_slow_staging_platform()
+    engine_ref = [None]
+
+    def pub_actor():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        stream.set_engine_type(DTLEngine.Type.Staging).set_transport_method(Transport.Method.Mailbox)
+        var = stream.define_variable("var", (1000, 1000), (0, 0), (1000, 1000), ctypes.sizeof(ctypes.c_double))
+        engine = stream.open("my-output", Stream.Mode.Publish)
+        engine_ref[0] = engine
+
+        Host.by_name("host-1.prod").add_actor("Canceller", canceller_actor)
+
+        # T1: completes normally (starts slow async sends over 10Mbps link)
+        engine.begin_transaction()
+        engine.put(var)
+        engine.end_transaction()
+
+        # T2: blocks waiting for T1 sends to complete -- gets cancelled
+        this_actor.info("Begin T2 (will block waiting for T1 sends to complete over slow link)")
+        try:
+            engine.begin_transaction()
+            assert False, "Expected TransactionCancelledException"
+        except TransactionCancelledException:
+            this_actor.info("Publisher caught TransactionCancelledException in T2 begin_transaction() as expected")
+        DTL.disconnect()
+
+    def sub_actor():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        engine = stream.open("my-output", Stream.Mode.Subscribe)
+        var_sub = stream.inquire_variable("var")
+
+        # T1: blocks in end_transaction() waiting for slow receives
+        engine.begin_transaction()
+        engine.get(var_sub)
+        this_actor.info("End T1 (will block waiting for receives over slow link)")
+        try:
+            engine.end_transaction()
+            assert False, "Expected TransactionCancelledException"
+        except TransactionCancelledException:
+            this_actor.info("Subscriber caught TransactionCancelledException in T1 end_transaction() as expected")
+        DTL.disconnect()
+
+    def canceller_actor():
+        this_actor.sleep_for(0.5)
+        this_actor.info("Cancelling the transaction")
+        engine_ref[0].cancel_transaction()
+
+    Host.by_name("host-0.prod").add_actor("PubTestActor", pub_actor)
+    Host.by_name("host-0.cons").add_actor("SubTestActor", sub_actor)
+    e.run()
+
+
 if __name__ == '__main__':
     tests = [
         run_test_cancel_staging_waiting_for_subscriber_mq,
         run_test_cancel_staging_waiting_for_subscriber_mailbox,
         run_test_cancel_staging_waiting_for_publisher_mq,
         run_test_cancel_file_engine_waiting_for_publisher,
+        run_test_cancel_staging_mid_transaction_mailbox,
     ]
 
     for test in tests:
