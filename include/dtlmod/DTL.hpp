@@ -47,8 +47,16 @@ public:
 
   /// @brief Add a data stream to the Data Transport Layer.
   /// @param name The name of the Stream to add to the DTL.
-  /// @return A handler on the newly created Stream object.
-  [[nodiscard]] std::shared_ptr<Stream> add_stream(std::string_view name);
+  /// @param type The Engine type for the stream. Defaults to Engine::Type::Undefined,
+  ///             which allows the stream to be configured later via set_engine_type().
+  /// @param method The Transport method for the stream. Defaults to Transport::Method::Undefined,
+  ///               which allows the stream to be configured later via set_transport_method().
+  /// @return A shared pointer to the newly created Stream object.
+  /// @note The returned Stream can be further configured by calling set_engine_type()
+  ///       and set_transport_method() if the optional parameters are not specified.
+  /// @see Stream::set_engine_type(), Stream::set_transport_method()
+  [[nodiscard]] std::shared_ptr<Stream> add_stream(std::string_view name, Engine::Type type = Engine::Type::Undefined,
+                                                   Transport::Method method = Transport::Method::Undefined);
 
   /// @brief Retrieve all streams declared in the Data Transport Layer.
   /// @return a map of handlers on Stream objects with their names as keys.

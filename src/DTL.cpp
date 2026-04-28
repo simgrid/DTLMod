@@ -141,14 +141,19 @@ void DTL::disconnect()
   sg4::MessageQueue::by_name("dtlmod::connection_manager_handle")->get_unique<bool>();
 }
 
-std::shared_ptr<Stream> DTL::add_stream(std::string_view name)
+std::shared_ptr<Stream> DTL::add_stream(std::string_view name, Engine::Type type, Transport::Method method)
 {
   // This has to be done in critical section to avoid concurrent creation. First actor to get the lock creates the
   // Stream. Other actors will retrieve it from the map.
   std::unique_lock lock(*mutex_);
   std::string name_str(name);
-  if (streams_.find(name_str) == streams_.end())
+  if (streams_.find(name_str) == streams_.end()) {
     streams_.try_emplace(name_str, std::make_shared<Stream>(name_str, this));
+    if (type != Engine::Type::Undefined)
+      streams_[name_str]->set_engine_type(type);
+    if (method != Transport::Method::Undefined)
+      streams_[name_str]->set_transport_method(method);
+  }
   return streams_[name_str];
 }
 

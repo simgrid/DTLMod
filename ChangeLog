@@ -25,6 +25,10 @@ API Changes:
       a DTLMod::TransactionCancelledException that must be caught if you want 
       the publishers and subscribers to survive to the cancellation of this
       transaction. 
+  - Behavior:
+    - DTL::add_stream can now take an Engine Type and a Transport Method as
+      parameters (both defaulting to 'Undefined' if not specified).
+
 ----------------------------------------------------------------------------
 
 DTLMod (0.4) February 16, 2026
