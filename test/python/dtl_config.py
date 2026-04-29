@@ -7,7 +7,7 @@ import sys
 import multiprocessing
 from simgrid import Engine, this_actor
 from fsmod import FileSystem, OneDiskStorage
-from dtlmod import DTL, Stream
+from dtlmod import DTL, Stream, Transport, Engine as DTLEngine
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -37,8 +37,8 @@ def run_test_config_file():
         this_actor.info("Open the stream")
         engine = stream.open("root:fs:/scratch/file", Stream.Mode.Publish)
         this_actor.info(f"Stream 1 is opened ({stream.engine_type},{stream.transport_method})")
-        assert stream.engine_type == "Engine::Type::File"
-        assert stream.transport_method == "Transport::Method::File"
+        assert stream.engine_type == DTLEngine.Type.File
+        assert stream.transport_method == Transport.Method.File
         assert stream.access_mode == "Mode::Publish"
         this_actor.info("Check if this stream is set to export metadata (it is)")
         assert True == stream.metadata_export
@@ -56,9 +56,9 @@ def run_test_config_file():
         assert None == dtl.stream_by_name("Unknown Stream")
         this_actor.info("Open the stream")
         engine = stream.open("staging", Stream.Mode.Publish)
-        this_actor.info(f"Stream 1 is opened ({stream.engine_type},{stream.transport_method})")
-        assert stream.engine_type == "Engine::Type::Staging"
-        assert stream.transport_method == "Transport::Method::MQ"
+        this_actor.info(f"Stream 1 is opened ({stream.engine_type_str},{stream.transport_method_str})")
+        assert stream.engine_type == DTLEngine.Type.Staging
+        assert stream.transport_method == Transport.Method.MQ
         this_actor.info("Let the actor sleep for 1 second")
         this_actor.sleep_for(1)
         this_actor.info("Close the engine")

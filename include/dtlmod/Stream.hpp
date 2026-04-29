@@ -100,9 +100,15 @@ public:
   /// @brief Helper function to print out the Engine::Type of the Stream.
   /// @return An optional containing the C-string if the type is valid, std::nullopt otherwise
   [[nodiscard]] std::optional<const char*> get_engine_type_str() const noexcept;
+  /// @brief Helper function to get the Engine::Type of the Stream.
+  /// @return The Engine type
+  [[nodiscard]] Engine::Type get_engine_type() const noexcept { return engine_type_; }
   /// @brief Helper function to print out the Transport::Method of the Stream.
   /// @return An optional containing the C-string if the method is valid, std::nullopt otherwise
   [[nodiscard]] std::optional<const char*> get_transport_method_str() const noexcept;
+  /// @brief Helper function to get the Transport::Method of the Stream.
+  /// @return The Transport method
+  [[nodiscard]] Transport::Method get_transport_method() const noexcept { return transport_method_; }
   /// @brief Helper function to know the access Mode of the Stream.
   /// @return The corresponding Stream::Mode
   [[nodiscard]] Mode get_access_mode() const noexcept { return access_mode_; }

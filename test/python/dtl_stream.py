@@ -147,9 +147,9 @@ def run_test_publish_file_stream_open_close():
         stream.set_engine_type(DTLEngine.Type.File)
         this_actor.info("Open the stream in Stream::Mode::Publish mode")
         engine = stream.open("zone:fs:/pfs/file", Stream.Mode.Publish)
-        this_actor.info(f"Stream is opened ({stream.engine_type},{stream.transport_method})")
-        assert stream.engine_type == "Engine::Type::File"
-        assert stream.transport_method == "Transport::Method::File"
+        this_actor.info(f"Stream is opened ({stream.engine_type_str},{stream.transport_method_str})")
+        assert stream.engine_type == DTLEngine.Type.File
+        assert stream.transport_method == Transport.Method.File
         this_actor.info("Let the actor sleep for 1 second")
         this_actor.sleep_for(1)
         this_actor.info("Close the engine")

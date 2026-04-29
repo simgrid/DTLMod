@@ -19,13 +19,22 @@ Improvements:
 
 API Changes:
   - New Engine method:
-    - Engine::cancel_transaction() cancel the currently ongoing transaction 
-      performed by this engine. This method has to be called by an external 
+    - Engine::cancel_transaction() cancel the currently ongoing transaction
+      performed by this engine. This method has to be called by an external
       actor not involved in the transaction. It will make the transaction raise
-      a DTLMod::TransactionCancelledException that must be caught if you want 
+      a DTLMod::TransactionCancelledException that must be caught if you want
       the publishers and subscribers to survive to the cancellation of this
-      transaction. 
-  - Behavior:
+      transaction.
+  - New Stream helper methods:
+    - Stream::get_engine_type() and Stream::get_transport_method() respectively
+      return the enum value of the engine type and transport method for a 
+      Stream.
+    - As a consequence, in the Python bindings, the Stream.engine_type and
+      Stream.transport_method readonly properties that convert the engine type
+      and transport method to a string have been renamed to
+      Stream.engine_type_str and Stream.transport_method_str while the existing
+      properties now return the enum values.
+  - Behavior modification:
     - DTL::add_stream can now take an Engine Type and a Transport Method as
       parameters (both defaulting to 'Undefined' if not specified).
 
