@@ -161,6 +161,13 @@ PYBIND11_MODULE(dtlmod, m)
             return result ? py::cast(*result) : py::cast<py::none>(Py_None);
           },
           "Print out the transport method of this Stream (read-only, returns None if invalid)")
+      .def(
+          "reduction_method",
+          [](const Stream& self, std::string_view name) -> py::object {
+            auto result = self.get_reduction_method(name);
+            return result ? py::cast(*result) : py::cast<py::none>(Py_None);
+          },
+          py::arg("name"), "Retrieve a reduction method by name, or None if not found")
       .def_property_readonly("engine_type", &Stream::get_engine_type, "Get the engine type of this Stream (read-only)")
       .def_property_readonly("transport_method", &Stream::get_transport_method,
                              "Get the transport method of this Stream (read-only)")

@@ -108,7 +108,7 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
           stream->define_variable("var3D", {640, 640, 640}, {0, 0, 0}, {640, 640, 640}, sizeof(double));
       XBT_INFO("Define a Decimation Reduction Method");
       ASSERT_NO_THROW(decimator = stream->define_reduction_method("decimation"));
-      XBT_INFO("Open the stream in Pulish mode");
+      XBT_INFO("Open the stream in Publish mode");
       auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
       ASSERT_NO_THROW(sg4::this_actor::sleep_for(1));
       XBT_INFO("Start a Transaction");

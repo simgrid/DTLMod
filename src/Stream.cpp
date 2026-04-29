@@ -104,6 +104,14 @@ std::optional<const char*> Stream::get_transport_method_str() const noexcept
   return std::nullopt; // LCOV_EXCL_LINE
 }
 
+std::optional<std::shared_ptr<ReductionMethod>> Stream::get_reduction_method(std::string_view name) const noexcept
+{
+  auto it = reduction_methods_.find(std::string(name));
+  if (it == reduction_methods_.end())
+    return std::nullopt;
+  return it->second;
+}
+
 Stream& Stream::set_transport_method(const Transport::Method& transport_method)
 {
   if (transport_method_ == transport_method) // No modification, just return

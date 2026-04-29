@@ -64,6 +64,11 @@ def run_test_config_file():
         this_actor.info("Close the engine")
         engine.close()
 
+        this_actor.info("Retrieve the Reduction Method defined for Stream3")
+        stream = dtl.stream_by_name("Stream3")
+        assert None == stream.reduction_method("decimation")
+        assert stream.reduction_method("compression").name == "compression"
+      
         this_actor.info("Check all_streams returns both configured streams")
         all_streams = dtl.all_streams
         assert len(all_streams) == 3

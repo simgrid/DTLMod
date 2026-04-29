@@ -16,6 +16,7 @@ Improvements:
       metadata file has already been written by pub_close())
     - Memory footprint of the File engine now grows as O(N_pub) instead of
       O(N_pub × N_transactions) for long-running concurrent streaming workloads
+    - 
 
 API Changes:
   - New Engine method:
@@ -34,6 +35,8 @@ API Changes:
       and transport method to a string have been renamed to
       Stream.engine_type_str and Stream.transport_method_str while the existing
       properties now return the enum values.
+    - Stream::get_reduction_method(name) to retrieve a reduction method 
+      associated to the stream.
   - Behavior modification:
     - DTL::add_stream can now take an Engine Type and a Transport Method as
       parameters (both defaulting to 'Undefined' if not specified).

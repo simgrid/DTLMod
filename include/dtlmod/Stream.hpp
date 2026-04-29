@@ -115,7 +115,12 @@ public:
   /// @brief Helper function to print out the access Mode of the Stream.
   /// @return The corresponding C-string
   [[nodiscard]] const char* get_access_mode_str() const noexcept { return mode_to_str(access_mode_); }
+  /// @brief Helper function to know the reduction method of the Stream.
+  /// @return An optional containing the ReductionMehtod if defined, std::nullopt otherwise
+  [[nodiscard]] std::optional<std::shared_ptr<ReductionMethod>>
+  get_reduction_method(std::string_view name) const noexcept;
   /// @brief Helper function to know if the Stream does export metadata or not
+  /// @param name the name of the reduction method
   /// @return a boolean indicating if the Stream does export metadata or not
   [[nodiscard]] bool does_export_metadata() const noexcept { return metadata_export_; }
 

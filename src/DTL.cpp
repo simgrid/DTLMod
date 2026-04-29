@@ -58,6 +58,11 @@ DTL::DTL(std::string_view filename)
     // And set its engine type and transport method
     streams_[name]->set_engine_type(type).set_transport_method(transport_method);
 
+    // Check if a reduction method must be defined for the stream
+    if (stream.contains("reduction_methods"))
+      for (const auto& method : stream["reduction_methods"])
+        streams_[name]->define_reduction_method(method.get<std::string>());
+
     // Check if metadata must be exported for this stream
     if (stream.contains("export_metadata")) {
       streams_[name]->set_metadata_export();

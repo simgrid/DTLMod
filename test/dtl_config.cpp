@@ -97,6 +97,12 @@ TEST_F(DTLConfigTest, ConfigFile)
       XBT_INFO("Close the engine");
       ASSERT_NO_THROW(engine->close());
 
+      XBT_INFO("Retrieve the Reduction Method defined for Stream3");
+      ASSERT_NO_THROW(stream = dtl->get_stream_by_name("Stream3").value());
+      ASSERT_FALSE(stream->get_reduction_method("decimation").has_value());
+      ASSERT_TRUE(stream->get_reduction_method("compression").has_value());
+      ASSERT_EQ(stream->get_reduction_method("compression").value()->get_name(), "compression");
+
       XBT_INFO("Check get_all_streams returns both configured streams");
       const auto& all_streams = dtl->get_all_streams();
       ASSERT_EQ(all_streams.size(), 3U);

@@ -20,7 +20,8 @@
             "engine": {
                 "type": "Staging",
                 "transport_method": "Mailbox"
-            }
+            },
+            "reduction_methods": ["compression"]
         }
     ]
 }
