@@ -101,9 +101,7 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
       XBT_INFO("Connect to the DTL");
       auto dtl = dtlmod::DTL::connect();
       XBT_INFO("Create a stream");
-      auto stream = dtl->add_stream("my-output");
-      stream->set_transport_method(dtlmod::Transport::Method::File);
-      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto stream = dtl->add_stream("my-output", dtlmod::Engine::Type::File, dtlmod::Transport::Method::File);
       stream->set_metadata_export();
       XBT_INFO("Create a 3D variable");
       auto var =
