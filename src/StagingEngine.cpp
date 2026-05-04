@@ -77,20 +77,15 @@ void StagingEngine::begin_pub_transaction()
               current_pub_transaction_id_, current_sub_transaction_id_, get_pub_transaction().size());
     try {
       get_pub_transaction().wait_all();
-    } catch (const simgrid::CancelException&) {
-      if (!is_cancelled())
-        throw;
-      get_pub_transaction().clear();
-      throw TransactionCancelledException(XBT_THROW_POINT);
     } catch (const simgrid::NetworkFailureException&) {
       if (!is_cancelled())
         throw;
-      get_pub_transaction().clear();
-      throw TransactionCancelledException(XBT_THROW_POINT);
     }
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     XBT_DEBUG("%u sub activities pending", get_sub_transaction().size());
     get_pub_transaction().clear();
+    if (is_cancelled())
+      throw TransactionCancelledException(XBT_THROW_POINT);
   }
 
   // Then we wait for all subscribers to be at the same transaction
