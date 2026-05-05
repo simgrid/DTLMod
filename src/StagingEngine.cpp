@@ -55,8 +55,8 @@ std::shared_ptr<StagingTransport> StagingEngine::get_staging_transport() const
 
 void StagingEngine::begin_pub_transaction()
 {
-  if (is_cancelled())
-    throw TransactionCancelledException(XBT_THROW_POINT);
+  if (is_transaction_canceled(current_pub_transaction_id_ + 1))
+    throw TransactioncanceledException(XBT_THROW_POINT);
 
   if (!pub_transaction_in_progress_) {
     pub_transaction_in_progress_ = true;
@@ -78,24 +78,24 @@ void StagingEngine::begin_pub_transaction()
     try {
       get_pub_transaction().wait_all();
     } catch (const simgrid::NetworkFailureException&) {
-      if (!is_cancelled())
+      if (!is_canceled())
         throw;
     }
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     XBT_DEBUG("%u sub activities pending", get_sub_transaction().size());
     get_pub_transaction().clear();
-    if (is_cancelled())
-      throw TransactionCancelledException(XBT_THROW_POINT);
+    if (is_transaction_canceled(current_pub_transaction_id_))
+      throw TransactioncanceledException(XBT_THROW_POINT);
   }
 
   // Then we wait for all subscribers to be at the same transaction
-  while (!is_cancelled() &&
+  while (!is_transaction_canceled(current_pub_transaction_id_) &&
          (get_subscribers().is_empty() || current_pub_transaction_id_ > current_sub_transaction_id_)) {
     XBT_DEBUG("Wait for subscribers");
     sub_transaction_started_->wait(lock);
   }
-  if (is_cancelled())
-    throw TransactionCancelledException(XBT_THROW_POINT);
+  if (is_transaction_canceled(current_pub_transaction_id_))
+    throw TransactioncanceledException(XBT_THROW_POINT);
   // Publisher has been notified by subscribers, it can proceed with the transaction
 }
 
@@ -146,16 +146,16 @@ void StagingEngine::pub_close()
 
 void StagingEngine::begin_sub_transaction()
 {
-  if (is_cancelled())
-    throw TransactionCancelledException(XBT_THROW_POINT);
+  if (is_transaction_canceled(current_sub_transaction_id_ + 1))
+    throw TransactioncanceledException(XBT_THROW_POINT);
 
   if (current_sub_transaction_id_ == 0) { // This is the first transaction
     // Wait for at least one publisher to start a tran
     std::unique_lock lock(*get_subscribers().get_mutex());
-    while (!is_cancelled() && current_pub_transaction_id_ == 0)
+    while (!is_transaction_canceled(current_sub_transaction_id_ + 1) && current_pub_transaction_id_ == 0)
       first_pub_transaction_started_->wait(lock);
-    if (is_cancelled())
-      throw TransactionCancelledException(XBT_THROW_POINT);
+    if (is_transaction_canceled(current_sub_transaction_id_ + 1))
+      throw TransactioncanceledException(XBT_THROW_POINT);
     XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
     // We now know the number of publishers, subscriber can create mailboxes/mqs with publishers
     get_staging_transport()->create_rendez_vous_points();
@@ -178,10 +178,13 @@ void StagingEngine::begin_sub_transaction()
   }
 
   std::unique_lock lock(*get_subscribers().get_mutex());
-  while (!is_cancelled() && completed_pub_transaction_id_ < current_sub_transaction_id_)
+  while (!is_transaction_canceled(current_sub_transaction_id_) &&
+         completed_pub_transaction_id_ < current_sub_transaction_id_)
     pub_transaction_completed_->wait(lock);
-  if (is_cancelled())
-    throw TransactionCancelledException(XBT_THROW_POINT);
+  if (is_transaction_canceled(current_sub_transaction_id_)) {
+    sub_transaction_in_progress_ = false;
+    throw TransactioncanceledException(XBT_THROW_POINT);
+  }
 }
 
 void StagingEngine::end_sub_transaction()
@@ -195,19 +198,19 @@ void StagingEngine::end_sub_transaction()
     try {
       get_sub_transaction().wait_all();
     } catch (const simgrid::CancelException&) {
-      if (!is_cancelled())
+      if (!is_canceled())
         throw;
       get_sub_transaction().clear();
       sub_transaction_in_progress_ = false;
       num_subscribers_starting_--;
-      throw TransactionCancelledException(XBT_THROW_POINT);
+      throw TransactioncanceledException(XBT_THROW_POINT);
     } catch (const simgrid::NetworkFailureException&) {
-      if (!is_cancelled())
+      if (!is_canceled())
         throw;
       get_sub_transaction().clear();
       sub_transaction_in_progress_ = false;
       num_subscribers_starting_--;
-      throw TransactionCancelledException(XBT_THROW_POINT);
+      throw TransactioncanceledException(XBT_THROW_POINT);
     }
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     get_sub_transaction().clear();

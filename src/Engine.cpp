@@ -86,9 +86,15 @@ void Engine::close()
   publishers_.contains(sg4::Actor::self()) ? pub_close() : sub_close();
 }
 
-void Engine::cancel_transaction()
+void Engine::cancel_transaction(unsigned int transaction_id)
 {
-  cancelled_ = true;
+  // No-op if both sides have already moved past the target transaction: cancelling now would
+  // affect the wrong (subsequent) transaction.
+  if (get_current_transaction_impl() > transaction_id && get_current_sub_transaction_impl() > transaction_id)
+    return;
+  // transaction_id == 0 means no transaction has started yet; treat as T1 so all checks against
+  // (current + 1 >= 1) still fire correctly.
+  canceled_transaction_id_.store(transaction_id == 0 ? 1 : transaction_id);
   cancel_activities();
 }
 

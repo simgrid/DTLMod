@@ -57,7 +57,7 @@ private:
   std::weak_ptr<Stream> stream_;
 
   bool pub_ever_present_ = false;
-  std::atomic<bool> cancelled_{false};
+  std::atomic<unsigned int> canceled_transaction_id_{0};
 
   ActorRegistry publishers_;
 
@@ -77,8 +77,9 @@ protected:
   [[nodiscard]] const sg4::ActivitySet& get_sub_transaction() const noexcept { return sub_transaction_; }
   [[nodiscard]] sg4::ActivitySet& get_sub_transaction() noexcept { return sub_transaction_; }
 
-  // Protected virtual method for derived classes to implement
-  [[nodiscard]] virtual unsigned int get_current_transaction_impl() const noexcept = 0;
+  // Protected virtual methods for derived classes to implement
+  [[nodiscard]] virtual unsigned int get_current_transaction_impl() const noexcept     = 0;
+  [[nodiscard]] virtual unsigned int get_current_sub_transaction_impl() const noexcept = 0;
 
   // Protected methods for derived classes only
   void close_stream() const;
@@ -93,7 +94,11 @@ protected:
 
   [[nodiscard]] bool pub_ever_present() const noexcept { return pub_ever_present_; }
 
-  [[nodiscard]] bool is_cancelled() const noexcept { return cancelled_; }
+  [[nodiscard]] bool is_canceled() const noexcept { return canceled_transaction_id_ != 0; }
+  [[nodiscard]] bool is_transaction_canceled(unsigned int tx_id) const noexcept
+  {
+    return canceled_transaction_id_ == tx_id;
+  }
 
   // Pure virtual methods for derived classes to implement
   virtual void create_transport(const Transport::Method& transport_method) = 0;
@@ -144,9 +149,11 @@ public:
   /// @return The id of the ongoing transaction.
   [[nodiscard]] unsigned int get_current_transaction() const noexcept { return get_current_transaction_impl(); }
 
-  /// @brief Cancel all in-flight activities of the current transaction, unblocking publishers and subscribers.
+  /// @brief Cancel all in-flight activities of a specific transaction, unblocking publishers and subscribers.
+  /// @param transaction_id The id of the transaction to cancel. If both sides have already moved past this
+  ///        transaction, the call is a no-op to avoid accidentally cancelling a subsequent transaction.
   /// @note Must be called from an external actor not participating in the transaction.
-  void cancel_transaction();
+  void cancel_transaction(unsigned int transaction_id);
 
   /// @brief Close the Engine associated to a Stream.
   void close();

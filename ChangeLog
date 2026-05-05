@@ -20,12 +20,12 @@ Improvements:
 
 API Changes:
   - New Engine method:
-    - Engine::cancel_transaction() cancel the currently ongoing transaction
-      performed by this engine. This method has to be called by an external
-      actor not involved in the transaction. It will make the transaction raise
-      a DTLMod::TransactionCancelledException that must be caught if you want
-      the publishers and subscribers to survive to the cancellation of this
-      transaction.
+    - Engine::cancel_transaction(unsigned int transaction_id) cancels a
+      specific transaction performed by this engine. This method has to be
+      called by an external actor not involved in the transaction. It will make
+      the transaction raise a DTLMod::TransactionCanceledException that must be
+      caught if you want the publishers and subscribers to survive to the
+      cancelation of this transaction.
   - New Stream helper methods:
     - Stream::get_engine_type() and Stream::get_transport_method() respectively
       return the enum value of the engine type and transport method for a 

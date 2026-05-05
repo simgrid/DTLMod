@@ -7,7 +7,7 @@ import ctypes
 import sys
 import multiprocessing
 from simgrid import Engine, Host, this_actor, LinkInRoute
-from dtlmod import DTL, Engine as DTLEngine, Stream, Transport, TransactionCancelledException
+from dtlmod import DTL, Engine as DTLEngine, Stream, Transport, TransactioncanceledException
 
 
 def add_cluster(root, suffix, num_hosts):
@@ -87,7 +87,7 @@ def setup_file_platform():
 
 
 # Publisher stuck in begin_transaction() waiting for a subscriber that never shows up.
-# Canceller fires at t=0.5s. Publisher catches TransactionCancelledException.
+# Canceller fires at t=0.5s. Publisher catches TransactioncanceledException.
 # Subscriber sleeps past the cancel point, then gets it immediately on its begin_transaction().
 def run_test_cancel_staging_waiting_for_subscriber_mq():
     e = setup_staging_platform()
@@ -106,9 +106,9 @@ def run_test_cancel_staging_waiting_for_subscriber_mq():
         this_actor.info("Begin transaction (will block waiting for subscriber)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Publisher caught TransactionCancelledException as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Publisher caught TransactioncanceledException as expected")
         DTL.disconnect()
 
     def sub_actor():
@@ -117,18 +117,18 @@ def run_test_cancel_staging_waiting_for_subscriber_mq():
         engine = stream.open("my-output", Stream.Mode.Subscribe)
         stream.inquire_variable("var")
         this_actor.sleep_for(2.0)
-        this_actor.info("Begin transaction (cancelled_ already true)")
+        this_actor.info("Begin transaction (canceled_ already true)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Subscriber caught TransactionCancelledException as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Subscriber caught TransactioncanceledException as expected")
         DTL.disconnect()
 
     def canceller_actor():
         this_actor.sleep_for(0.5)
         this_actor.info("Cancelling the transaction")
-        engine_ref[0].cancel_transaction()
+        engine_ref[0].cancel_transaction(engine_ref[0].current_transaction)
 
     Host.by_name("host-0.prod").add_actor("PubTestActor", pub_actor)
     Host.by_name("host-0.cons").add_actor("SubTestActor", sub_actor)
@@ -153,9 +153,9 @@ def run_test_cancel_staging_waiting_for_subscriber_mailbox():
         this_actor.info("Begin transaction (will block waiting for subscriber)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Publisher caught TransactionCancelledException as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Publisher caught TransactioncanceledException as expected")
         DTL.disconnect()
 
     def sub_actor():
@@ -164,18 +164,18 @@ def run_test_cancel_staging_waiting_for_subscriber_mailbox():
         engine = stream.open("my-output", Stream.Mode.Subscribe)
         stream.inquire_variable("var")
         this_actor.sleep_for(2.0)
-        this_actor.info("Begin transaction (cancelled_ already true)")
+        this_actor.info("Begin transaction (canceled_ already true)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Subscriber caught TransactionCancelledException as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Subscriber caught TransactioncanceledException as expected")
         DTL.disconnect()
 
     def canceller_actor():
         this_actor.sleep_for(0.5)
         this_actor.info("Cancelling the transaction")
-        engine_ref[0].cancel_transaction()
+        engine_ref[0].cancel_transaction(engine_ref[0].current_transaction)
 
     Host.by_name("host-0.prod").add_actor("PubTestActor", pub_actor)
     Host.by_name("host-0.cons").add_actor("SubTestActor", sub_actor)
@@ -184,7 +184,7 @@ def run_test_cancel_staging_waiting_for_subscriber_mailbox():
 
 # Subscriber stuck in begin_transaction() waiting for the publisher to start a transaction.
 # Publisher opens the stream but sleeps before calling begin_transaction().
-# Canceller fires at t=0.5s. Subscriber catches TransactionCancelledException.
+# Canceller fires at t=0.5s. Subscriber catches TransactioncanceledException.
 def run_test_cancel_staging_waiting_for_publisher_mq():
     e = setup_staging_platform()
     engine_ref = [None]
@@ -200,12 +200,12 @@ def run_test_cancel_staging_waiting_for_publisher_mq():
         Host.by_name("host-1.prod").add_actor("Canceller", canceller_actor)
 
         this_actor.sleep_for(2.0)
-        this_actor.info("Begin transaction (cancelled_ already true)")
+        this_actor.info("Begin transaction (canceled_ already true)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Publisher caught TransactionCancelledException as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Publisher caught TransactioncanceledException as expected")
         DTL.disconnect()
 
     def sub_actor():
@@ -216,15 +216,15 @@ def run_test_cancel_staging_waiting_for_publisher_mq():
         this_actor.info("Begin transaction (will block waiting for publisher to start a transaction)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Subscriber caught TransactionCancelledException as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Subscriber caught TransactioncanceledException as expected")
         DTL.disconnect()
 
     def canceller_actor():
         this_actor.sleep_for(0.5)
         this_actor.info("Cancelling the transaction")
-        engine_ref[0].cancel_transaction()
+        engine_ref[0].cancel_transaction(engine_ref[0].current_transaction)
 
     Host.by_name("host-0.prod").add_actor("PubTestActor", pub_actor)
     Host.by_name("host-0.cons").add_actor("SubTestActor", sub_actor)
@@ -233,7 +233,7 @@ def run_test_cancel_staging_waiting_for_publisher_mq():
 
 # FileEngine: subscriber stuck in begin_transaction() waiting for publisher to complete a transaction.
 # Publisher opens the stream but sleeps before calling begin_transaction().
-# Canceller fires at t=0.5s. Subscriber catches TransactionCancelledException.
+# Canceller fires at t=0.5s. Subscriber catches TransactioncanceledException.
 def run_test_cancel_file_engine_waiting_for_publisher():
     e = setup_file_platform()
     engine_ref = [None]
@@ -249,12 +249,12 @@ def run_test_cancel_file_engine_waiting_for_publisher():
         Host.by_name("node-2").add_actor("Canceller", canceller_actor)
 
         this_actor.sleep_for(2.0)
-        this_actor.info("Begin transaction (cancelled_ already true)")
+        this_actor.info("Begin transaction (canceled_ already true)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Publisher caught TransactionCancelledException as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Publisher caught TransactioncanceledException as expected")
         DTL.disconnect()
 
     def sub_actor():
@@ -265,15 +265,15 @@ def run_test_cancel_file_engine_waiting_for_publisher():
         this_actor.info("Begin transaction (will block waiting for publisher to complete a transaction)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Subscriber caught TransactionCancelledException as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Subscriber caught TransactioncanceledException as expected")
         DTL.disconnect()
 
     def canceller_actor():
         this_actor.sleep_for(0.5)
         this_actor.info("Cancelling the transaction")
-        engine_ref[0].cancel_transaction()
+        engine_ref[0].cancel_transaction(engine_ref[0].current_transaction)
 
     Host.by_name("node-0").add_actor("PubTestActor", pub_actor)
     Host.by_name("node-1").add_actor("SubTestActor", sub_actor)
@@ -283,7 +283,7 @@ def run_test_cancel_file_engine_waiting_for_publisher():
 # Publisher and subscriber are both engaged in a long Mailbox transfer.
 # Publisher completes T1 end_transaction() (starting slow async comms) then blocks in T2
 # begin_transaction() waiting for T1 sends to complete. Subscriber blocks in T1 end_transaction()
-# waiting for receives. Canceller fires at t=0.5s, unblocking both with TransactionCancelledException.
+# waiting for receives. Canceller fires at t=0.5s, unblocking both with TransactioncanceledException.
 def run_test_cancel_staging_mid_transaction_mailbox():
     e = setup_slow_staging_platform()
     engine_ref = [None]
@@ -303,13 +303,13 @@ def run_test_cancel_staging_mid_transaction_mailbox():
         engine.put(var)
         engine.end_transaction()
 
-        # T2: blocks waiting for T1 sends to complete -- gets cancelled
+        # T2: blocks waiting for T1 sends to complete -- gets canceled
         this_actor.info("Begin T2 (will block waiting for T1 sends to complete over slow link)")
         try:
             engine.begin_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Publisher caught TransactionCancelledException in T2 begin_transaction() as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Publisher caught TransactioncanceledException in T2 begin_transaction() as expected")
         DTL.disconnect()
 
     def sub_actor():
@@ -324,15 +324,15 @@ def run_test_cancel_staging_mid_transaction_mailbox():
         this_actor.info("End T1 (will block waiting for receives over slow link)")
         try:
             engine.end_transaction()
-            assert False, "Expected TransactionCancelledException"
-        except TransactionCancelledException:
-            this_actor.info("Subscriber caught TransactionCancelledException in T1 end_transaction() as expected")
+            assert False, "Expected TransactioncanceledException"
+        except TransactioncanceledException:
+            this_actor.info("Subscriber caught TransactioncanceledException in T1 end_transaction() as expected")
         DTL.disconnect()
 
     def canceller_actor():
         this_actor.sleep_for(0.5)
         this_actor.info("Cancelling the transaction")
-        engine_ref[0].cancel_transaction()
+        engine_ref[0].cancel_transaction(engine_ref[0].current_transaction)
 
     Host.by_name("host-0.prod").add_actor("PubTestActor", pub_actor)
     Host.by_name("host-0.cons").add_actor("SubTestActor", sub_actor)

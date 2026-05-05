@@ -101,9 +101,9 @@ public:
 };
 
 // Publisher is stuck in begin_transaction() waiting for a subscriber that never shows up.
-// An external canceller fires after 0.5s, unblocking the publisher with TransactionCancelledException.
-// The subscriber registers but sleeps past the cancellation point, then gets TransactionCancelledException
-// immediately on its own begin_transaction() because cancelled_ is already true.
+// An external canceller fires after 0.5s, unblocking the publisher with TransactioncanceledException.
+// The subscriber registers but sleeps past the cancellation point, then gets TransactioncanceledException
+// immediately on its own begin_transaction() because canceled_ is already true.
 TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForSubscriber_MQ)
 {
   DO_TEST_WITH_FORK([this]() {
@@ -123,12 +123,12 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForSubscriber_MQ)
       wdog_host->add_actor("Canceller", [engine]() {
         sg4::this_actor::sleep_for(0.5);
         XBT_INFO("Cancelling the transaction");
-        engine->cancel_transaction();
+        engine->cancel_transaction(engine->get_current_transaction());
       });
 
       XBT_INFO("Begin transaction (will block waiting for subscriber)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Publisher caught TransactionCancelledException as expected");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Publisher caught TransactioncanceledException as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -139,9 +139,9 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForSubscriber_MQ)
       auto var_sub = stream->inquire_variable("var");
 
       sg4::this_actor::sleep_for(2.0); // sleep past the cancellation point
-      XBT_INFO("Begin transaction (cancelled_ already true)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Subscriber caught TransactionCancelledException as expected");
+      XBT_INFO("Begin transaction (canceled_ already true)");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Subscriber caught TransactioncanceledException as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -169,12 +169,12 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForSubscriber_Mailbox)
       wdog_host->add_actor("Canceller", [engine]() {
         sg4::this_actor::sleep_for(0.5);
         XBT_INFO("Cancelling the transaction");
-        engine->cancel_transaction();
+        engine->cancel_transaction(engine->get_current_transaction());
       });
 
       XBT_INFO("Begin transaction (will block waiting for subscriber)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Publisher caught TransactionCancelledException as expected");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Publisher caught TransactioncanceledException as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -185,9 +185,9 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForSubscriber_Mailbox)
       auto var_sub = stream->inquire_variable("var");
 
       sg4::this_actor::sleep_for(2.0);
-      XBT_INFO("Begin transaction (cancelled_ already true)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Subscriber caught TransactionCancelledException as expected");
+      XBT_INFO("Begin transaction (canceled_ already true)");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Subscriber caught TransactioncanceledException as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -198,7 +198,7 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForSubscriber_Mailbox)
 // Subscriber is stuck in begin_transaction() waiting for the publisher to start a transaction.
 // Publisher opens the stream but never calls begin_transaction().
 // Canceller fires after 0.5s, unblocking the subscriber.
-// Publisher then gets TransactionCancelledException immediately on its begin_transaction().
+// Publisher then gets TransactioncanceledException immediately on its begin_transaction().
 TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForPublisher_MQ)
 {
   DO_TEST_WITH_FORK([this]() {
@@ -218,13 +218,13 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForPublisher_MQ)
       wdog_host->add_actor("Canceller", [engine]() {
         sg4::this_actor::sleep_for(0.5);
         XBT_INFO("Cancelling the transaction");
-        engine->cancel_transaction();
+        engine->cancel_transaction(engine->get_current_transaction());
       });
 
       sg4::this_actor::sleep_for(2.0); // sleep past the cancellation point
-      XBT_INFO("Begin transaction (cancelled_ already true)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Publisher caught TransactionCancelledException as expected");
+      XBT_INFO("Begin transaction (canceled_ already true)");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Publisher caught TransactioncanceledException as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -235,8 +235,8 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_WaitingForPublisher_MQ)
       auto var_sub = stream->inquire_variable("var");
 
       XBT_INFO("Begin transaction (will block waiting for publisher to start a transaction)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Subscriber caught TransactionCancelledException as expected");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Subscriber caught TransactioncanceledException as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -266,13 +266,13 @@ TEST_F(DTLCancelTest, CancelFileEngineTransaction_WaitingForPublisher)
       wdog_host->add_actor("Canceller", [engine]() {
         sg4::this_actor::sleep_for(0.5);
         XBT_INFO("Cancelling the transaction");
-        engine->cancel_transaction();
+        engine->cancel_transaction(engine->get_current_transaction());
       });
 
       sg4::this_actor::sleep_for(2.0); // sleep past the cancellation point
-      XBT_INFO("Begin transaction (cancelled_ already true)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Publisher caught TransactionCancelledException as expected");
+      XBT_INFO("Begin transaction (canceled_ already true)");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Publisher caught TransactioncanceledException as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -283,8 +283,8 @@ TEST_F(DTLCancelTest, CancelFileEngineTransaction_WaitingForPublisher)
       auto var_sub = stream->inquire_variable("var");
 
       XBT_INFO("Begin transaction (will block waiting for publisher to complete a transaction)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Subscriber caught TransactionCancelledException as expected");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Subscriber caught TransactioncanceledException as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -295,7 +295,7 @@ TEST_F(DTLCancelTest, CancelFileEngineTransaction_WaitingForPublisher)
 // Publisher and subscriber are both engaged in a long Mailbox transfer (Mailbox simulates bandwidth; MQ does not).
 // Publisher completes T1 end_transaction() (starting slow async Comms) then blocks in T2 begin_transaction()
 // waiting for T1 sends to complete. Subscriber blocks in T1 end_transaction() waiting for receives.
-// Canceller fires after 0.5s, unblocking both with TransactionCancelledException.
+// Canceller fires after 0.5s, unblocking both with TransactioncanceledException.
 TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
 {
   DO_TEST_WITH_FORK([this]() {
@@ -315,7 +315,7 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
       wdog_host->add_actor("Canceller", [engine]() {
         sg4::this_actor::sleep_for(0.5);
         XBT_INFO("Cancelling the transaction");
-        engine->cancel_transaction();
+        engine->cancel_transaction(engine->get_current_transaction());
       });
 
       // T1: completes normally, starting slow async Comms over the 1MBps internet link
@@ -323,10 +323,10 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
       engine->put(var);
       engine->end_transaction();
 
-      // T2: blocks waiting for T1 Comms to drain -- cancelled mid-transfer
+      // T2: blocks waiting for T1 Comms to drain -- canceled mid-transfer
       XBT_INFO("Begin T2 (will block waiting for T1 sends to complete over slow link)");
-      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Publisher caught TransactionCancelledException in T2 begin_transaction() as expected");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Publisher caught TransactioncanceledException in T2 begin_transaction() as expected");
       dtlmod::DTL::disconnect();
     });
 
@@ -336,12 +336,12 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
       auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
       auto var_sub = stream->inquire_variable("var");
 
-      // T1: blocks in end_transaction() waiting for slow receives -- cancelled mid-transfer
+      // T1: blocks in end_transaction() waiting for slow receives -- canceled mid-transfer
       engine->begin_transaction();
       engine->get(var_sub);
       XBT_INFO("End T1 (will block waiting for receives over slow link)");
-      ASSERT_THROW(engine->end_transaction(), dtlmod::TransactionCancelledException);
-      XBT_INFO("Subscriber caught TransactionCancelledException in T1 end_transaction() as expected");
+      ASSERT_THROW(engine->end_transaction(), dtlmod::TransactioncanceledException);
+      XBT_INFO("Subscriber caught TransactioncanceledException in T1 end_transaction() as expected");
       dtlmod::DTL::disconnect();
     });
 

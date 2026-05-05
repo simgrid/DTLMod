@@ -55,6 +55,10 @@ class FileEngine : public Engine {
   {
     return current_pub_transaction_id_;
   }
+  [[nodiscard]] unsigned int get_current_sub_transaction_impl() const noexcept override
+  {
+    return current_sub_transaction_id_;
+  }
 
 protected:
   [[nodiscard]] std::shared_ptr<FileTransport> get_file_transport() const;

@@ -70,7 +70,7 @@ DECLARE_DTLMOD_EXCEPTION(UnknownCompressionOptionException, "Unknown Compression
 DECLARE_DTLMOD_EXCEPTION(InconsistentCompressionRatioException, "Inconsistent Compression ratio");
 DECLARE_DTLMOD_EXCEPTION(SubscriberSideCompressionException, "Compression can only be applied on the publisher side");
 
-DECLARE_DTLMOD_EXCEPTION(TransactionCancelledException, "Transaction cancelled");
+DECLARE_DTLMOD_EXCEPTION(TransactioncanceledException, "Transaction canceled");
 
 } // namespace dtlmod
 
