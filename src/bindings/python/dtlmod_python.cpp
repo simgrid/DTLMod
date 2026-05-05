@@ -88,7 +88,7 @@ PYBIND11_MODULE(dtlmod, m)
   py::register_exception<dtlmod::InconsistentCompressionRatioException>(m, "InconsistentCompressionRatioException");
   py::register_exception<dtlmod::SubscriberSideCompressionException>(m, "SubscriberSideCompressionException");
 
-  py::register_exception<dtlmod::TransactioncanceledException>(m, "TransactioncanceledException");
+  py::register_exception<dtlmod::TransactionCanceledException>(m, "TransactionCanceledException");
 
   /* Class Engine */
   py::class_<Engine, std::shared_ptr<Engine>> engine(

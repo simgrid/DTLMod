@@ -56,7 +56,7 @@ std::shared_ptr<StagingTransport> StagingEngine::get_staging_transport() const
 void StagingEngine::begin_pub_transaction()
 {
   if (is_transaction_canceled(current_pub_transaction_id_ + 1))
-    throw TransactioncanceledException(XBT_THROW_POINT);
+    throw TransactionCanceledException(XBT_THROW_POINT);
 
   if (!pub_transaction_in_progress_) {
     pub_transaction_in_progress_ = true;
@@ -85,7 +85,7 @@ void StagingEngine::begin_pub_transaction()
     XBT_DEBUG("%u sub activities pending", get_sub_transaction().size());
     get_pub_transaction().clear();
     if (is_transaction_canceled(current_pub_transaction_id_))
-      throw TransactioncanceledException(XBT_THROW_POINT);
+      throw TransactionCanceledException(XBT_THROW_POINT);
   }
 
   // Then we wait for all subscribers to be at the same transaction
@@ -95,7 +95,7 @@ void StagingEngine::begin_pub_transaction()
     sub_transaction_started_->wait(lock);
   }
   if (is_transaction_canceled(current_pub_transaction_id_))
-    throw TransactioncanceledException(XBT_THROW_POINT);
+    throw TransactionCanceledException(XBT_THROW_POINT);
   // Publisher has been notified by subscribers, it can proceed with the transaction
 }
 
@@ -147,7 +147,7 @@ void StagingEngine::pub_close()
 void StagingEngine::begin_sub_transaction()
 {
   if (is_transaction_canceled(current_sub_transaction_id_ + 1))
-    throw TransactioncanceledException(XBT_THROW_POINT);
+    throw TransactionCanceledException(XBT_THROW_POINT);
 
   if (current_sub_transaction_id_ == 0) { // This is the first transaction
     // Wait for at least one publisher to start a tran
@@ -155,7 +155,7 @@ void StagingEngine::begin_sub_transaction()
     while (!is_transaction_canceled(current_sub_transaction_id_ + 1) && current_pub_transaction_id_ == 0)
       first_pub_transaction_started_->wait(lock);
     if (is_transaction_canceled(current_sub_transaction_id_ + 1))
-      throw TransactioncanceledException(XBT_THROW_POINT);
+      throw TransactionCanceledException(XBT_THROW_POINT);
     XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
     // We now know the number of publishers, subscriber can create mailboxes/mqs with publishers
     get_staging_transport()->create_rendez_vous_points();
@@ -183,7 +183,7 @@ void StagingEngine::begin_sub_transaction()
     pub_transaction_completed_->wait(lock);
   if (is_transaction_canceled(current_sub_transaction_id_)) {
     sub_transaction_in_progress_ = false;
-    throw TransactioncanceledException(XBT_THROW_POINT);
+    throw TransactionCanceledException(XBT_THROW_POINT);
   }
 }
 
@@ -203,14 +203,14 @@ void StagingEngine::end_sub_transaction()
       get_sub_transaction().clear();
       sub_transaction_in_progress_ = false;
       num_subscribers_starting_--;
-      throw TransactioncanceledException(XBT_THROW_POINT);
+      throw TransactionCanceledException(XBT_THROW_POINT);
     } catch (const simgrid::NetworkFailureException&) {
       if (!is_canceled())
         throw;
       get_sub_transaction().clear();
       sub_transaction_in_progress_ = false;
       num_subscribers_starting_--;
-      throw TransactioncanceledException(XBT_THROW_POINT);
+      throw TransactionCanceledException(XBT_THROW_POINT);
     }
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     get_sub_transaction().clear();

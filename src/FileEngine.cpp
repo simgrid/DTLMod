@@ -101,7 +101,7 @@ std::string FileEngine::get_path_to_dataset() const
 void FileEngine::begin_pub_transaction()
 {
   if (is_transaction_canceled(current_pub_transaction_id_ + 1))
-    throw TransactioncanceledException(XBT_THROW_POINT);
+    throw TransactionCanceledException(XBT_THROW_POINT);
 
   auto self = sg4::Actor::self();
 
@@ -120,7 +120,7 @@ void FileEngine::begin_pub_transaction()
       pub_activities_completed_->wait(lock);
     }
     if (is_transaction_canceled(current_pub_transaction_id_))
-      throw TransactioncanceledException(XBT_THROW_POINT);
+      throw TransactionCanceledException(XBT_THROW_POINT);
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     get_file_transport()->clear_to_write_in_transaction(self);
   }
@@ -192,7 +192,7 @@ void FileEngine::pub_close()
 void FileEngine::begin_sub_transaction()
 {
   if (is_transaction_canceled(current_sub_transaction_id_ + 1))
-    throw TransactioncanceledException(XBT_THROW_POINT);
+    throw TransactionCanceledException(XBT_THROW_POINT);
 
   // Only one subscriber has to do this
   if (!sub_transaction_in_progress_) {
@@ -211,7 +211,7 @@ void FileEngine::begin_sub_transaction()
     }
     if (is_transaction_canceled(current_sub_transaction_id_)) {
       sub_transaction_in_progress_ = false;
-      throw TransactioncanceledException(XBT_THROW_POINT);
+      throw TransactionCanceledException(XBT_THROW_POINT);
     }
     XBT_DEBUG("Publishers stored metadata for that transaction, proceed");
   }
@@ -234,7 +234,7 @@ void FileEngine::end_sub_transaction()
     transport->close_sub_files(self);
     transport->clear_to_read_in_transaction(self);
     sub_transaction_in_progress_ = false;
-    throw TransactioncanceledException(XBT_THROW_POINT);
+    throw TransactionCanceledException(XBT_THROW_POINT);
   }
 
   // Subscriber get the list of files and size to read that has been build during the get() operations
@@ -251,7 +251,7 @@ void FileEngine::end_sub_transaction()
     transport->close_sub_files(self);
     transport->clear_to_read_in_transaction(self);
     sub_transaction_in_progress_ = false;
-    throw TransactioncanceledException(XBT_THROW_POINT);
+    throw TransactionCanceledException(XBT_THROW_POINT);
   }
   file_sub_transaction_[self].clear();
   // Close files opened in this transaction
