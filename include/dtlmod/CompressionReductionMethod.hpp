@@ -25,11 +25,14 @@ class CompressionReductionMethod : public ReductionMethod {
   };
 
   class ParameterizedCompression {
-    const Variable* var_; // non-owning: the Variable outlives the parameterization (both owned by Stream)
+    std::string var_name_;
     CompressionConfig cfg_;
 
   public:
-    ParameterizedCompression(const Variable& var, CompressionConfig cfg) : var_(&var), cfg_(std::move(cfg)) {}
+    ParameterizedCompression(const Variable& var, CompressionConfig cfg)
+        : var_name_(var.get_name()), cfg_(std::move(cfg))
+    {
+    }
 
     [[nodiscard]] double get_accuracy() const { return cfg_.accuracy; }
     [[nodiscard]] double get_compression_cost_per_element() const { return cfg_.compression_cost_per_element; }

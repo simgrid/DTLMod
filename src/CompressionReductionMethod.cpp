@@ -18,7 +18,7 @@ double CompressionReductionMethod::ParameterizedCompression::get_effective_ratio
   if (cfg_.ratio_variability <= 0.0)
     return cfg_.compression_ratio;
   // Deterministic noise from hash of (variable_name, transaction_id)
-  size_t seed = std::hash<std::string>{}(var_->get_name()) ^ (std::hash<unsigned int>{}(transaction_id) << 1);
+  size_t seed = std::hash<std::string>{}(var_name_) ^ (std::hash<unsigned int>{}(transaction_id) << 1);
   // Map to [1 - variability, 1 + variability]
   double noise = 1.0 + cfg_.ratio_variability * (2.0 * (seed % 10001) / 10000.0 - 1.0);
   return std::max(1.0, cfg_.compression_ratio * noise);
