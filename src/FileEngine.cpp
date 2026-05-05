@@ -245,7 +245,17 @@ void FileEngine::end_sub_transaction()
     file_sub_transaction_[self].push(file->read_async(size));
 
   XBT_DEBUG("Wait for the %d subscribe activities for the transaction", file_sub_transaction_[self].size());
-  file_sub_transaction_[self].wait_all();
+  try {
+    file_sub_transaction_[self].wait_all();
+  } catch (const simgrid::CancelException&) {
+    if (!is_canceled())
+      throw;
+    file_sub_transaction_[self].clear();
+    transport->close_sub_files(self);
+    transport->clear_to_read_in_transaction(self);
+    sub_transaction_in_progress_ = false;
+    throw TransactionCanceledException(XBT_THROW_POINT);
+  }
   if (is_transaction_canceled(current_sub_transaction_id_)) {
     file_sub_transaction_[self].clear();
     transport->close_sub_files(self);

@@ -77,6 +77,11 @@ void StagingEngine::begin_pub_transaction()
               current_pub_transaction_id_, current_sub_transaction_id_, get_pub_transaction().size());
     try {
       get_pub_transaction().wait_all();
+    } catch (const simgrid::CancelException&) {
+      if (!is_canceled())
+        throw;
+      get_pub_transaction().clear();
+      throw TransactionCanceledException(XBT_THROW_POINT);
     } catch (const simgrid::NetworkFailureException&) {
       if (!is_canceled())
         throw;
