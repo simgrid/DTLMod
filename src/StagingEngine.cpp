@@ -134,7 +134,19 @@ void StagingEngine::pub_close()
     pub_closing_ = true;
     XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
               get_pub_transaction().size());
-    get_pub_transaction().wait_all();
+    try {
+      get_pub_transaction().wait_all();
+    } catch (const simgrid::CancelException&) {
+      if (!is_canceled())
+        throw;
+      for (size_t i = 0; i < get_pub_transaction().size(); i++)
+        get_pub_transaction().at(i)->cancel();
+    } catch (const simgrid::NetworkFailureException&) {
+      if (!is_canceled())
+        throw;
+      for (size_t i = 0; i < get_pub_transaction().size(); i++)
+        get_pub_transaction().at(i)->cancel();
+    }
     get_pub_transaction().clear();
     XBT_DEBUG("[%s] last publish transaction is over", get_cname());
     current_pub_transaction_id_++;
@@ -188,6 +200,7 @@ void StagingEngine::begin_sub_transaction()
     pub_transaction_completed_->wait(lock);
   if (is_transaction_canceled(current_sub_transaction_id_)) {
     sub_transaction_in_progress_ = false;
+    num_subscribers_starting_--;
     throw TransactionCanceledException(XBT_THROW_POINT);
   }
 }
@@ -239,7 +252,19 @@ void StagingEngine::sub_close()
     // I'm the first to close
     sub_closing_ = true;
     XBT_DEBUG("Wait for the %d subscribe activities for the transaction", get_sub_transaction().size());
-    get_sub_transaction().wait_all();
+    try {
+      get_sub_transaction().wait_all();
+    } catch (const simgrid::CancelException&) {
+      if (!is_canceled())
+        throw;
+      for (size_t i = 0; i < get_sub_transaction().size(); i++)
+        get_sub_transaction().at(i)->cancel();
+    } catch (const simgrid::NetworkFailureException&) {
+      if (!is_canceled())
+        throw;
+      for (size_t i = 0; i < get_sub_transaction().size(); i++)
+        get_sub_transaction().at(i)->cancel();
+    }
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     get_sub_transaction().clear();
   }
