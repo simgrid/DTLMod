@@ -1,45 +1,91 @@
 ----------------------------------------------------------------------------
 
-DTLMod (0.5) not released yet (target: May 2026)
+DTLMod (0.5) May 25, 2026
 
 Improvements:
+  - Transaction cancellation support
+    - New Engine::cancel_transaction(transaction_id) allows an external actor
+      to cancel a specific in-flight transaction, unblocking both its
+      publishers and subscribers
+    - Publishers and subscribers receive a TransactionCanceledException;
+      catching it allows them to survive the cancellation and continue to
+      subsequent transactions
+    - Works with both File and Staging engines across any number of publishers
+      and subscribers
   - Memory efficiency: progressive eviction of metadata transaction entries
     - Once all subscribers have consumed a transaction, its entries are evicted
       from the in-memory Metadata::transaction_infos_ map
     - When metadata export is enabled and publishers and subscribers coexist
-      (file streaming), evicted entries are progressively flushed to 
-      per-variable temporary files; the final metadata file is assembled at 
-      pub_close() from those files and any remaining in-memory entries, 
+      (file streaming), evicted entries are progressively flushed to
+      per-variable temporary files; the final metadata file is assembled at
+      pub_close() from those files and any remaining in-memory entries,
       preserving the existing format and transaction count
     - When the stream is opened by subscribers only after all publishers have
       closed (sequential scenario), memory-only eviction is performed (the
       metadata file has already been written by pub_close())
     - Memory footprint of the File engine now grows as O(N_pub) instead of
       O(N_pub × N_transactions) for long-running concurrent streaming workloads
-    - 
+  - Improved test coverage
+    - Comprehensive C++ and Python test suite for transaction cancellation,
+      covering cancellation while waiting for a subscriber, while waiting for
+      a publisher, and mid-transaction for both File and Staging engines
+    - Tests for the 3-parameter form of DTL::add_stream
+    - Tests for propagation of reduction parameters to subscribers for both
+      compression and decimation methods
+
+Bug Fixes:
+  - SZ compression model: the ratio formula incorrectly used -log10(accuracy)
+    instead of accuracy^beta, inverting the accuracy-to-ratio relationship;
+    constants recalibrated to give ratio ≈ 7 at accuracy = 1e-3 and ratio ≈ 2
+    at accuracy = 1e-6
+  - CompressionReductionMethod did not register the subscriber-side variable
+    during inquire_variable, preventing Engine::get() from simulating
+    decompression costs
+  - DecimationReductionMethod did not propagate its parameterization to
+    subscribers, preventing them from querying reduced variable sizes after
+    inquire_variable
+  - Transaction cancellation in StagingEngine: CancelException and
+    NetworkFailureException thrown during pub_close and sub_close were not
+    caught when a cancellation was in progress, leaving in-flight activities
+    in an inconsistent state
+  - StagingEngine::begin_sub_transaction did not decrement
+    num_subscribers_starting_ when a transaction was canceled, causing an
+    imbalance in subsequent synchronization
+  - CompressionReductionMethod::ParameterizedCompression stored a raw pointer
+    to the associated Variable; replaced with the variable name string to
+    eliminate potential dangling references
 
 API Changes:
   - New Engine method:
     - Engine::cancel_transaction(unsigned int transaction_id) cancels a
-      specific transaction performed by this engine. This method has to be
-      called by an external actor not involved in the transaction. It will make
-      the transaction raise a DTLMod::TransactionCanceledException that must be
-      caught if you want the publishers and subscribers to survive to the
-      cancelation of this transaction.
+      specific transaction performed by this engine. This method must be
+      called from an external actor not involved in the transaction. It raises
+      a TransactionCanceledException that publishers and subscribers must catch
+      to survive the cancellation and continue to subsequent transactions. If
+      both sides have already moved past the given transaction ID, the call is
+      a no-op to avoid accidentally canceling a subsequent transaction.
   - New Stream helper methods:
     - Stream::get_engine_type() and Stream::get_transport_method() respectively
-      return the enum value of the engine type and transport method for a 
+      return the enum value of the engine type and transport method for a
       Stream.
     - As a consequence, in the Python bindings, the Stream.engine_type and
-      Stream.transport_method readonly properties that convert the engine type
-      and transport method to a string have been renamed to
-      Stream.engine_type_str and Stream.transport_method_str while the existing
+      Stream.transport_method readonly properties that return the engine type
+      and transport method as a string have been renamed to
+      Stream.engine_type_str and Stream.transport_method_str; the existing
       properties now return the enum values.
-    - Stream::get_reduction_method(name) to retrieve a reduction method 
-      associated to the stream.
-  - Behavior modification:
-    - DTL::add_stream can now take an Engine Type and a Transport Method as
-      parameters (both defaulting to 'Undefined' if not specified).
+    - Stream::get_reduction_method(name) retrieves a reduction method
+      associated to the stream by name, returning std::nullopt if not found.
+  - New ReductionMethod virtual method:
+    - ReductionMethod::propagate_for_subscriber(publisher_var, subscriber_var)
+      copies the publisher-side parameterization to the subscriber variable;
+      the default implementation is a no-op; both DecimationReductionMethod
+      and CompressionReductionMethod provide overrides called by
+      Stream::inquire_variable.
+  - Behavior modifications:
+    - DTL::add_stream can now take an Engine::Type and a Transport::Method as
+      optional parameters (both defaulting to Undefined if not specified).
+    - Reduction methods can now be declared in the DTL configuration file via
+      a "reduction_methods" array in the stream definition.
 
 ----------------------------------------------------------------------------
 
