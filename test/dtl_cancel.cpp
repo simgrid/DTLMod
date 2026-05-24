@@ -292,6 +292,118 @@ TEST_F(DTLCancelTest, CancelFileEngineTransaction_WaitingForPublisher)
   });
 }
 
+// Both publisher and subscriber complete two transactions before the canceller fires.
+// cancel_transaction(0) is a no-op because both sides have already advanced past transaction 0
+// (i.e., both current_pub_transaction_id_ and current_sub_transaction_id_ are > 0).
+// This exercises the get_current_sub_transaction_impl() path in the no-op guard of
+// Engine::cancel_transaction() for the StagingEngine.
+TEST_F(DTLCancelTest, CancelNoOp_BothSidesPastTransaction_StagingMQ)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_staging_platform();
+    auto* pub_host  = sg4::Host::by_name("host-0.prod");
+    auto* sub_host  = sg4::Host::by_name("host-0.cons");
+    auto* wdog_host = sg4::Host::by_name("host-1.prod");
+
+    pub_host->add_actor("PubTestActor", [wdog_host]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::MQ);
+      auto var    = stream->define_variable("var", {100}, {0}, {100}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+
+      wdog_host->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(0.5);
+        XBT_INFO("Both sides completed T1 and T2 at t=0; cancel_transaction(0) must be a no-op");
+        ASSERT_NO_THROW(engine->cancel_transaction(0));
+        XBT_INFO("cancel_transaction returned as a no-op as expected");
+      });
+
+      // Both T1 and T2 complete instantly with MQ; both current IDs are 2 before the canceller fires
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->end_transaction());
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      sg4::this_actor::sleep_for(2.0); // keep engine alive until canceller fires at 0.5s
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", []() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      (void)stream->inquire_variable("var");
+
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->end_transaction());
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->end_transaction());
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// Same scenario for the FileEngine: both sides complete two full transactions (including
+// actual file I/O) so that both current_pub_transaction_id_ and current_sub_transaction_id_
+// are > 0 when the canceller fires. cancel_transaction(0) must be a no-op and must call
+// get_current_sub_transaction_impl() through the no-op guard of Engine::cancel_transaction().
+TEST_F(DTLCancelTest, CancelNoOp_BothSidesPastTransaction_FileEngine)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_file_platform();
+    auto* pub_host  = sg4::Host::by_name("node-0");
+    auto* sub_host  = sg4::Host::by_name("node-1");
+    auto* wdog_host = sg4::Host::by_name("node-2");
+
+    pub_host->add_actor("PubTestActor", [wdog_host]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto var    = stream->define_variable("var", {100}, {0}, {100}, sizeof(double));
+      auto engine = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Publish);
+
+      wdog_host->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(1.0);
+        XBT_INFO("Both sides completed T1 and T2; cancel_transaction(0) must be a no-op");
+        ASSERT_NO_THROW(engine->cancel_transaction(0));
+        XBT_INFO("cancel_transaction returned as a no-op as expected");
+      });
+
+      ASSERT_NO_THROW(engine->begin_transaction());
+      engine->put(var);
+      ASSERT_NO_THROW(engine->end_transaction());
+      ASSERT_NO_THROW(engine->begin_transaction());
+      engine->put(var);
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      sg4::this_actor::sleep_for(2.0); // keep engine alive until canceller fires at 1.0s
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", []() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+
+      ASSERT_NO_THROW(engine->begin_transaction());
+      engine->get(var_sub);
+      ASSERT_NO_THROW(engine->end_transaction());
+      ASSERT_NO_THROW(engine->begin_transaction());
+      engine->get(var_sub);
+      ASSERT_NO_THROW(engine->end_transaction());
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 // Publisher and subscriber are both engaged in a long Mailbox transfer (Mailbox simulates bandwidth; MQ does not).
 // Publisher completes T1 end_transaction() (starting slow async Comms) then blocks in T2 begin_transaction()
 // waiting for T1 sends to complete. Subscriber blocks in T1 end_transaction() waiting for receives.
