@@ -150,7 +150,23 @@
 <p>A <a class="reference internal" href="#concept-dtl"><strong>DTL</strong></a> is created by calling <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">DTL::create()</span></code> at the beginning of the
 <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">main()</span></code> function of your simulator. This function can take as an optional argument a JSON configuration
 file that describes the different <a class="reference internal" href="#concept-streams"><strong>Streams</strong></a> to be created during the simulation each with a <strong>name</strong>,
-<a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> type, and <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> method.</p>
+<a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> type, <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> method, and optionally a list of reduction methods and a flag to
+enable metadata export. A minimal stream entry looks like:</p>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
+<span class="w">  </span><span class="nt">&quot;streams&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">    </span><span class="p">{</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-output&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;engine_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;File&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;transport_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;File&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;reduction_methods&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;compression&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;export_metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">]</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">&quot;reduction_methods&quot;</span></code> array accepts any combination of <code class="docutils literal notranslate"><span class="pre">&quot;decimation&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;compression&quot;</span></code>. Each listed
+method is pre-registered on the stream (equivalent to calling <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::define_reduction_method</span></code>) and can then be applied to individual variables.</p>
 <p>A common in situ processing scenario is that some analyses or visualization are only needed when certain conditions
 are met. In such cases, a new process is spawned, subscribes to some variables, and analyzes or visualizes data.
 DTLMod has been designed to enable the development of simulators in which actors can connect to or disconnect from the
@@ -343,15 +359,33 @@ Potential matches:
 <section id="stream-factory">
 <h4>Stream factory<a class="headerlink" href="#stream-factory" title="Link to this heading"></a></h4>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-2-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-2-Qysr" class="sphinx-tabs-panel group-tab" id="panel-2-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>doxygenfunction: Unable to resolve function “dtlmod::DTL::add_stream” with arguments (const std::string&amp;) in doxygen xml output for project “dtlmod” from directory: ../build/xml.
-Potential matches:
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-2-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-2-Qysr" class="sphinx-tabs-panel group-tab" id="panel-2-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod3DTL10add_streamENSt11string_viewEN6Engine4TypeEN9Transport6MethodE">
+<span id="_CPPv3N6dtlmod3DTL10add_streamENSt11string_viewEN6Engine4TypeEN9Transport6MethodE"></span><span id="_CPPv2N6dtlmod3DTL10add_streamENSt11string_viewEN6Engine4TypeEN9Transport6MethodE"></span><span id="dtlmod::DTL::add_stream__std::string_view.Engine::Type.Transport::Method"></span><span class="target" id="classdtlmod_1_1DTL_1a282159d4d62f5f81ea8369e8968895fe"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">DTL</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">add_stream</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string_view</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">name</span></span>, <span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Type</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">type</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Type</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Undefined</span></span>, <span class="n"><span class="pre">Transport</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Method</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">method</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="n"><span class="pre">Transport</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Method</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Undefined</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod3DTL10add_streamENSt11string_viewEN6Engine4TypeEN9Transport6MethodE" title="Link to this definition"></a><br /></dt>
+<dd><p>Add a data stream to the Data Transport Layer. </p>
+<p><div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>Stream::set_engine_type(), Stream::set_transport_method() </p>
+</div>
 </p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">-</span> <span class="n">std</span><span class="p">::</span><span class="n">shared_ptr</span><span class="o">&lt;</span><span class="n">Stream</span><span class="o">&gt;</span> <span class="n">add_stream</span><span class="p">(</span><span class="n">std</span><span class="p">::</span><span class="n">string_view</span> <span class="n">name</span><span class="p">,</span> <span class="n">Engine</span><span class="p">::</span><span class="n">Type</span> <span class="nb">type</span> <span class="o">=</span> <span class="n">Engine</span><span class="p">::</span><span class="n">Type</span><span class="p">::</span><span class="n">Undefined</span><span class="p">,</span> <span class="n">Transport</span><span class="p">::</span><span class="n">Method</span> <span class="n">method</span> <span class="o">=</span> <span class="n">Transport</span><span class="p">::</span><span class="n">Method</span><span class="p">::</span><span class="n">Undefined</span><span class="p">)</span>
-</pre></div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The returned Stream can be further configured by calling set_engine_type() and set_transport_method() if the optional parameters are not specified. </p>
 </div>
-</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> – The name of the Stream to add to the DTL. </p></li>
+<li><p><strong>type</strong> – The Engine type for the stream. Defaults to Engine::Type::Undefined, which allows the stream to be configured later via set_engine_type(). </p></li>
+<li><p><strong>method</strong> – The Transport method for the stream. Defaults to Transport::Method::Undefined, which allows the stream to be configured later via set_transport_method(). </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A shared pointer to the newly created Stream object. </p>
+</dd>
+</dl>
+</dd></dl>
+
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>doxygenfunction: Unable to resolve function “dtlmod::DTL::get_stream_by_name” with arguments (const std::string&amp;) const in doxygen xml output for project “dtlmod” from directory: ../build/xml.
@@ -436,12 +470,34 @@ Potential matches:
 <h4>Properties<a class="headerlink" href="#properties" title="Link to this heading"></a></h4>
 <div class="sphinx-tabs docutils container">
 <div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-4-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-4-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-4-UHl0aG9u" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-4-UHl0aG9u" name="UHl0aG9u" role="tab" tabindex="-1">Python</button></div><div aria-labelledby="tab-4-Qysr" class="sphinx-tabs-panel group-tab" id="panel-4-Qysr" name="Qysr" role="tabpanel" tabindex="0"><dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream15get_engine_typeEv">
+<span id="_CPPv3NK6dtlmod6Stream15get_engine_typeEv"></span><span id="_CPPv2NK6dtlmod6Stream15get_engine_typeEv"></span><span id="dtlmod::Stream::get_engine_typeC"></span><span class="target" id="classdtlmod_1_1Stream_1a43a9942043cad8108e865158c0fb5e3d"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Type</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_engine_type</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream15get_engine_typeEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to get the Engine::Type of the Stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The Engine type </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream19get_engine_type_strEv">
 <span id="_CPPv3NK6dtlmod6Stream19get_engine_type_strEv"></span><span id="_CPPv2NK6dtlmod6Stream19get_engine_type_strEv"></span><span id="dtlmod::Stream::get_engine_type_strC"></span><span class="target" id="classdtlmod_1_1Stream_1a79a199e532f7451d0314bee31658ef49"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="kt"><span class="pre">char</span></span><span class="p"><span class="pre">*</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_engine_type_str</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream19get_engine_type_strEv" title="Link to this definition"></a><br /></dt>
 <dd><p>Helper function to print out the Engine::Type of the Stream. </p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p>An optional containing the C-string if the type is valid, std::nullopt otherwise </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream20get_transport_methodEv">
+<span id="_CPPv3NK6dtlmod6Stream20get_transport_methodEv"></span><span id="_CPPv2NK6dtlmod6Stream20get_transport_methodEv"></span><span id="dtlmod::Stream::get_transport_methodC"></span><span class="target" id="classdtlmod_1_1Stream_1a1c140893f1bf7114418fbb566222e363"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="n"><span class="pre">Transport</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Method</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_transport_method</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream20get_transport_methodEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to get the Transport::Method of the Stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The Transport method </p>
 </dd>
 </dl>
 </dd></dl>
@@ -478,6 +534,17 @@ Potential matches:
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p>a boolean indicating if the Stream does export metadata or not </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream20get_reduction_methodENSt11string_viewE">
+<span id="_CPPv3NK6dtlmod6Stream20get_reduction_methodENSt11string_viewE"></span><span id="_CPPv2NK6dtlmod6Stream20get_reduction_methodENSt11string_viewE"></span><span id="dtlmod::Stream::get_reduction_method__std::string_viewC"></span><span class="target" id="classdtlmod_1_1Stream_1a3f3289357bcbec72af1ac6e80c52bd5f"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">optional</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">ReductionMethod</span></span><span class="p"><span class="pre">&gt;</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_reduction_method</span></span></span><span class="sig-paren">(</span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string_view</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream20get_reduction_methodENSt11string_viewE" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to know the reduction method of the Stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>An optional containing the ReductionMehtod if defined, std::nullopt otherwise </p>
 </dd>
 </dl>
 </dd></dl>
@@ -669,6 +736,21 @@ Potential matches:
 <dd><p>End a transaction on an Engine. </p>
 <p>This function first synchronizes all the subscribers thanks to the internal barrier. When the last subscriber enters the barrier, all the simulated activities registered for the current transaction are started.</p>
 <p>Then it marks the transaction as done. </p>
+</dd></dl>
+
+<dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Engine18cancel_transactionEj">
+<span id="_CPPv3N6dtlmod6Engine18cancel_transactionEj"></span><span id="_CPPv2N6dtlmod6Engine18cancel_transactionEj"></span><span id="dtlmod::Engine::cancel_transaction__unsigned-i"></span><span class="target" id="classdtlmod_1_1Engine_1aa50d8aa183baea97a3a007e84c890c5b"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">cancel_transaction</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">unsigned</span></span><span class="w"> </span><span class="kt"><span class="pre">int</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">transaction_id</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Engine18cancel_transactionEj" title="Link to this definition"></a><br /></dt>
+<dd><p>Cancel all in-flight activities of a specific transaction, unblocking publishers and subscribers. </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Must be called from an external actor not participating in the transaction. </p>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>transaction_id</strong> – The id of the transaction to cancel. If both sides have already moved past this transaction, the call is a no-op to avoid accidentally cancelling a subsequent transaction. </p>
+</dd>
+</dl>
 </dd></dl>
 
 </div><div aria-labelledby="tab-8-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-8-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"></div></div>

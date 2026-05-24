@@ -27,7 +27,26 @@ DTL
 A |Concept_DTL|_ is created by calling :cpp:func:`DTL::create() <dtlmod::DTL::create()>` at the beginning of the
 :cpp:func:`main()` function of your simulator. This function can take as an optional argument a JSON configuration
 file that describes the different |Concept_Streams|_ to be created during the simulation each with a **name**,
-|Concept_Engine|_ type, and |Concept_Transport|_ method.
+|Concept_Engine|_ type, |Concept_Transport|_ method, and optionally a list of reduction methods and a flag to
+enable metadata export. A minimal stream entry looks like:
+
+.. code-block:: json
+
+   {
+     "streams": [
+       {
+         "name": "my-output",
+         "engine_type": "File",
+         "transport_method": "File",
+         "reduction_methods": ["compression"],
+         "export_metadata": true
+       }
+     ]
+   }
+
+The ``"reduction_methods"`` array accepts any combination of ``"decimation"`` and ``"compression"``. Each listed
+method is pre-registered on the stream (equivalent to calling :cpp:func:`Stream::define_reduction_method
+<dtlmod::Stream::define_reduction_method()>`) and can then be applied to individual variables.
 
 A common in situ processing scenario is that some analyses or visualization are only needed when certain conditions
 are met. In such cases, a new process is spawned, subscribes to some variables, and analyzes or visualizes data.
@@ -274,7 +293,7 @@ Stream factory
 
    .. group-tab:: C++
 
-      .. doxygenfunction:: dtlmod::DTL::add_stream(const std::string& name)
+      .. doxygenfunction:: dtlmod::DTL::add_stream(std::string_view name, Engine::Type type, Transport::Method method)
       .. doxygenfunction:: dtlmod::DTL::get_stream_by_name(const std::string& name) const
       .. doxygenfunction:: dtlmod::DTL::get_all_streams
 
@@ -313,15 +332,20 @@ Properties
 
    .. group-tab:: C++
 
+      .. doxygenfunction:: dtlmod::Stream::get_engine_type() const
       .. doxygenfunction:: dtlmod::Stream::get_engine_type_str() const
+      .. doxygenfunction:: dtlmod::Stream::get_transport_method() const
       .. doxygenfunction:: dtlmod::Stream::get_transport_method_str() const
       .. doxygenfunction:: dtlmod::Stream::get_access_mode_str() const
       .. doxygenfunction:: does_export_metadata() const
+      .. doxygenfunction:: dtlmod::Stream::get_reduction_method(std::string_view name) const
 
    .. group-tab:: Python
 
       .. autoproperty:: dtlmod.Stream.engine_type
+      .. autoproperty:: dtlmod.Stream.engine_type_str
       .. autoproperty:: dtlmod.Stream.transport_method
+      .. autoproperty:: dtlmod.Stream.transport_method_str
       .. autoproperty:: dtlmod.Stream.access_mode
       .. autoproperty:: dtlmod.Stream.metadata_export
 
@@ -394,6 +418,7 @@ Transactions
       .. doxygenfunction:: dtlmod::Engine::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) const
       .. doxygenfunction:: dtlmod::Engine::get(std::shared_ptr<Variable> var) const
       .. doxygenfunction:: dtlmod::Engine::end_transaction()
+      .. doxygenfunction:: dtlmod::Engine::cancel_transaction(unsigned int transaction_id)
 
    .. group-tab:: Python
 
@@ -401,6 +426,7 @@ Transactions
       .. automethod:: dtlmod.Engine.put
       .. automethod:: dtlmod.Engine.get
       .. automethod:: dtlmod.Engine.end_transaction
+      .. automethod:: dtlmod.Engine.cancel_transaction
 
 .. _API_dtlmod_Variable:
 
