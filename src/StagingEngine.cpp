@@ -82,10 +82,10 @@ void StagingEngine::begin_pub_transaction()
         throw;
       get_pub_transaction().clear();
       throw TransactionCanceledException(XBT_THROW_POINT);
-    } catch (const simgrid::NetworkFailureException&) {
+    } catch (const simgrid::NetworkFailureException&) { // LCOV_EXCL_START
       if (!is_canceled())
         throw;
-    }
+    } // LCOV_EXCL_STOP
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     XBT_DEBUG("%u sub activities pending", get_sub_transaction().size());
     get_pub_transaction().clear();
@@ -141,12 +141,12 @@ void StagingEngine::pub_close()
         throw;
       for (size_t i = 0; i < get_pub_transaction().size(); i++)
         get_pub_transaction().at(i)->cancel();
-    } catch (const simgrid::NetworkFailureException&) {
+    } catch (const simgrid::NetworkFailureException&) { // LCOV_EXCL_START
       if (!is_canceled())
         throw;
       for (size_t i = 0; i < get_pub_transaction().size(); i++)
         get_pub_transaction().at(i)->cancel();
-    }
+    } // LCOV_EXCL_STOP
     get_pub_transaction().clear();
     XBT_DEBUG("[%s] last publish transaction is over", get_cname());
     current_pub_transaction_id_++;
@@ -222,14 +222,14 @@ void StagingEngine::end_sub_transaction()
       sub_transaction_in_progress_ = false;
       num_subscribers_starting_--;
       throw TransactionCanceledException(XBT_THROW_POINT);
-    } catch (const simgrid::NetworkFailureException&) {
+    } catch (const simgrid::NetworkFailureException&) { // LCOV_EXCL_START
       if (!is_canceled())
         throw;
       get_sub_transaction().clear();
       sub_transaction_in_progress_ = false;
       num_subscribers_starting_--;
       throw TransactionCanceledException(XBT_THROW_POINT);
-    }
+    } // LCOV_EXCL_STOP
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     get_sub_transaction().clear();
   }
@@ -259,12 +259,12 @@ void StagingEngine::sub_close()
         throw;
       for (size_t i = 0; i < get_sub_transaction().size(); i++)
         get_sub_transaction().at(i)->cancel();
-    } catch (const simgrid::NetworkFailureException&) {
+    } catch (const simgrid::NetworkFailureException&) { // LCOV_EXCL_START
       if (!is_canceled())
         throw;
       for (size_t i = 0; i < get_sub_transaction().size(); i++)
         get_sub_transaction().at(i)->cancel();
-    }
+    } // LCOV_EXCL_STOP
     XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
     get_sub_transaction().clear();
   }
