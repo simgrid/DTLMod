@@ -63,6 +63,42 @@ public:
     dtlmod::DTL::create();
   }
 
+  void setup_slow_file_platform()
+  {
+    sg4::NetZone* cluster = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_star("cluster");
+    auto pfs_server       = cluster->add_host("pfs_server", "1Gf");
+    std::vector<sg4::Disk*> pfs_disks;
+    for (int i = 0; i < 4; i++)
+      pfs_disks.push_back(pfs_server->add_disk("pfs_disk" + std::to_string(i), "1MBps", "1MBps"));
+    auto remote_storage = sgfs::JBODStorage::create("pfs_storage", pfs_disks);
+    remote_storage->set_raid_level(sgfs::JBODStorage::RAID::RAID5);
+
+    std::vector<std::shared_ptr<sgfs::OneDiskStorage>> local_storages;
+    for (int i = 0; i < 4; i++) {
+      std::string hostname = "node-" + std::to_string(i);
+      auto* host           = cluster->add_host(hostname, "1Gf");
+      auto* disk           = host->add_disk(hostname + "_disk", "1MBps", "1MBps");
+      local_storages.push_back(sgfs::OneDiskStorage::create(hostname + "_local_storage", disk));
+      std::string linkname = "link_" + std::to_string(i);
+      auto* link_up        = cluster->add_link(linkname + "_UP", "1Gbps");
+      auto* link_down      = cluster->add_link(linkname + "_DOWN", "1Gbps");
+      auto* loopback =
+          cluster->add_link(hostname + "_loopback", "10Gbps")->set_sharing_policy(sg4::Link::SharingPolicy::FATPIPE);
+      cluster->add_route(host, nullptr, {sg4::LinkInRoute(link_up)}, false);
+      cluster->add_route(nullptr, host, {sg4::LinkInRoute(link_down)}, false);
+      cluster->add_route(host, host, {loopback});
+    }
+    cluster->seal();
+
+    auto my_fs = sgfs::FileSystem::create("my_fs");
+    sgfs::FileSystem::register_file_system(cluster, my_fs);
+    my_fs->mount_partition("/pfs/", remote_storage, "500TB");
+    for (int i = 0; i < 4; i++)
+      my_fs->mount_partition("/node-" + std::to_string(i) + "/scratch/", local_storages.at(i), "1TB");
+
+    dtlmod::DTL::create();
+  }
+
   void setup_file_platform()
   {
     sg4::NetZone* cluster = sg4::Engine::get_instance()->get_netzone_root()->add_netzone_star("cluster");
@@ -452,6 +488,244 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
       engine->begin_transaction();
       engine->get(var_sub);
       XBT_INFO("End T1 (will block waiting for receives over slow link)");
+      ASSERT_THROW(engine->end_transaction(), dtlmod::TransactionCanceledException);
+      XBT_INFO("Subscriber caught TransactionCanceledException in T1 end_transaction() as expected");
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// Publisher begins T1 and then sleeps (simulating slow computation before end_transaction).
+// Subscriber connects and immediately calls begin_transaction(), which blocks waiting for the publisher
+// to signal pub_transaction_completed (StagingEngine lines 202-204).
+// Canceller fires during that wait, unblocking the subscriber with TransactionCanceledException.
+TEST_F(DTLCancelTest, CancelStagingTransaction_SubWaitingForPubToEndTx_MQ)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_staging_platform();
+    auto* pub_host  = sg4::Host::by_name("host-0.prod");
+    auto* sub_host  = sg4::Host::by_name("host-0.cons");
+    auto* wdog_host = sg4::Host::by_name("host-1.prod");
+
+    pub_host->add_actor("PubTestActor", [wdog_host]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::MQ);
+      [[maybe_unused]] auto var = stream->define_variable("var", {100}, {0}, {100}, sizeof(double));
+      auto engine               = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+
+      wdog_host->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(0.5);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      ASSERT_NO_THROW(engine->begin_transaction());
+      sg4::this_actor::sleep_for(2.0); // hold T1 open long enough for sub to block on it
+      ASSERT_NO_THROW(engine->end_transaction());
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", []() {
+      auto dtl                      = dtlmod::DTL::connect();
+      auto stream                   = dtl->add_stream("my-output");
+      auto engine                   = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      [[maybe_unused]] auto var_sub = stream->inquire_variable("var");
+
+      XBT_INFO("Subscriber calling begin_transaction() — will block waiting for pub to end T1");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCanceledException);
+      XBT_INFO("Subscriber caught TransactionCanceledException as expected");
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// Subscriber sleeps past an already-fired cancellation, then calls begin_transaction().
+// FileEngine line 195: the early-exit check fires immediately on begin_sub_transaction()
+// because canceled_transaction_id_ is already set before the subscriber enters.
+TEST_F(DTLCancelTest, CancelFileEngineTransaction_SubAlreadyCanceled)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_file_platform();
+    auto* pub_host  = sg4::Host::by_name("node-0");
+    auto* sub_host  = sg4::Host::by_name("node-1");
+    auto* wdog_host = sg4::Host::by_name("node-2");
+
+    pub_host->add_actor("PubTestActor", [wdog_host]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      [[maybe_unused]] auto var = stream->define_variable("var", {100}, {0}, {100}, sizeof(double));
+      auto engine = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Publish);
+
+      wdog_host->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(0.5);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      sg4::this_actor::sleep_for(3.0);
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", []() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      auto engine = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Subscribe);
+      [[maybe_unused]] auto var_sub = stream->inquire_variable("var");
+
+      sg4::this_actor::sleep_for(2.0); // sleep past the cancellation point
+      XBT_INFO("Subscriber calling begin_transaction() after cancellation already fired");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCanceledException);
+      XBT_INFO("Subscriber caught TransactionCanceledException as expected");
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// Publisher does T1 (put on slow disk), then immediately starts T2 begin_transaction(),
+// which blocks waiting for T1 write activities to complete (FileEngine line 123).
+// Canceller fires at 1s while writes are still in flight, unblocking publisher with
+// TransactionCanceledException on T2 begin_transaction().
+TEST_F(DTLCancelTest, CancelFileEngineTransaction_PubMidWrite)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_slow_file_platform();
+    auto* pub_host  = sg4::Host::by_name("node-0");
+    auto* wdog_host = sg4::Host::by_name("node-1");
+
+    pub_host->add_actor("PubTestActor", [wdog_host]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto engine = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Publish);
+
+      wdog_host->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(1.0);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      // T1: begin + put (starts slow async writes), then end_transaction (returns immediately)
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      // T2: blocks waiting for T1 writes to finish on slow disk — canceled while waiting
+      XBT_INFO("Begin T2 (will block waiting for T1 writes to complete on slow disk)");
+      ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCanceledException);
+      XBT_INFO("Publisher caught TransactionCanceledException in T2 begin_transaction() as expected");
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// Publisher does T1 on slow disk; subscriber's end_sub_transaction() blocks waiting for the
+// publisher's writes to complete (FileEngine lines 234-237: pub_activities_completed CV wait).
+// Canceller fires at 1s while writes are still in flight, unblocking subscriber with
+// TransactionCanceledException.
+TEST_F(DTLCancelTest, CancelFileEngineTransaction_SubWaitingForPubWrites)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_slow_file_platform();
+    auto* pub_host  = sg4::Host::by_name("node-0");
+    auto* sub_host  = sg4::Host::by_name("node-1");
+    auto* wdog_host = sg4::Host::by_name("node-2");
+
+    pub_host->add_actor("PubTestActor", [wdog_host]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto engine = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Publish);
+
+      wdog_host->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(1.0);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+      sg4::this_actor::sleep_for(5.0);
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", []() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+
+      // T1: begin and get succeed; end_transaction blocks waiting for pub writes — canceled there
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->get(var_sub));
+      XBT_INFO("End T1 (will block waiting for pub writes to complete on slow disk)");
+      ASSERT_THROW(engine->end_transaction(), dtlmod::TransactionCanceledException);
+      XBT_INFO("Subscriber caught TransactionCanceledException in T1 end_transaction() as expected");
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// Publisher writes 8MB to slow disk (~2.67s on 3MBps RAID5). Writes complete before the cancel at 4s.
+// Subscriber starts reading after writes complete; canceller fires at 4s during the slow reads
+// (FileEngine lines 31, 250-258). Subscriber's end_transaction() catches TransactionCanceledException.
+TEST_F(DTLCancelTest, CancelFileEngineTransaction_SubMidRead)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_slow_file_platform();
+    auto* pub_host  = sg4::Host::by_name("node-0");
+    auto* sub_host  = sg4::Host::by_name("node-1");
+    auto* wdog_host = sg4::Host::by_name("node-2");
+
+    pub_host->add_actor("PubTestActor", [wdog_host]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto engine = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Publish);
+
+      wdog_host->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(4.0); // after writes finish (~2.67s) but during reads
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+      sg4::this_actor::sleep_for(10.0);
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", []() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+
+      // T1: begin/get/end — end_transaction blocks during slow reads, canceled at 4s
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->get(var_sub));
+      XBT_INFO("End T1 (will block waiting for reads to complete on slow disk)");
       ASSERT_THROW(engine->end_transaction(), dtlmod::TransactionCanceledException);
       XBT_INFO("Subscriber caught TransactionCanceledException in T1 end_transaction() as expected");
       dtlmod::DTL::disconnect();
