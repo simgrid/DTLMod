@@ -95,9 +95,24 @@ Per-transaction variability
 ---------------------------
 
 In practice, the compression ratio achieved on a given variable varies from one time step to the next as the data
-evolves. DTLMod can model this variability through an optional **ratio variability** parameter that introduces a
-bounded, deterministic perturbation around the nominal compression ratio at each transaction. This enables the
-simulation of realistic scenarios in which the effectiveness of compression fluctuates over the course of a run.
+evolves. DTLMod models this variability through an optional **ratio variability** parameter that introduces a
+bounded, deterministic perturbation around the nominal compression ratio at each transaction.
+
+For a given transaction :math:`t`, the effective ratio is computed as:
+
+.. math::
+
+   r_{\text{eff}}(t) = \max\!\Big(1,\; r \cdot \big(1 + \delta \cdot (2 h(t) - 1)\big)\Big)
+
+where :math:`r` is the nominal compression ratio, :math:`\delta` is the ratio variability, and :math:`h(t)` is a
+deterministic value in :math:`[0, 1]` derived from a hash of the variable name and the transaction id. This ensures
+that simulations are fully reproducible: the same transaction always produces the same effective ratio.
+
+The effective ratio is used by :cpp:func:`Engine::put()` to determine the actual transfer size for each transaction.
+The :cpp:func:`ReductionMethod::get_reduced_variable_global_size()` and
+:cpp:func:`ReductionMethod::get_reduced_variable_local_size()` query methods also accept an optional
+``transaction_id`` argument so that users can inspect the effective size for any transaction before running the
+simulation.
 
 Re-parameterization
 -------------------

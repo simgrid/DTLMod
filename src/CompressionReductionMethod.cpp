@@ -24,15 +24,17 @@ double CompressionReductionMethod::ParameterizedCompression::get_effective_ratio
   return std::max(1.0, cfg_.compression_ratio * noise);
 }
 
-size_t CompressionReductionMethod::get_reduced_variable_global_size(const Variable& var) const
+size_t CompressionReductionMethod::get_reduced_variable_global_size(const Variable& var,
+                                                                    unsigned int transaction_id) const
 {
-  auto ratio = per_variable_parameterizations_.at(&var)->get_compression_ratio();
+  auto ratio = per_variable_parameterizations_.at(&var)->get_effective_ratio(transaction_id);
   return static_cast<size_t>(std::ceil(static_cast<double>(var.get_global_size()) / ratio));
 }
 
-size_t CompressionReductionMethod::get_reduced_variable_local_size(const Variable& var) const
+size_t CompressionReductionMethod::get_reduced_variable_local_size(const Variable& var,
+                                                                   unsigned int transaction_id) const
 {
-  auto ratio = per_variable_parameterizations_.at(&var)->get_compression_ratio();
+  auto ratio = per_variable_parameterizations_.at(&var)->get_effective_ratio(transaction_id);
   return static_cast<size_t>(std::ceil(static_cast<double>(var.get_local_size()) / ratio));
 }
 

@@ -3,6 +3,24 @@
 DTLMod (0.5) May 25, 2026
 
 Improvements:
+  - Per-transaction compression ratio variability is now active
+    - CompressionReductionMethod::get_reduced_variable_global_size() and
+      get_reduced_variable_local_size() now accept an optional transaction_id
+      parameter and call get_effective_ratio(transaction_id) to compute the
+      actual ratio, which may be perturbed around the nominal value when
+      ratio_variability > 0
+    - Engine::put() passes the current transaction id to both calls, so the
+      simulated transfer size varies realistically from transaction to transaction
+      when ratio_variability is set
+    - The same transaction_id always produces the same effective ratio
+      (deterministic hash of variable name and transaction id), making
+      simulations reproducible
+    - ReductionMethod base-class virtuals and all overrides (Compression,
+      Decimation) updated accordingly; Decimation ignores the parameter as its
+      reduced sizes are transaction-independent
+    - Python bindings updated: get_reduced_variable_global_size() and
+      get_reduced_variable_local_size() accept an optional transaction_id
+      keyword argument (default 0)
   - Transaction cancellation support
     - New Engine::cancel_transaction(transaction_id) allows an external actor
       to cancel a specific in-flight transaction, unblocking both its

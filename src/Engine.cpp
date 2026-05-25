@@ -39,8 +39,9 @@ void Engine::put(const std::shared_ptr<Variable>& var) const
     XBT_DEBUG("Variable %s has been reduced!", var->get_cname());
     // Now put the reduced version of the variable into the DTL, i.e., using its reduced local size.
     XBT_DEBUG("Put this reduced version of %s (initial size = %zu, reduced size = %zu)", var->get_cname(),
-              var->get_local_size(), var->get_reduction_method()->get_reduced_variable_local_size(*var));
-    transport_->put(var, var->get_reduction_method()->get_reduced_variable_local_size(*var));
+              var->get_local_size(),
+              var->get_reduction_method()->get_reduced_variable_local_size(*var, get_current_transaction()));
+    transport_->put(var, var->get_reduction_method()->get_reduced_variable_local_size(*var, get_current_transaction()));
   } else
     transport_->put(var, var->get_local_size());
 }

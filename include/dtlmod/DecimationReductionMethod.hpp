@@ -70,12 +70,14 @@ protected:
 
   void reduce_variable(const Variable& var) override;
 
-  [[nodiscard]] size_t get_reduced_variable_global_size(const Variable& var) const override
+  [[nodiscard]] size_t get_reduced_variable_global_size(const Variable& var,
+                                                        unsigned int /*transaction_id*/ = 0) const override
   {
     return per_variable_parameterizations_.at(&var)->get_global_reduced_size();
   }
 
-  [[nodiscard]] size_t get_reduced_variable_local_size(const Variable& var) const override
+  [[nodiscard]] size_t get_reduced_variable_local_size(const Variable& var,
+                                                       unsigned int /*transaction_id*/ = 0) const override
   {
     return per_variable_parameterizations_.at(&var)->get_local_reduced_size();
   }

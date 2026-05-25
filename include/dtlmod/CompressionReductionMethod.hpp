@@ -66,8 +66,10 @@ public:
   void reduce_variable(const Variable& /* var*/) override
   { /* Variable metadata are not modfied when using compression */ }
 
-  [[nodiscard]] size_t get_reduced_variable_global_size(const Variable& var) const override;
-  [[nodiscard]] size_t get_reduced_variable_local_size(const Variable& var) const override;
+  [[nodiscard]] size_t get_reduced_variable_global_size(const Variable& var,
+                                                        unsigned int transaction_id = 0) const override;
+  [[nodiscard]] size_t get_reduced_variable_local_size(const Variable& var,
+                                                       unsigned int transaction_id = 0) const override;
 
   [[nodiscard]] const std::vector<size_t>& get_reduced_variable_shape(const Variable& var) const override
   {

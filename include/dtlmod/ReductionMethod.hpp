@@ -31,8 +31,8 @@ public:
   virtual void parameterize_for_variable(const Variable& var,
                                          const std::map<std::string, std::string, std::less<>>& parameters)         = 0;
   virtual void reduce_variable(const Variable& var)                                                                 = 0;
-  virtual size_t get_reduced_variable_global_size(const Variable& var) const                                        = 0;
-  virtual size_t get_reduced_variable_local_size(const Variable& var) const                                         = 0;
+  virtual size_t get_reduced_variable_global_size(const Variable& var, unsigned int transaction_id = 0) const       = 0;
+  virtual size_t get_reduced_variable_local_size(const Variable& var, unsigned int transaction_id = 0) const        = 0;
   virtual const std::vector<size_t>& get_reduced_variable_shape(const Variable& var) const                          = 0;
   virtual const std::pair<std::vector<size_t>, std::vector<size_t>>&
   get_reduced_start_and_count_for(const Variable& var, simgrid::s4u::ActorPtr publisher) const = 0;

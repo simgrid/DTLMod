@@ -451,6 +451,58 @@ TEST_F(DTLReductionTest, CompressionWithDerivedRatio)
   });
 }
 
+TEST_F(DTLReductionTest, CompressionWithVariableRatio)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("Publisher", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto var        = stream->define_variable("var2D", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto compressor = stream->define_reduction_method("compression");
+      auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      sg4::this_actor::sleep_for(1);
+
+      XBT_INFO("With ratio_variability=0, effective size is the same for all transaction ids");
+      ASSERT_NO_THROW(var->set_reduction_operation(compressor, {{"compression_ratio", "10"}}));
+      size_t base_size = static_cast<size_t>(std::ceil(sizeof(double) * 1000.0 * 1000.0 / 10.0));
+      ASSERT_EQ(compressor->get_reduced_variable_global_size(*var, 1), base_size);
+      ASSERT_EQ(compressor->get_reduced_variable_global_size(*var, 2), base_size);
+      ASSERT_EQ(compressor->get_reduced_variable_global_size(*var, 3), base_size);
+
+      XBT_INFO("With ratio_variability=0.3, different transaction ids produce different effective sizes");
+      ASSERT_NO_THROW(var->set_reduction_operation(compressor, {{"ratio_variability", "0.3"}}));
+      size_t size_tx1 = compressor->get_reduced_variable_local_size(*var, 1);
+      size_t size_tx2 = compressor->get_reduced_variable_local_size(*var, 2);
+      size_t size_tx3 = compressor->get_reduced_variable_local_size(*var, 3);
+      XBT_INFO("Reduced sizes: tx1=%zu tx2=%zu tx3=%zu (base=%zu)", size_tx1, size_tx2, size_tx3, base_size);
+
+      // All effective sizes must be within the variability bounds (ratio in [10*0.7, 10*1.3])
+      size_t min_size = static_cast<size_t>(std::ceil(sizeof(double) * 1000.0 * 1000.0 / (10.0 * 1.3)));
+      size_t max_size = static_cast<size_t>(std::ceil(sizeof(double) * 1000.0 * 1000.0 / (10.0 * 0.7)));
+      ASSERT_GE(size_tx1, min_size);
+      ASSERT_LE(size_tx1, max_size);
+      ASSERT_GE(size_tx2, min_size);
+      ASSERT_LE(size_tx2, max_size);
+      // At least two of the three transaction ids must differ (hash collision probability is negligible)
+      ASSERT_TRUE(size_tx1 != size_tx2 || size_tx1 != size_tx3 || size_tx2 != size_tx3);
+      // The hash is deterministic: the same transaction_id always gives the same size
+      ASSERT_EQ(compressor->get_reduced_variable_local_size(*var, 1), size_tx1);
+
+      engine->begin_transaction();
+      ASSERT_NO_THROW(engine->put(var));
+      engine->end_transaction();
+      engine->close();
+
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLReductionTest, DecimationStagingEngine)
 {
   DO_TEST_WITH_FORK([this]() {

@@ -254,9 +254,9 @@ PYBIND11_MODULE(dtlmod, m)
                                                                 "A reduction method applied to Variables in a Stream")
       .def_property_readonly("name", &ReductionMethod::get_name, "The name of the ReductionMethod (read-only)")
       .def("get_reduced_variable_global_size", &ReductionMethod::get_reduced_variable_global_size, py::arg("var"),
-           "Get the reduced global size of a Variable")
+           py::arg("transaction_id") = 0, "Get the reduced global size of a Variable")
       .def("get_reduced_variable_local_size", &ReductionMethod::get_reduced_variable_local_size, py::arg("var"),
-           "Get the reduced local size of a Variable")
+           py::arg("transaction_id") = 0, "Get the reduced local size of a Variable")
       .def("get_reduced_variable_shape", &ReductionMethod::get_reduced_variable_shape, py::arg("var"),
            "Get the reduced shape of a Variable")
       .def("get_flop_amount_to_reduce_variable", &ReductionMethod::get_flop_amount_to_reduce_variable, py::arg("var"),
