@@ -177,9 +177,19 @@ the DTL, and the decompression cost is incurred by the subscriber right after re
 <section id="per-transaction-variability">
 <h2>Per-transaction variability<a class="headerlink" href="#per-transaction-variability" title="Link to this heading"></a></h2>
 <p>In practice, the compression ratio achieved on a given variable varies from one time step to the next as the data
-evolves. DTLMod can model this variability through an optional <strong>ratio variability</strong> parameter that introduces a
-bounded, deterministic perturbation around the nominal compression ratio at each transaction. This enables the
-simulation of realistic scenarios in which the effectiveness of compression fluctuates over the course of a run.</p>
+evolves. DTLMod models this variability through an optional <strong>ratio variability</strong> parameter that introduces a
+bounded, deterministic perturbation around the nominal compression ratio at each transaction.</p>
+<p>For a given transaction <span class="math notranslate nohighlight">\(t\)</span>, the effective ratio is computed as:</p>
+<div class="math notranslate nohighlight">
+\[r_{\text{eff}}(t) = \max\!\Big(1,\; r \cdot \big(1 + \delta \cdot (2 h(t) - 1)\big)\Big)\]</div>
+<p>where <span class="math notranslate nohighlight">\(r\)</span> is the nominal compression ratio, <span class="math notranslate nohighlight">\(\delta\)</span> is the ratio variability, and <span class="math notranslate nohighlight">\(h(t)\)</span> is a
+deterministic value in <span class="math notranslate nohighlight">\([0, 1]\)</span> derived from a hash of the variable name and the transaction id. This ensures
+that simulations are fully reproducible: the same transaction always produces the same effective ratio.</p>
+<p>The effective ratio is used by <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Engine::put()</span></code> to determine the actual transfer size for each transaction.
+The <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ReductionMethod::get_reduced_variable_global_size()</span></code> and
+<code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ReductionMethod::get_reduced_variable_local_size()</span></code> query methods also accept an optional
+<code class="docutils literal notranslate"><span class="pre">transaction_id</span></code> argument so that users can inspect the effective size for any transaction before running the
+simulation.</p>
 </section>
 <section id="re-parameterization">
 <h2>Re-parameterization<a class="headerlink" href="#re-parameterization" title="Link to this heading"></a></h2>
