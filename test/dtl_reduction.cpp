@@ -121,6 +121,7 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
       sg4::this_actor::sleep_until(6);
       XBT_INFO("Assign the decimation method to 'var3D'");
       ASSERT_NO_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2,4"}}));
+      ASSERT_EQ(decimator->get_reduced_variable_global_size(*var), 640 * 320 * 160 * sizeof(double));
       XBT_INFO("Check that the variable is marked as 'reduced'");
       ASSERT_TRUE(var->is_reduced());
       XBT_INFO("Start a Transaction");
