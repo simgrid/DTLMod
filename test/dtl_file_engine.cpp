@@ -462,12 +462,115 @@ TEST_F(DTLFileEngineTest, MetadataExport)
 
       ASSERT_EQ(file_contents, expected_contents);
       std::remove(metadata_file_name.c_str());
-      
+
       XBT_INFO("Disconnect the actor");
       dtlmod::DTL::disconnect();
     });
 
     // Run the simulation
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLFileEngineTest, MetadataExportProgressiveFlushing)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    std::string metadata_file_name;
+
+    auto* pub_host = sg4::Host::by_name("node-0");
+    auto* sub_host = sg4::Host::by_name("node-1");
+
+    pub_host->add_actor("node-0_pub", [this, &metadata_file_name]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      XBT_INFO("Set metadata export for that stream");
+      stream->set_metadata_export();
+      XBT_INFO("Create a 2D-array variable with 10kx10k double");
+      auto var    = stream->define_variable("var", {10000, 10000}, {0, 0}, {10000, 10000}, sizeof(double));
+      auto engine = stream->open("cluster:my_fs:/pfs/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      XBT_INFO("Stream '%s' (Engine '%s') is ready for publishing", stream->get_cname(), engine->get_cname());
+
+      sg4::this_actor::sleep_for(0.5); // Let subscriber join the engine
+
+      XBT_INFO("Start Transaction 1");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      // Sleep long enough for the subscriber to complete reading tx 1 before we close.
+      // write_transaction_to_stream is called during the subscriber's end_transaction() because
+      // metadata_exported_ is still false while we sleep here.
+      XBT_INFO("Sleep 100s to remain alive while subscriber reads Transaction 1");
+      sg4::this_actor::sleep_for(100.0);
+
+      XBT_INFO("Start Transaction 2");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      XBT_INFO("Close the engine — triggers export_metadata_to_file, which reads the .prog file");
+      ASSERT_NO_THROW(engine->close());
+      metadata_file_name = stream->get_metadata_file_name();
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("node-1_sub", [this]() {
+      auto dtl = dtlmod::DTL::connect();
+      sg4::this_actor::sleep_for(0.5);
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("cluster:my_fs:/pfs/my-working-dir/my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+
+      // Read tx 1 while publisher is sleeping (metadata_exported_=false):
+      // end_transaction() triggers flush_and_evict_transaction() → write_transaction_to_stream()
+      XBT_INFO("Read Transaction 1 while publisher is still alive");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->get(var_sub));
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      // Directly verify that write_transaction_to_stream wrote tx 1 to the .prog file
+      std::string prog_file = stream->get_metadata_file_name() + ".var.prog";
+      XBT_INFO("Check that the .prog file '%s' exists", prog_file.c_str());
+      ASSERT_TRUE(std::ifstream(prog_file).good());
+
+      // Read tx 2 (blocks until publisher wakes up and publishes it)
+      XBT_INFO("Read Transaction 2");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->get(var_sub));
+      ASSERT_NO_THROW(engine->end_transaction());
+
+      XBT_INFO("Close the engine");
+      ASSERT_NO_THROW(engine->close());
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+
+    // The final metadata file should contain both transactions:
+    //   - tx 1 was written progressively by write_transaction_to_stream to the .prog file
+    //   - tx 2 was held in memory and written by export_to_file at publisher close
+    XBT_INFO("Check the contents of '%s'", metadata_file_name.c_str());
+    std::ifstream file(metadata_file_name);
+    ASSERT_TRUE(file.is_open());
+    std::string file_contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+
+    const std::string expected_contents = "8\tvar\t2*{10000,10000}\n"
+                                          "  Transaction 1:\n"
+                                          "    /pfs/my-working-dir/my-output/data.0: [0:10000, 0:10000]\n"
+                                          "  Transaction 2:\n"
+                                          "    /pfs/my-working-dir/my-output/data.0: [0:10000, 0:10000]\n";
+
+    ASSERT_EQ(file_contents, expected_contents);
+    std::remove(metadata_file_name.c_str());
+
+    // The .prog file must have been removed by export_metadata_to_file after merging
+    ASSERT_FALSE(std::ifstream(metadata_file_name + ".var.prog").good());
   });
 }
