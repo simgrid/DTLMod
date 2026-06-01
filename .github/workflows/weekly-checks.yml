@@ -63,7 +63,7 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-python-v2
+          key: ${{ runner.os }}-fsmod-python-v3
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
@@ -180,7 +180,7 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-python-v2
+          key: ${{ runner.os }}-fsmod-python-v3
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
