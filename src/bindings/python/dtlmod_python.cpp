@@ -26,6 +26,7 @@
 #include <dtlmod/Variable.hpp>
 #include <dtlmod/version.hpp>
 
+#include <simgrid/python.hpp>
 #include <xbt/log.h>
 
 namespace py = pybind11;
@@ -94,23 +95,23 @@ PYBIND11_MODULE(dtlmod, m)
   py::class_<Engine, std::shared_ptr<Engine>> engine(
       m, "Engine", "An Engine defines how data is transferred between the applications and the DTL");
   engine.def_property_readonly("name", &Engine::get_name, "The name of the Engine (read-only)")
-      .def("begin_transaction", &Engine::begin_transaction, py::call_guard<py::gil_scoped_release>(),
+      .def("begin_transaction", &Engine::begin_transaction, py::call_guard<simgrid::SimGridGilGuard>(),
            "Begin a transaction on this Engine")
       .def("put", py::overload_cast<const std::shared_ptr<Variable>&>(&Engine::put, py::const_), py::arg("var"),
-           py::call_guard<py::gil_scoped_release>(), "Put a Variable in the DTL using this Engine")
+           py::call_guard<simgrid::SimGridGilGuard>(), "Put a Variable in the DTL using this Engine")
       .def("put", py::overload_cast<const std::shared_ptr<Variable>&, size_t>(&Engine::put, py::const_), py::arg("var"),
-           py::arg("simulated_size_in_bytes"), py::call_guard<py::gil_scoped_release>(),
+           py::arg("simulated_size_in_bytes"), py::call_guard<simgrid::SimGridGilGuard>(),
            "Put a Variable in the DTL using this Engine")
-      .def("get", &Engine::get, py::arg("var"), py::call_guard<py::gil_scoped_release>(),
+      .def("get", &Engine::get, py::arg("var"), py::call_guard<simgrid::SimGridGilGuard>(),
            "Get a Variable from the DTL using this Engine")
-      .def("end_transaction", &Engine::end_transaction, py::call_guard<py::gil_scoped_release>(),
+      .def("end_transaction", &Engine::end_transaction, py::call_guard<simgrid::SimGridGilGuard>(),
            "End a transaction on this Engine")
       .def_property_readonly("current_transaction", &Engine::get_current_transaction,
                              "The id of the current transaction on this Engine (read-only)")
-      .def("cancel_transaction", &Engine::cancel_transaction, py::call_guard<py::gil_scoped_release>(),
+      .def("cancel_transaction", &Engine::cancel_transaction, py::call_guard<simgrid::SimGridGilGuard>(),
            py::arg("transaction_id"),
            "Cancel all in-flight activities of a specific transaction (must be called from an external actor)")
-      .def("close", &Engine::close, py::call_guard<py::gil_scoped_release>(), "Close this Engine");
+      .def("close", &Engine::close, py::call_guard<simgrid::SimGridGilGuard>(), "Close this Engine");
 
   py::enum_<Engine::Type>(engine, "Type", "The type of Engine")
       .value("Undefined", Engine::Type::Undefined)
@@ -127,14 +128,14 @@ PYBIND11_MODULE(dtlmod, m)
 
   /* Class DTL */
   py::class_<DTL, std::shared_ptr<DTL>>(m, "DTL", "Data Transport Layer")
-      .def_static("create", py::overload_cast<std::string_view>(&DTL::create), py::call_guard<py::gil_scoped_release>(),
-                  py::arg("filename") = "", "Create the DTL (no return)")
-      .def_static("connect", &DTL::connect, py::call_guard<py::gil_scoped_release>(), "Connect an Actor to the DTL")
-      .def_static("disconnect", &DTL::disconnect, py::call_guard<py::gil_scoped_release>(),
+      .def_static("create", py::overload_cast<std::string_view>(&DTL::create),
+                  py::call_guard<simgrid::SimGridGilGuard>(), py::arg("filename") = "", "Create the DTL (no return)")
+      .def_static("connect", &DTL::connect, py::call_guard<simgrid::SimGridGilGuard>(), "Connect an Actor to the DTL")
+      .def_static("disconnect", &DTL::disconnect, py::call_guard<simgrid::SimGridGilGuard>(),
                   "Disconnect an Actor from the DTL")
       .def_property_readonly("has_active_connections", &DTL::has_active_connections,
                              "Check whether some simulated actors are currently connected to the DTL (read-only)")
-      .def("add_stream", &DTL::add_stream, py::call_guard<py::gil_scoped_release>(), py::arg("name"),
+      .def("add_stream", &DTL::add_stream, py::call_guard<simgrid::SimGridGilGuard>(), py::arg("name"),
            py::arg("type") = Engine::Type::Undefined, py::arg("method") = Transport::Method::Undefined,
            "Add a data stream to the DTL")
       .def_property_readonly("all_streams", &DTL::get_all_streams,
@@ -185,7 +186,7 @@ PYBIND11_MODULE(dtlmod, m)
       .def("unset_metadata_export", &Stream::unset_metadata_export,
            "Specify that metadata must not be exported for that stream")
       // Engine factory
-      .def("open", &Stream::open, py::arg("name"), py::call_guard<py::gil_scoped_release>(), py::arg("mode"),
+      .def("open", &Stream::open, py::arg("name"), py::call_guard<simgrid::SimGridGilGuard>(), py::arg("mode"),
            "Open a Stream and create an Engine")
       .def_property_readonly("num_publishers", &Stream::get_num_publishers,
                              "The number of actors connected to this Stream in Mode::Publish (read-only)")
@@ -197,14 +198,14 @@ PYBIND11_MODULE(dtlmod, m)
           [](Stream& self, std::string_view name, size_t element_size) {
             return self.define_variable(name, element_size);
           },
-          py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("element_size"),
+          py::call_guard<simgrid::SimGridGilGuard>(), py::arg("name"), py::arg("element_size"),
           "Define a scalar variable for this Stream")
       .def(
           "define_variable",
           [](Stream& self, std::string_view name, const std::vector<size_t>& shape, const std::vector<size_t>& start,
              const std::vector<size_t>& count,
              size_t element_size) { return self.define_variable(name, shape, start, count, element_size); },
-          py::call_guard<py::gil_scoped_release>(), py::arg("name"), py::arg("shape"), py::arg("start"),
+          py::call_guard<simgrid::SimGridGilGuard>(), py::arg("name"), py::arg("shape"), py::arg("start"),
           py::arg("count"), py::arg("element_size"), "Define a variable for this Stream")
       .def_property_readonly("all_variables", &Stream::get_all_variables, "Retrieve the list of Variables by names")
       .def_property_readonly("metadata_file_name", &Stream::get_metadata_file_name,
