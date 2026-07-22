@@ -54,7 +54,7 @@ jobs:
         run: |
           git clone --depth 1 https://framagit.org/simgrid/simgrid.git
           cd simgrid
-          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/simgrid
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -Denable_python=ON -Denable_java=OFF -DCMAKE_INSTALL_PREFIX=/opt/simgrid
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
@@ -171,7 +171,7 @@ jobs:
         run: |
           git clone --depth 1 https://framagit.org/simgrid/simgrid.git
           cd simgrid
-          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -Denable_python=ON -DCMAKE_INSTALL_PREFIX=/opt/simgrid
+          cmake -B build -Denable_smpi=OFF -Denable_model-checking=OFF -Denable_python=ON -Denable_java=OFF -DCMAKE_INSTALL_PREFIX=/opt/simgrid
           cmake --build build -j$(nproc)
           sudo cmake --install build
 
