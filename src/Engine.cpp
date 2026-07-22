@@ -104,6 +104,24 @@ void Engine::cancel_transaction(unsigned int transaction_id)
 ////////////////////////////////////////////
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
+void Engine::cancel_pending_activities(sg4::ActivitySet& activities)
+{
+  std::vector<sg4::ActivityPtr> snapshot;
+  snapshot.reserve(activities.size());
+  for (int i = 0; i < activities.size(); i++)
+    snapshot.push_back(activities.at(i));
+
+  for (const auto& activity : snapshot)
+    if (activity->get_state() == sg4::Activity::State::STARTED)
+      activity->cancel();
+}
+
+void Engine::drain(sg4::ActivitySet& activities)
+{
+  cancel_pending_activities(activities);
+  activities.clear();
+}
+
 void Engine::add_publisher(sg4::ActorPtr actor)
 {
   pub_ever_present_ = true;

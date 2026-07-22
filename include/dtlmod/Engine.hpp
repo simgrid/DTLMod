@@ -82,6 +82,19 @@ protected:
   [[nodiscard]] virtual unsigned int get_current_sub_transaction_impl() const noexcept = 0;
 
   // Protected methods for derived classes only
+
+  /// Cancel every activity of that set that is still in flight.
+  ///
+  /// The set is snapshot before anything is cancelled, because Activity::cancel() mutates it in two different ways:
+  /// it is a simcall, hence a scheduling point at which a resumed actor can clear the set, and it fires the
+  /// on_this_completion callbacks, one of which erases the activity from the set it belongs to. Iterating the set
+  /// itself would thus skip activities and, worse, let them be destroyed before being cancelled. Activities that are
+  /// already over are left alone, so that their completion callbacks are not fired a second time.
+  static void cancel_pending_activities(sg4::ActivitySet& activities);
+  /// Cancel whatever is still in flight in that set, then empty it. Dropping the references to a running activity
+  /// would leave its ActivityImpl alive in the kernel, still consuming resources, with no handle left to wait on it.
+  static void drain(sg4::ActivitySet& activities);
+
   void close_stream() const;
   [[nodiscard]] std::shared_ptr<Stream> get_stream() const { return stream_.lock(); }
   void set_transport(std::shared_ptr<Transport> transport) noexcept { transport_ = transport; }

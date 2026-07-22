@@ -1,5 +1,42 @@
 ----------------------------------------------------------------------------
 
+DTLMod (0.6) not released yet (target: September 2026)
+
+Improvements:
+  - New Engine::cancel_pending_activities() and Engine::drain() helpers, now
+    used by every transaction teardown path of the Staging and File engines,
+    so that cancelling and emptying an ActivitySet is done in one place
+  - Improved test coverage
+    - Regression test for the cancellation of a Staging transaction with four
+      publishers, checking that no activity is destroyed while still running
+    - Regression test for the cancellation of a File transaction with two
+      pending writes, checking that both are canceled
+    - Both tests need at least two activities in the set to be meaningful, a
+      case the existing single-publisher cancellation tests could not cover
+    - The test suite now aborts at startup if it loaded a libdtlmod other than
+      the one just built, which LD_LIBRARY_PATH can silently cause
+
+Bug Fixes:
+  - Transaction cancellation only canceled part of the in-flight activities.
+    Activity::cancel() mutates the ActivitySet being iterated over, in two
+    different ways: it is a simcall, hence a scheduling point at which a
+    resumed actor can clear the set (StagingEngine), and it fires the
+    on_this_completion callback that erases the activity from its set
+    (FileEngine). Indexing the set therefore skipped roughly every other
+    activity. The skipped ones kept running, and the subsequent clear()
+    dropped their last handle, leaving an ActivityImpl alive in the kernel,
+    still consuming link or disk bandwidth for the rest of the simulation.
+    Multi-publisher Staging scenarios could also deadlock
+  - Transaction teardown after a cancellation emptied the ActivitySets without
+    cancelling what was left in them, in StagingEngine::end_sub_transaction(),
+    StagingEngine::begin_pub_transaction() and FileEngine::sub_read(), whereas
+    pub_close() and sub_close() did cancel first
+  - pub_close() and sub_close() canceled the leftover activities
+    unconditionally, flipping the state of those that had already completed
+    and firing their completion callbacks a second time
+
+----------------------------------------------------------------------------
+
 DTLMod (0.5) May 25, 2026
 
 Improvements:

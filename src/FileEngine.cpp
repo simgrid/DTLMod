@@ -25,13 +25,13 @@ namespace dtlmod {
 
 void FileEngine::cancel_activities()
 {
-  // Cancelling write activities fires on_this_completion_cb, which calls notify_all() and drains the set naturally.
+  // Cancelling a write activity fires its on_this_completion_cb, which erases it from the set being cancelled. Going
+  // through cancel_pending_activities() rather than indexing the sets directly is what keeps that from skipping every
+  // other activity.
   for (auto& [actor, aset] : file_pub_transaction_)
-    for (int i = 0; i < aset.size(); i++)
-      aset.at(i)->cancel();
+    cancel_pending_activities(aset);
   for (auto& [actor, aset] : file_sub_transaction_)
-    for (int i = 0; i < aset.size(); i++)
-      aset.at(i)->cancel();
+    cancel_pending_activities(aset);
   pub_transaction_completed_->notify_all();
   pub_activities_completed_->notify_all();
 }
@@ -250,14 +250,14 @@ void FileEngine::end_sub_transaction()
   } catch (const simgrid::CancelException&) {
     if (!is_canceled())
       throw;
-    file_sub_transaction_[self].clear();
+    drain(file_sub_transaction_[self]);
     transport->close_sub_files(self);
     transport->clear_to_read_in_transaction(self);
     sub_transaction_in_progress_ = false;
     throw TransactionCanceledException(XBT_THROW_POINT);
   }
   if (is_transaction_canceled(current_sub_transaction_id_)) {
-    file_sub_transaction_[self].clear();
+    drain(file_sub_transaction_[self]);
     transport->close_sub_files(self);
     transport->clear_to_read_in_transaction(self);
     sub_transaction_in_progress_ = false;

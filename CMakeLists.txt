@@ -281,9 +281,11 @@ if(GTEST_LIBRARY)
     ${FSMOD_INCLUDE_DIR}
     ${GTEST_INCLUDE_DIR}
   )
-  target_link_libraries(unit_tests ${GTEST_LIBRARY} ${SimGrid_LIBRARY} ${FSMOD_LIBRARY} dtlmod -lpthread -lm)
+  target_link_libraries(unit_tests ${GTEST_LIBRARY} ${SimGrid_LIBRARY} ${FSMOD_LIBRARY} dtlmod -lpthread -lm -ldl)
   set_target_properties(unit_tests PROPERTIES COMPILE_FLAGS "-g -O0 --coverage")
   set_target_properties(unit_tests PROPERTIES LINK_FLAGS "--coverage")
+  # Let the tests check at startup that they loaded the library from this build tree, see test/main.cpp
+  target_compile_definitions(unit_tests PRIVATE DTLMOD_BUILT_LIB_DIR="$<TARGET_FILE_DIR:dtlmod>")
 
   # Python test - copy test scripts
   add_custom_target(copy_python_tests
