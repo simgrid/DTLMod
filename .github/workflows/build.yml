@@ -110,7 +110,8 @@ jobs:
           sudo cmake --install build
           cmake --build build --target unit_tests -j$(nproc)
           cd build
-          ./unit_tests
+          # Make sure the freshly built library wins over the one just installed in /usr/local/lib
+          LD_LIBRARY_PATH=$PWD/lib:$LD_LIBRARY_PATH ./unit_tests
           cd test/python
           python3 ./unit_tests_python.py
           cd ../..
