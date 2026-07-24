@@ -122,6 +122,8 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
       XBT_INFO("Assign the decimation method to 'var3D'");
       ASSERT_NO_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2,4"}}));
       ASSERT_EQ(decimator->get_reduced_variable_global_size(*var), 640 * 320 * 160 * sizeof(double));
+      XBT_INFO("Check the retained fraction reported as fidelity (stride 1,2,4 keeps 1/8 of the elements)");
+      ASSERT_DOUBLE_EQ(decimator->get_fidelity(*var), 1.0 / (1.0 * 2.0 * 4.0));
       XBT_INFO("Check that the variable is marked as 'reduced'");
       ASSERT_TRUE(var->is_reduced());
       XBT_INFO("Start a Transaction");
@@ -344,6 +346,42 @@ TEST_F(DTLReductionTest, BogusCompressionSetting)
   });
 }
 
+TEST_F(DTLReductionTest, CompressionFidelityMonotonicInAccuracy)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("TestActor", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto tight      = stream->define_variable("tight", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto loose      = stream->define_variable("loose", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto over       = stream->define_variable("over", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto compressor = stream->define_reduction_method("compression");
+      auto engine = stream->open("zone:my_fs:/host/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      sg4::this_actor::sleep_for(1);
+
+      // Tighter error bound -> higher fidelity; the model is -log10(accuracy)/6, clamped to [0,1].
+      // An accuracy-driven profile (sz) is used so the error bound, not a fixed ratio, sets the parameterization.
+      ASSERT_NO_THROW(tight->set_reduction_operation(compressor, {{"compressor", "sz"}, {"accuracy", "1e-6"}}));
+      ASSERT_NO_THROW(loose->set_reduction_operation(compressor, {{"compressor", "sz"}, {"accuracy", "1e-1"}}));
+      ASSERT_NO_THROW(over->set_reduction_operation(compressor, {{"compressor", "sz"}, {"accuracy", "1e-9"}}));
+
+      ASSERT_DOUBLE_EQ(compressor->get_fidelity(*tight), 1.0);
+      ASSERT_DOUBLE_EQ(compressor->get_fidelity(*loose), 1.0 / 6.0);
+      ASSERT_GT(compressor->get_fidelity(*tight), compressor->get_fidelity(*loose));
+      XBT_INFO("A tighter-than-reference bound saturates at 1.0 rather than exceeding it");
+      ASSERT_DOUBLE_EQ(compressor->get_fidelity(*over), 1.0);
+
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLReductionTest, SimpleCompressionFileEngine)
 {
   DO_TEST_WITH_FORK([this]() {
@@ -375,6 +413,8 @@ TEST_F(DTLReductionTest, SimpleCompressionFileEngine)
       size_t expected_reduced     = static_cast<size_t>(std::ceil(original_global_size / 10.0));
       ASSERT_EQ(compressor->get_reduced_variable_global_size(*var), expected_reduced);
       ASSERT_EQ(compressor->get_reduced_variable_local_size(*var), expected_reduced);
+      XBT_INFO("Verify fidelity is driven by the accuracy bound (default 1e-3 -> 0.5), not by the reduced size");
+      ASSERT_DOUBLE_EQ(compressor->get_fidelity(*var), 0.5);
       XBT_INFO("Verify that shape is unchanged");
       auto reduced_shape = compressor->get_reduced_variable_shape(*var);
       ASSERT_EQ(reduced_shape.size(), 2u);

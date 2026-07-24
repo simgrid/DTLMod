@@ -70,6 +70,7 @@ public:
                                                         unsigned int transaction_id = 0) const override;
   [[nodiscard]] size_t get_reduced_variable_local_size(const Variable& var,
                                                        unsigned int transaction_id = 0) const override;
+  [[nodiscard]] double get_fidelity(const Variable& var, unsigned int transaction_id = 0) const override;
 
   [[nodiscard]] const std::vector<size_t>& get_reduced_variable_shape(const Variable& var) const override
   {

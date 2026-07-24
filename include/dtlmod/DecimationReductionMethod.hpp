@@ -82,6 +82,20 @@ protected:
     return per_variable_parameterizations_.at(&var)->get_local_reduced_size();
   }
 
+  /// Decimation keeps every stride-th element, so the retained fraction is the ratio of the reduced to the original
+  /// element count. Computed from the shapes, hence independent of which actor asks and of the transaction.
+  [[nodiscard]] double get_fidelity(const Variable& var, unsigned int /*transaction_id*/ = 0) const override
+  {
+    const auto& reduced_shape  = per_variable_parameterizations_.at(&var)->get_reduced_shape();
+    const auto& original_shape = var.get_shape();
+    size_t reduced_vol = 1, original_vol = 1;
+    for (auto d : reduced_shape)
+      reduced_vol *= d;
+    for (auto d : original_shape)
+      original_vol *= d;
+    return original_vol > 0 ? static_cast<double>(reduced_vol) / static_cast<double>(original_vol) : 1.0;
+  }
+
   [[nodiscard]] double get_flop_amount_to_reduce_variable(const Variable& var) const override
   {
     return per_variable_parameterizations_.at(&var)->get_flop_amount_to_decimate();

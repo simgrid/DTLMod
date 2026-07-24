@@ -3,6 +3,11 @@
 DTLMod (0.6) not released yet (target: September 2026)
 
 Improvements:
+  - New ReductionMethod::get_fidelity(var, transaction_id) returning the
+    fraction of the original information retained after reduction, in [0, 1].
+    Decimation reports the retained-element fraction; compression derives a
+    fidelity from the accuracy bound (shape and reduced size are uninformative
+    for it), so subscribers can reason about data quality, not just volume.
   - New Engine::cancel_pending_activities() and Engine::drain() helpers, now
     used by every transaction teardown path of the Staging and File engines,
     so that cancelling and emptying an ActivitySet is done in one place

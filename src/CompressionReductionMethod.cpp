@@ -3,6 +3,7 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
+#include <algorithm>
 #include <cmath>
 #include <functional>
 
@@ -36,6 +37,19 @@ size_t CompressionReductionMethod::get_reduced_variable_local_size(const Variabl
 {
   auto ratio = per_variable_parameterizations_.at(&var)->get_effective_ratio(transaction_id);
   return static_cast<size_t>(std::ceil(static_cast<double>(var.get_local_size()) / ratio));
+}
+
+double CompressionReductionMethod::get_fidelity(const Variable& var, unsigned int /*transaction_id*/) const
+{
+  // Compression preserves the shape but bounds the per-element error at 'accuracy'; fidelity therefore depends on
+  // that error bound, not on the (constant) shape or the transferred size. This is a coarse, monotone first-order
+  // model, not a compressor-specific quality curve: tighter bounds map to higher fidelity, saturating at 1.0.
+  // -log10(accuracy) / 6 gives 1.0 at accuracy 1e-6 and 0.5 at 1e-3. It is deliberately independent of the
+  // transaction id since 'accuracy' does not vary per transaction (unlike the compression ratio).
+  constexpr double reference_exponent = 6.0;
+  double accuracy                     = per_variable_parameterizations_.at(&var)->get_accuracy();
+  double fidelity                     = -std::log10(accuracy) / reference_exponent;
+  return std::clamp(fidelity, 0.0, 1.0);
 }
 
 double CompressionReductionMethod::get_flop_amount_to_reduce_variable(const Variable& var) const
