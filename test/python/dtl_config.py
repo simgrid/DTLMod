@@ -3,11 +3,29 @@
 # This program is free software you can redistribute it and/or modify it
 # under the terms of the license (GNU LGPL) which comes with this package.
 
+import os
 import sys
 import multiprocessing
 from simgrid import Engine, this_actor
 from fsmod import FileSystem, OneDiskStorage
 from dtlmod import DTL, Stream, Transport, Engine as DTLEngine
+
+# Locate DTL-config.json relative to this script rather than to the current working directory, so the test can be
+# launched from anywhere. CMake stages the file under <build>/config_files/test/ (canonical, used by CI); the second
+# candidate is the source-tree location (test/DTL-config.json) so the test also works when run from the sources.
+_HERE = os.path.dirname(os.path.abspath(__file__))
+_CONFIG_CANDIDATES = [
+    os.path.join(_HERE, "..", "..", "config_files", "test", "DTL-config.json"),
+    os.path.join(_HERE, "..", "DTL-config.json"),
+]
+
+
+def config_file_path():
+    for candidate in _CONFIG_CANDIDATES:
+        if os.path.exists(candidate):
+            return candidate
+    raise FileNotFoundError("DTL-config.json not found in any of: " + ", ".join(_CONFIG_CANDIDATES))
+
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -24,7 +42,7 @@ def setup_platform():
     FileSystem.register_file_system(root, fs)
     fs.mount_partition("/scratch/", local_storage, "100MB")
 
-    DTL.create("../../config_files/test/DTL-config.json")
+    DTL.create(config_file_path())
     return e, host
 
 def run_test_config_file():
