@@ -3,11 +3,19 @@
 DTLMod (0.6) not released yet (target: September 2026)
 
 Improvements:
+  - End-of-stream signaling. Once the last publisher closes an engine, a
+    subscriber that requests a transaction which was never produced is now
+    released with a new EndOfStreamException instead of blocking forever
+    (mirroring the StepStatus::EndOfStream returned by ADIOS2's BeginStep).
+    This lets a consumer terminate when its upstream stops. Implemented for
+    both the Staging and File engines, for any number of subscribers. Exposed
+    in the Python bindings as EndOfStreamException.
   - New ReductionMethod::get_fidelity(var, transaction_id) returning the
     fraction of the original information retained after reduction, in [0, 1].
     Decimation reports the retained-element fraction; compression derives a
     fidelity from the accuracy bound (shape and reduced size are uninformative
     for it), so subscribers can reason about data quality, not just volume.
+    Exposed in the Python bindings as ReductionMethod.get_fidelity().
   - New Engine::cancel_pending_activities() and Engine::drain() helpers, now
     used by every transaction teardown path of the Staging and File engines,
     so that cancelling and emptying an ActivitySet is done in one place

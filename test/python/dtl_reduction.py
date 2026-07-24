@@ -303,6 +303,9 @@ def run_test_simple_compression_file_engine():
         assert reduced_shape[0] == 1000
         assert reduced_shape[1] == 1000
 
+        this_actor.info("Verify fidelity is driven by the accuracy bound (default 1e-3 -> 0.5), not by the reduced size")
+        assert compressor.get_fidelity(var) == 0.5
+
         this_actor.info("Verify compression flop cost")
         expected_flops = 5.0 * 1000 * 1000
         assert compressor.get_flop_amount_to_reduce_variable(var) == expected_flops
@@ -475,6 +478,9 @@ def run_test_decimation_staging_engine():
         assert shape[0] == 5000
         assert shape[1] == 5000
 
+        this_actor.info("Verify fidelity is the retained fraction (stride 2,2 keeps 1/4 of the elements)")
+        assert decimator.get_fidelity(var) == 1.0 / (2.0 * 2.0)
+
         engine.begin_transaction()
         engine.put(var)
         engine.end_transaction()
@@ -573,6 +579,7 @@ if __name__ == '__main__':
         run_test_compression_staging_engine,
     ]
 
+    all_passed = True
     for test in tests:
         print(f"\n🔧 Run {test.__name__} ...")
         p = multiprocessing.Process(target=test)
@@ -581,5 +588,9 @@ if __name__ == '__main__':
 
         if p.exitcode != 0:
             print(f"❌ {test.__name__} failed with exit code {p.exitcode}")
+            all_passed = False
         else:
             print(f"✅ {test.__name__} passed")
+
+    if not all_passed:
+        sys.exit(1)

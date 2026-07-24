@@ -71,6 +71,7 @@ DECLARE_DTLMOD_EXCEPTION(InconsistentCompressionRatioException, "Inconsistent Co
 DECLARE_DTLMOD_EXCEPTION(SubscriberSideCompressionException, "Compression can only be applied on the publisher side");
 
 DECLARE_DTLMOD_EXCEPTION(TransactionCanceledException, "Transaction canceled");
+DECLARE_DTLMOD_EXCEPTION(EndOfStreamException, "End of stream: all publishers have closed");
 
 } // namespace dtlmod
 

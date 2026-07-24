@@ -219,6 +219,7 @@ if __name__ == '__main__':
         run_test_publish_file_muliple_open
     ]
 
+    all_passed = True
     for test in tests:
         print(f"\n🔧 Run {test.__name__} ...")
         p = multiprocessing.Process(target=test)
@@ -227,6 +228,10 @@ if __name__ == '__main__':
 
         if p.exitcode != 0:
             print(f"❌ {test.__name__} failed with exit code {p.exitcode}")
+            all_passed = False
         else:
             print(f"✅ {test.__name__} passed")
 
+
+    if not all_passed:
+        sys.exit(1)

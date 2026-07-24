@@ -10,7 +10,8 @@ scripts = [
     "dtl_stream.py",
     "dtl_variable.py",
     "dtl_reduction.py",
-    "dtl_cancel.py"
+    "dtl_cancel.py",
+    "dtl_end_of_stream.py"
     ]
                         
 def run_script(script):

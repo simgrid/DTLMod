@@ -58,6 +58,7 @@ private:
 
   bool pub_ever_present_ = false;
   std::atomic<unsigned int> canceled_transaction_id_{0};
+  std::atomic<bool> pub_stream_ended_{false};
 
   ActorRegistry publishers_;
 
@@ -112,6 +113,11 @@ protected:
   {
     return canceled_transaction_id_ == tx_id;
   }
+
+  // Set once the last publisher has closed the engine: no further transaction will ever be produced, so a subscriber
+  // waiting for one that was never produced must be released with an EndOfStreamException rather than block forever.
+  void mark_pub_stream_ended() noexcept { pub_stream_ended_ = true; }
+  [[nodiscard]] bool pub_stream_ended() const noexcept { return pub_stream_ended_; }
 
   // Pure virtual methods for derived classes to implement
   virtual void create_transport(const Transport::Method& transport_method) = 0;

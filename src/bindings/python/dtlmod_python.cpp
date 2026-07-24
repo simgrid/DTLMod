@@ -90,6 +90,7 @@ PYBIND11_MODULE(dtlmod, m)
   py::register_exception<dtlmod::SubscriberSideCompressionException>(m, "SubscriberSideCompressionException");
 
   py::register_exception<dtlmod::TransactionCanceledException>(m, "TransactionCanceledException");
+  py::register_exception<dtlmod::EndOfStreamException>(m, "EndOfStreamException");
 
   /* Class Engine */
   py::class_<Engine, std::shared_ptr<Engine>> engine(
@@ -260,6 +261,8 @@ PYBIND11_MODULE(dtlmod, m)
            py::arg("transaction_id") = 0, "Get the reduced local size of a Variable")
       .def("get_reduced_variable_shape", &ReductionMethod::get_reduced_variable_shape, py::arg("var"),
            "Get the reduced shape of a Variable")
+      .def("get_fidelity", &ReductionMethod::get_fidelity, py::arg("var"), py::arg("transaction_id") = 0,
+           "Get the fraction of the original information retained after reduction, in [0, 1] (1.0 = lossless)")
       .def("get_flop_amount_to_reduce_variable", &ReductionMethod::get_flop_amount_to_reduce_variable, py::arg("var"),
            "Get the flop cost to reduce a Variable")
       .def("get_flop_amount_to_decompress_variable", &ReductionMethod::get_flop_amount_to_decompress_variable,

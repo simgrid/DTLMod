@@ -348,6 +348,7 @@ if __name__ == '__main__':
         run_test_cancel_staging_mid_transaction_mailbox,
     ]
 
+    all_passed = True
     for test in tests:
         print(f"\nRun {test.__name__} ...")
         p = multiprocessing.Process(target=test)
@@ -356,5 +357,9 @@ if __name__ == '__main__':
 
         if p.exitcode != 0:
             print(f"FAILED: {test.__name__} (exit code {p.exitcode})")
+            all_passed = False
         else:
             print(f"PASSED: {test.__name__}")
+
+    if not all_passed:
+        sys.exit(1)

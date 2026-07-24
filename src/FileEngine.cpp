@@ -186,6 +186,9 @@ void FileEngine::pub_close()
     transport->close_pub_files();
     XBT_DEBUG("Engine '%s' is now closed for all publishers ", get_cname());
     get_stream()->export_metadata_to_file();
+    // No more transactions will ever be produced: release any subscriber blocked waiting for one.
+    mark_pub_stream_ended();
+    pub_transaction_completed_->notify_all();
   }
 }
 
@@ -205,7 +208,7 @@ void FileEngine::begin_sub_transaction()
   if (not get_publishers().is_empty()) {
     std::unique_lock lock(*get_subscribers().get_mutex());
     while (!is_transaction_canceled(current_sub_transaction_id_) &&
-           completed_pub_transaction_id_ < current_sub_transaction_id_) {
+           completed_pub_transaction_id_ < current_sub_transaction_id_ && !pub_stream_ended()) {
       XBT_DEBUG("Wait for publishers to end the transaction I need");
       pub_transaction_completed_->wait(lock);
     }
@@ -213,7 +216,16 @@ void FileEngine::begin_sub_transaction()
       sub_transaction_in_progress_ = false;
       throw TransactionCanceledException(XBT_THROW_POINT);
     }
+    if (completed_pub_transaction_id_ < current_sub_transaction_id_ && pub_stream_ended()) {
+      sub_transaction_in_progress_ = false;
+      throw EndOfStreamException(XBT_THROW_POINT);
+    }
     XBT_DEBUG("Publishers stored metadata for that transaction, proceed");
+  } else if (pub_stream_ended() && completed_pub_transaction_id_ < current_sub_transaction_id_) {
+    // All publishers have already closed (so the wait above is skipped) and the transaction we want was never
+    // produced. Without this the subscriber would fall through and read data that does not exist.
+    sub_transaction_in_progress_ = false;
+    throw EndOfStreamException(XBT_THROW_POINT);
   }
 }
 
