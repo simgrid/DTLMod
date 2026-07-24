@@ -163,26 +163,53 @@ void StagingEngine::pub_close()
   }
 }
 
+// Block until the first publisher opens a transaction. Called only for the very first subscribe transaction, to learn
+// how many publishers there are before creating the rendez-vous points. No subscriber counter has been touched yet,
+// so the cancel/end-of-stream exits here need no rollback.
+void StagingEngine::await_first_pub_transaction()
+{
+  std::unique_lock lock(*get_subscribers().get_mutex());
+  while (!is_transaction_canceled(current_sub_transaction_id_ + 1) && current_pub_transaction_id_ == 0 &&
+         !pub_stream_ended())
+    first_pub_transaction_started_->wait(lock);
+  if (is_transaction_canceled(current_sub_transaction_id_ + 1))
+    throw TransactionCanceledException(XBT_THROW_POINT);
+  // All publishers closed before ever starting a transaction: nothing will ever come.
+  if (current_pub_transaction_id_ == 0 && pub_stream_ended())
+    throw EndOfStreamException(XBT_THROW_POINT);
+  XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
+  // We now know the number of publishers, subscriber can create mailboxes/mqs with publishers
+  get_staging_transport()->create_rendez_vous_points();
+}
+
+// Block until the publishers have completed the transaction this subscriber is starting. On cancel or end of stream,
+// roll back the per-subscriber bookkeeping (this transaction was counted as started) so the shared counters stay
+// balanced across subscribers, then throw.
+void StagingEngine::await_completed_pub_transaction()
+{
+  std::unique_lock lock(*get_subscribers().get_mutex());
+  while (!is_transaction_canceled(current_sub_transaction_id_) &&
+         completed_pub_transaction_id_ < current_sub_transaction_id_ && !pub_stream_ended())
+    pub_transaction_completed_->wait(lock);
+  if (is_transaction_canceled(current_sub_transaction_id_)) {
+    sub_transaction_in_progress_ = false;
+    num_subscribers_starting_--;
+    throw TransactionCanceledException(XBT_THROW_POINT);
+  }
+  if (completed_pub_transaction_id_ < current_sub_transaction_id_ && pub_stream_ended()) {
+    sub_transaction_in_progress_ = false;
+    num_subscribers_starting_--;
+    throw EndOfStreamException(XBT_THROW_POINT);
+  }
+}
+
 void StagingEngine::begin_sub_transaction()
 {
   if (is_transaction_canceled(current_sub_transaction_id_ + 1))
     throw TransactionCanceledException(XBT_THROW_POINT);
 
-  if (current_sub_transaction_id_ == 0) { // This is the first transaction
-    // Wait for at least one publisher to start a tran
-    std::unique_lock lock(*get_subscribers().get_mutex());
-    while (!is_transaction_canceled(current_sub_transaction_id_ + 1) && current_pub_transaction_id_ == 0 &&
-           !pub_stream_ended())
-      first_pub_transaction_started_->wait(lock);
-    if (is_transaction_canceled(current_sub_transaction_id_ + 1))
-      throw TransactionCanceledException(XBT_THROW_POINT);
-    // All publishers closed before ever starting a transaction: nothing will come (no counters touched yet).
-    if (current_pub_transaction_id_ == 0 && pub_stream_ended())
-      throw EndOfStreamException(XBT_THROW_POINT);
-    XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
-    // We now know the number of publishers, subscriber can create mailboxes/mqs with publishers
-    get_staging_transport()->create_rendez_vous_points();
-  }
+  if (current_sub_transaction_id_ == 0) // This is the first transaction
+    await_first_pub_transaction();
 
   if (!sub_transaction_in_progress_) {
     current_sub_transaction_id_++;
@@ -200,22 +227,7 @@ void StagingEngine::begin_sub_transaction()
     sub_transaction_started_->notify_all();
   }
 
-  std::unique_lock lock(*get_subscribers().get_mutex());
-  while (!is_transaction_canceled(current_sub_transaction_id_) &&
-         completed_pub_transaction_id_ < current_sub_transaction_id_ && !pub_stream_ended())
-    pub_transaction_completed_->wait(lock);
-  if (is_transaction_canceled(current_sub_transaction_id_)) {
-    sub_transaction_in_progress_ = false;
-    num_subscribers_starting_--;
-    throw TransactionCanceledException(XBT_THROW_POINT);
-  }
-  // Woken by the last publisher closing while the transaction we want was never produced: end of stream. Roll back the
-  // same per-subscriber bookkeeping as the cancel path so the shared counters stay balanced across subscribers.
-  if (completed_pub_transaction_id_ < current_sub_transaction_id_ && pub_stream_ended()) {
-    sub_transaction_in_progress_ = false;
-    num_subscribers_starting_--;
-    throw EndOfStreamException(XBT_THROW_POINT);
-  }
+  await_completed_pub_transaction();
 }
 
 void StagingEngine::end_sub_transaction()

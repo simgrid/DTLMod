@@ -37,6 +37,8 @@ class StagingEngine : public Engine {
   void end_pub_transaction() override;
   void pub_close() override;
   void begin_sub_transaction() override;
+  void await_first_pub_transaction();
+  void await_completed_pub_transaction();
   void end_sub_transaction() override;
   void sub_close() override;
   void cancel_activities() override;
