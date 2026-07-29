@@ -88,7 +88,8 @@ protected:
   {
     const auto& reduced_shape  = per_variable_parameterizations_.at(&var)->get_reduced_shape();
     const auto& original_shape = var.get_shape();
-    size_t reduced_vol = 1, original_vol = 1;
+    size_t reduced_vol         = 1;
+    size_t original_vol        = 1;
     for (auto d : reduced_shape)
       reduced_vol *= d;
     for (auto d : original_shape)
