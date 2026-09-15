@@ -58,6 +58,10 @@ DTL::DTL(std::string_view filename)
     // And set its engine type and transport method
     streams_[name]->set_engine_type(type).set_transport_method(transport_method);
 
+    // Check if a local memory copy overhead must be simulated before a put on this stream
+    if (stream["engine"].contains("simulate_memory_copy"))
+      streams_[name]->set_simulate_memory_copy(stream["engine"]["simulate_memory_copy"].get<bool>());
+
     // Check if a reduction method must be defined for the stream
     if (stream.contains("reduction_methods"))
       for (const auto& method : stream["reduction_methods"])

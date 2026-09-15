@@ -1,8 +1,22 @@
 ----------------------------------------------------------------------------
 
-DTLMod (0.6) not released yet (target: September 2026)
+DTLMod (0.6) not released yet (target: October, 12 2026)
 
 Improvements:
+  - Optional simulation of the cost of a local memory copy before a put, to
+    account for the time an application needs to stage a Variable into a
+    send buffer before handing it off to the transport
+    - Modeled as a loopback network transfer (sg4::Comm::sendto(host, host,
+      size)) on the host of the actor calling put(), so the cost follows the
+      loopback link characteristics already configurable in the platform
+    - Off by default. Enabled per Stream with the new
+      Stream::set_simulate_memory_copy(bool) (must be called before
+      Stream::open()), or via a new "simulate_memory_copy" boolean in the
+      "engine" section of the DTL configuration file. The Engine captures the
+      setting once, when it is created
+      Note: applies to Engine::put() only, not Engine::get()
+    - Exposed in the Python bindings as Stream.set_simulate_memory_copy() and
+      the read-only Stream.simulate_memory_copy property
   - End-of-stream signaling. Once the last publisher closes an engine, a
     subscriber that requests a transaction which was never produced is now
     released with a new EndOfStreamException instead of blocking forever

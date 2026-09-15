@@ -178,6 +178,9 @@ PYBIND11_MODULE(dtlmod, m)
                              "Print out the access mode of this Stream (read-only)")
       .def_property_readonly("metadata_export", &Stream::does_export_metadata,
                              "Does the stream export metadata (read only)")
+      .def_property_readonly("simulate_memory_copy", &Stream::should_simulate_memory_copy,
+                             "Do Engines opened on this Stream simulate a local memory copy overhead before a put "
+                             "(read only)")
       .def("set_engine_type", &Stream::set_engine_type, py::arg("type"),
            "Set the engine type associated to this Stream")
       .def("set_transport_method", &Stream::set_transport_method, py::arg("method"),
@@ -186,6 +189,9 @@ PYBIND11_MODULE(dtlmod, m)
            "Specify that metadata must be exported for that stream")
       .def("unset_metadata_export", &Stream::unset_metadata_export,
            "Specify that metadata must not be exported for that stream")
+      .def("set_simulate_memory_copy", &Stream::set_simulate_memory_copy, py::arg("value"),
+           "Specify whether Engines opened on this Stream should simulate a local memory copy overhead before a "
+           "put. Must be called before Stream.open")
       // Engine factory
       .def("open", &Stream::open, py::arg("name"), py::call_guard<simgrid::SimGridGilGuard>(), py::arg("mode"),
            "Open a Stream and create an Engine")

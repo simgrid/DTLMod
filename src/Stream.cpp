@@ -154,6 +154,12 @@ Stream& Stream::unset_metadata_export() noexcept
   return *this;
 }
 
+Stream& Stream::set_simulate_memory_copy(bool value) noexcept
+{
+  simulate_memory_copy_ = value;
+  return *this;
+}
+
 void Stream::export_metadata_to_file()
 {
   metadata_exported_ = true;

@@ -15,6 +15,11 @@ namespace sg4 = simgrid::s4u;
 
 namespace dtlmod {
 
+Engine::Engine(const std::string& name, std::shared_ptr<Stream> stream, Type type)
+    : name_(name), type_(type), stream_(stream), simulate_memory_copy_(stream->should_simulate_memory_copy())
+{
+}
+
 ////////////////////////////////////////////
 ///////////// PUBLIC INTERFACE /////////////
 ////////////////////////////////////////////
@@ -33,21 +38,27 @@ void Engine::begin_transaction()
 /// The actual data transport is delegated to the Transport method associated to the Engine.
 void Engine::put(const std::shared_ptr<Variable>& var) const
 {
+  size_t size;
   if (var->is_reduced()) {
     // Perform an Exec activity before putting the variable into the DTL to account for the time needed to reduce it.
     sg4::this_actor::execute(var->get_reduction_method()->get_flop_amount_to_reduce_variable(*var));
     XBT_DEBUG("Variable %s has been reduced!", var->get_cname());
     // Now put the reduced version of the variable into the DTL, i.e., using its reduced local size.
+    size = var->get_reduction_method()->get_reduced_variable_local_size(*var, get_current_transaction());
     XBT_DEBUG("Put this reduced version of %s (initial size = %zu, reduced size = %zu)", var->get_cname(),
-              var->get_local_size(),
-              var->get_reduction_method()->get_reduced_variable_local_size(*var, get_current_transaction()));
-    transport_->put(var, var->get_reduction_method()->get_reduced_variable_local_size(*var, get_current_transaction()));
-  } else
-    transport_->put(var, var->get_local_size());
+              var->get_local_size(), size);
+  } else {
+    size = var->get_local_size();
+  }
+  if (simulate_memory_copy_)
+    simulate_memory_copy_overhead(size);
+  transport_->put(var, size);
 }
 
 void Engine::put(const std::shared_ptr<Variable>& var, size_t simulated_size_in_bytes) const
 {
+  if (simulate_memory_copy_)
+    simulate_memory_copy_overhead(simulated_size_in_bytes);
   transport_->put(var, simulated_size_in_bytes);
 }
 
@@ -139,6 +150,16 @@ void Engine::close_stream() const
 {
   if (auto s = stream_.lock())
     s->close();
+}
+
+/// Model the cost of a local memory copy as a loopback network transfer on the host of the calling actor. The cost
+/// is governed by the loopback link's bandwidth/latency, so it is tuned like any other link in the platform.
+void Engine::simulate_memory_copy_overhead(size_t bytes) const
+{
+  if (bytes == 0)
+    return;
+  auto* host = sg4::Host::current();
+  sg4::Comm::sendto(host, host, bytes);
 }
 /// \endcond
 

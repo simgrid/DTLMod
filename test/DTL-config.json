@@ -19,7 +19,8 @@
             "name": "Stream3",
             "engine": {
                 "type": "Staging",
-                "transport_method": "Mailbox"
+                "transport_method": "Mailbox",
+                "simulate_memory_copy": true
             },
             "reduction_methods": ["compression"]
         }

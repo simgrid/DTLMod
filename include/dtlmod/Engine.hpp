@@ -55,6 +55,7 @@ private:
   Type type_                            = Type::Undefined;
   std::shared_ptr<Transport> transport_ = nullptr;
   std::weak_ptr<Stream> stream_;
+  bool simulate_memory_copy_ = false;
 
   bool pub_ever_present_ = false;
   std::atomic<unsigned int> canceled_transaction_id_{0};
@@ -108,6 +109,12 @@ protected:
 
   [[nodiscard]] bool pub_ever_present() const noexcept { return pub_ever_present_; }
 
+  // Whether this Engine should simulate the cost of a local memory copy before a put, as set on its Stream at the
+  // time this Engine was created.
+  [[nodiscard]] bool should_simulate_memory_copy() const noexcept { return simulate_memory_copy_; }
+  // Simulate the cost of a local memory copy as a loopback network transfer on the calling actor's host.
+  void simulate_memory_copy_overhead(size_t bytes) const;
+
   [[nodiscard]] bool is_canceled() const noexcept { return canceled_transaction_id_ != 0; }
   [[nodiscard]] bool is_transaction_canceled(unsigned int tx_id) const noexcept
   {
@@ -131,10 +138,7 @@ protected:
 
 public:
   /// \cond EXCLUDE_FROM_DOCUMENTATION
-  explicit Engine(const std::string& name, std::shared_ptr<Stream> stream, Type type)
-      : name_(name), type_(type), stream_(stream)
-  {
-  }
+  explicit Engine(const std::string& name, std::shared_ptr<Stream> stream, Type type);
   virtual ~Engine() = default;
   /// \endcond
 
@@ -148,11 +152,13 @@ public:
   /// @brief Start a transaction on an Engine.
   void begin_transaction();
 
-  /// @brief Put a Variable in the DTL using a specific Engine.
+  /// @brief Put a Variable in the DTL using a specific Engine. If the Stream this Engine belongs to was configured
+  ///        with Stream::set_simulate_memory_copy(true), a local memory copy overhead is simulated first.
   /// @param var The variable to put in the DTL
   void put(const std::shared_ptr<Variable>& var) const;
 
-  /// @brief Put a Variable in the DTL using a specific Engine.
+  /// @brief Put a Variable in the DTL using a specific Engine. If the Stream this Engine belongs to was configured
+  ///        with Stream::set_simulate_memory_copy(true), a local memory copy overhead is simulated first.
   /// @param var The variable to put in the DTL
   /// @param simulated_size_in_bytes The simulated size of the Variable (can be different of actual size)
   void put(const std::shared_ptr<Variable>& var, size_t simulated_size_in_bytes) const;

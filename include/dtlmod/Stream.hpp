@@ -46,6 +46,7 @@ private:
   Engine::Type engine_type_           = Engine::Type::Undefined;
   Transport::Method transport_method_ = Transport::Method::Undefined;
   bool metadata_export_               = false;
+  bool simulate_memory_copy_          = false;
   std::string metadata_file_;
   std::unordered_map<std::string, std::string> var_prog_file_paths_; // variable name -> prog file path
   bool metadata_exported_ = false; // true once export_metadata_to_file() has been called
@@ -123,6 +124,10 @@ public:
   /// @param name the name of the reduction method
   /// @return a boolean indicating if the Stream does export metadata or not
   [[nodiscard]] bool does_export_metadata() const noexcept { return metadata_export_; }
+  /// @brief Helper function to know if a local memory copy overhead should be simulated by Engines opened on this
+  ///        Stream before a put.
+  /// @return a boolean indicating if the memory copy overhead must be simulated or not
+  [[nodiscard]] bool should_simulate_memory_copy() const noexcept { return simulate_memory_copy_; }
 
   /// @brief Stream configuration function: set the Engine type to create.
   /// @param engine_type The type of Engine to create when opening the Stream.
@@ -138,6 +143,11 @@ public:
   /// @brief Stream configuration function: specify that metadata must not be exported
   /// @return The calling Stream (enable method chaining).
   Stream& unset_metadata_export() noexcept;
+  /// @brief Stream configuration function: specify whether Engines opened on this Stream should simulate the cost
+  ///        of a local memory copy (as a loopback network transfer) before a put. Must be called before Stream::open.
+  /// @param value true to simulate the memory copy overhead, false otherwise.
+  /// @return The calling Stream (enable method chaining).
+  Stream& set_simulate_memory_copy(bool value) noexcept;
   /// @brief Get the name of the file in which the stream stores metadata
   /// @return The name of the file.
   [[nodiscard]] const std::string& get_metadata_file_name() const noexcept { return metadata_file_; }

@@ -93,6 +93,68 @@ def run_test_single_pub_single_sub_same_cluster():
     
     e.run()
 
+def run_test_single_pub_single_sub_same_cluster_with_simulated_memory_copy():
+    e = setup_platform()
+
+    def pub_test_actor():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output").set_engine_type(DTLEngine.Type.Staging).set_transport_method(Transport.Method.Mailbox)
+        this_actor.info("Simulate a local memory copy overhead before each put on this Stream")
+        stream.set_simulate_memory_copy(True)
+        this_actor.info("Create a 2D-array variable with 20kx20k double")
+        var = stream.define_variable("var", (20000, 20000), (0, 0), (20000, 20000), ctypes.sizeof(ctypes.c_double))
+        this_actor.info("Open the stream")
+        engine = stream.open("my-output", Stream.Mode.Publish)
+        this_actor.info(f"Stream {stream.name} is opened")
+        this_actor.sleep_for(1)
+
+        this_actor.info("Start a transaction")
+        put_start = e.clock
+        engine.begin_transaction()
+        this_actor.info("Put Variable 'var' into the DTL")
+        engine.put(var)
+        this_actor.info("End the transaction")
+        engine.end_transaction()
+        this_actor.info(f"Transaction with simulated memory copy took {e.clock - put_start} seconds")
+
+        this_actor.info("Close the engine")
+        engine.close()
+        this_actor.info("Disconnect from the DTL")
+        DTL.disconnect()
+
+    def sub_test_actor():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        engine = stream.open("my-output", Stream.Mode.Subscribe)
+        var_sub = stream.inquire_variable("var")
+        assert var_sub.name == "var"
+        shape = var_sub.shape
+        assert shape[0] == 20000 and shape[1] == 20000
+        assert var_sub.global_size == 20000 * 20000 * ctypes.sizeof(ctypes.c_double)
+
+        this_actor.info("Set a selection for 'var_sub': Just get the second half of the first dimension")
+        var_sub.set_selection((10000, 0), (10000, shape[1]))
+
+        this_actor.info("Start a transaction")
+        engine.begin_transaction()
+        this_actor.info("Get a subset of the Variable 'var' from the DTL")
+        engine.get(var_sub)
+        this_actor.info("End the transaction")
+        engine.end_transaction()
+
+        this_actor.info("Check local size of var_sub. Should be 1,600,000,000 bytes")
+        assert var_sub.local_size == 8 * 10000 * 20000
+
+        this_actor.info("Close the engine")
+        engine.close()
+        this_actor.info("Disconnect from the DTL")
+        DTL.disconnect()
+
+    Host.by_name("host-0.prod").add_actor("PubTestActor", pub_test_actor)
+    Host.by_name("host-0.cons").add_actor("SubTestActor", sub_test_actor)
+
+    e.run()
+
 def run_test_multiple_pub_single_sub_message_queue():
     e = setup_platform()
 
@@ -204,6 +266,7 @@ def run_test_multiple_pub_single_sub_mailbox():
 if __name__ == '__main__':
     tests = [
         run_test_single_pub_single_sub_same_cluster,
+        run_test_single_pub_single_sub_same_cluster_with_simulated_memory_copy,
         run_test_multiple_pub_single_sub_message_queue,
         run_test_multiple_pub_single_sub_mailbox
     ]

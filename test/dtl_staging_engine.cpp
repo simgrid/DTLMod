@@ -93,6 +93,78 @@ TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameCluster)
       auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
       auto var_sub = stream->inquire_variable("var");
       ASSERT_TRUE(var_sub->get_name() == "var");
+      auto shape = var_sub->get_shape();
+      ASSERT_TRUE(shape[0] == 20000 && shape[1] == 20000);
+      ASSERT_DOUBLE_EQ(var_sub->get_global_size(), 8. * 20000 * 20000);
+
+      XBT_INFO("Set a selection for 'var_sub': Just get the second half of the first dimension");
+      ASSERT_NO_THROW(var_sub->set_selection({10000, 0}, {10000, shape[1]}));
+
+      XBT_INFO("Start a Transaction");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      XBT_INFO("Get a subset of the Variable 'var' from the DTL");
+      ASSERT_NO_THROW(engine->get(var_sub));
+      XBT_INFO("End the Transaction");
+      ASSERT_NO_THROW(engine->end_transaction());
+      XBT_INFO("Check local size of var_sub. Should be 1,600,000,000 bytes");
+      ASSERT_DOUBLE_EQ(var_sub->get_local_size(), 8. * 10000 * 20000);
+
+      XBT_INFO("Close the engine");
+      ASSERT_NO_THROW(engine->close());
+
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLStagingEngineTest, SinglePubSingleSubSameClusterWithSimulatedMemoryCopy)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    auto* pub_host = sg4::Host::by_name("host-0.prod");
+    auto* sub_host = sg4::Host::by_name("host-0.cons");
+
+    pub_host->add_actor("PubTestActor", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::Mailbox);
+      XBT_INFO("Simulate a local memory copy overhead before each put on this Stream");
+      stream->set_simulate_memory_copy(true);
+      XBT_INFO("Create a 2D-array variable with 20kx20k double");
+      auto var    = stream->define_variable("var", {20000, 20000}, {0, 0}, {20000, 20000}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+      XBT_INFO("Stream '%s' is ready for Publish data into the DTL", stream->get_cname());
+      sg4::this_actor::sleep_for(1);
+
+      XBT_INFO("Start a Transaction");
+      double put_start = sg4::Engine::get_clock();
+      ASSERT_NO_THROW(engine->begin_transaction());
+      XBT_INFO("Put Variable 'var' into the DTL");
+      ASSERT_NO_THROW(engine->put(var));
+      XBT_INFO("End the Transaction");
+      ASSERT_NO_THROW(engine->end_transaction());
+      // The put() above should incur an extra loopback-transfer delay to simulate the memory copy, on top of the
+      // time it takes SinglePubSingleSubSameCluster (without the flag) to complete the same put.
+      XBT_INFO("Transaction with simulated memory copy took %g seconds", sg4::Engine::get_clock() - put_start);
+
+      XBT_INFO("Close the engine");
+      ASSERT_NO_THROW(engine->close());
+
+      XBT_INFO("Disconnect the actor");
+      dtlmod::DTL::disconnect();
+    });
+
+    sub_host->add_actor("SubTestActor", [this]() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+      ASSERT_TRUE(var_sub->get_name() == "var");
       auto shape   = var_sub->get_shape();
       ASSERT_TRUE(shape[0] == 20000 && shape[1] == 20000);
       ASSERT_DOUBLE_EQ(var_sub->get_global_size(), 8. * 20000 * 20000);
