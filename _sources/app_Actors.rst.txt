@@ -66,8 +66,9 @@ Data subscriber
    // Add the already defined ``Data'' stream
    auto s = dtl->add_stream("Data");
   
-   // Obtain information on variable ``V''
-   auto V = s->inquire_variable("V");
+   // Obtain information on variable ``V''. Wait for the publisher to define it,
+   // if needed, as actors may be scheduled in any order
+   auto V = s->inquire_variable("V", -1);
   
    // Open the stream in ``Subscribe'' mode
    auto e = s->open("cluster:file_system:/working_dir/", Stream::Mode::Subscribe);

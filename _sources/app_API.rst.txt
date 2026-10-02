@@ -260,8 +260,7 @@ Creation
 
          #include <dtlmod/DTL.hpp>
 
-      .. doxygenfunction:: dtlmod::DTL::create()   
-      .. doxygenfunction:: dtlmod::DTL::create(const std::string& config_filename)
+      .. doxygenfunction:: dtlmod::DTL::create(std::string_view filename)
 
    .. group-tab:: Python
 
@@ -294,7 +293,7 @@ Stream factory
    .. group-tab:: C++
 
       .. doxygenfunction:: dtlmod::DTL::add_stream(std::string_view name, Engine::Type type, Transport::Method method)
-      .. doxygenfunction:: dtlmod::DTL::get_stream_by_name(const std::string& name) const
+      .. doxygenfunction:: dtlmod::DTL::get_stream_by_name(std::string_view name) const
       .. doxygenfunction:: dtlmod::DTL::get_all_streams
 
    .. group-tab:: Python
@@ -318,6 +317,8 @@ Configuration
       .. doxygenfunction:: dtlmod::Stream::set_transport_method(const Transport::Method& transport_method)
       .. doxygenfunction:: dtlmod::Stream::set_metadata_export()
       .. doxygenfunction:: dtlmod::Stream::unset_metadata_export()
+      .. doxygenfunction:: dtlmod::Stream::set_simulate_memory_copy(bool value)
+      .. doxygenfunction:: dtlmod::Stream::define_reduction_method(const std::string& name)
 
    .. group-tab:: Python
 
@@ -325,6 +326,8 @@ Configuration
       .. automethod:: dtlmod.Stream.set_transport_method
       .. automethod:: dtlmod.Stream.set_metadata_export
       .. automethod:: dtlmod.Stream.unset_metadata_export
+      .. automethod:: dtlmod.Stream.set_simulate_memory_copy
+      .. automethod:: dtlmod.Stream.define_reduction_method
 
 Properties
 ----------
@@ -337,7 +340,9 @@ Properties
       .. doxygenfunction:: dtlmod::Stream::get_transport_method() const
       .. doxygenfunction:: dtlmod::Stream::get_transport_method_str() const
       .. doxygenfunction:: dtlmod::Stream::get_access_mode_str() const
-      .. doxygenfunction:: does_export_metadata() const
+      .. doxygenfunction:: dtlmod::Stream::does_export_metadata() const
+      .. doxygenfunction:: dtlmod::Stream::should_simulate_memory_copy() const
+      .. doxygenfunction:: dtlmod::Stream::get_metadata_file_name() const
       .. doxygenfunction:: dtlmod::Stream::get_reduction_method(std::string_view name) const
 
    .. group-tab:: Python
@@ -348,6 +353,8 @@ Properties
       .. autoproperty:: dtlmod.Stream.transport_method_str
       .. autoproperty:: dtlmod.Stream.access_mode
       .. autoproperty:: dtlmod.Stream.metadata_export
+      .. autoproperty:: dtlmod.Stream.simulate_memory_copy
+      .. autoproperty:: dtlmod.Stream.metadata_file_name
 
 Engine factory
 --------------
@@ -355,7 +362,7 @@ Engine factory
 
    .. group-tab:: C++
 
-      .. doxygenfunction:: dtlmod::Stream::open(const std::string& name, Mode mode)
+      .. doxygenfunction:: dtlmod::Stream::open(std::string_view name, Mode mode)
       .. doxygenfunction:: dtlmod::Stream::get_num_publishers() const
       .. doxygenfunction:: dtlmod::Stream::get_num_subscribers() const
 
@@ -372,10 +379,10 @@ Variable factory
 
    .. group-tab:: C++
 
-      .. doxygenfunction:: dtlmod::Stream::define_variable(const std::string& name, size_t element_size)
-      .. doxygenfunction:: dtlmod::Stream::define_variable(const std::string& name, const std::vector<size_t>& shape, const std::vector<size_t>& start, const std::vector<size_t>& count, size_t element_size)
-      .. doxygenfunction:: dtlmod::Stream::inquire_variable(const std::string& name) const
-      .. doxygenfunction:: dtlmod::Stream::remove_variable(const std::string& name)
+      .. doxygenfunction:: dtlmod::Stream::define_variable(std::string_view name, size_t element_size)
+      .. doxygenfunction:: dtlmod::Stream::define_variable(std::string_view name, const std::vector<size_t>& shape, const std::vector<size_t>& start, const std::vector<size_t>& count, size_t element_size)
+      .. doxygenfunction:: dtlmod::Stream::inquire_variable(std::string_view name, double timeout) const
+      .. doxygenfunction:: dtlmod::Stream::remove_variable(std::string_view name)
       .. doxygenfunction:: dtlmod::Stream::get_all_variables() const
 
    .. group-tab:: Python
@@ -399,13 +406,11 @@ Properties
       .. doxygenfunction:: dtlmod::Engine::get_name() const
       .. doxygenfunction:: dtlmod::Engine::get_cname() const
       .. doxygenfunction:: dtlmod::Engine::get_current_transaction() const
-      .. doxygenfunction:: dtlmod::Engine::get_metadata_file_name() const
 
    .. group-tab:: Python
 
       .. autoproperty:: dtlmod.Engine.name
       .. autoproperty:: dtlmod.Engine.current_transaction
-      .. autoproperty:: dtlmod.Engine.metadata_file_name
 
 Transactions
 ------------
@@ -414,11 +419,12 @@ Transactions
    .. group-tab:: C++
 
       .. doxygenfunction:: dtlmod::Engine::begin_transaction()
-      .. doxygenfunction:: dtlmod::Engine::put(std::shared_ptr<Variable> var) const
-      .. doxygenfunction:: dtlmod::Engine::put(std::shared_ptr<Variable> var, size_t simulated_size_in_bytes) const
-      .. doxygenfunction:: dtlmod::Engine::get(std::shared_ptr<Variable> var) const
+      .. doxygenfunction:: dtlmod::Engine::put(const std::shared_ptr<Variable>& var) const
+      .. doxygenfunction:: dtlmod::Engine::put(const std::shared_ptr<Variable>& var, size_t simulated_size_in_bytes) const
+      .. doxygenfunction:: dtlmod::Engine::get(const std::shared_ptr<Variable>& var) const
       .. doxygenfunction:: dtlmod::Engine::end_transaction()
       .. doxygenfunction:: dtlmod::Engine::cancel_transaction(unsigned int transaction_id)
+      .. doxygenfunction:: dtlmod::Engine::close()
 
    .. group-tab:: Python
 
@@ -427,6 +433,7 @@ Transactions
       .. automethod:: dtlmod.Engine.get
       .. automethod:: dtlmod.Engine.end_transaction
       .. automethod:: dtlmod.Engine.cancel_transaction
+      .. automethod:: dtlmod.Engine.close
 
 .. _API_dtlmod_Variable:
 
