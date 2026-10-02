@@ -320,6 +320,44 @@ def run_test_inquire_variable_remote():
     host.add_actor("TestActorConsumer", inquire_variable_remote_consumer)
     e.run()
 
+def run_test_inquire_variable_before_definition():
+    e, host = setup_platform()
+
+    def consumer():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("Stream")
+        this_actor.info("Inquire 'var' without waiting, should raise an exception as it is not defined yet")
+        try:
+            stream.inquire_variable("var")
+            raise AssertionError("Expected UnknownVariableException was not raised")
+        except UnknownVariableException:
+            pass
+        this_actor.info("Inquire 'var' and wait until it is defined")
+        var = stream.inquire_variable("var", timeout=-1)
+        assert Engine.clock == 1.0
+        assert var.name == "var"
+        assert var.global_size == (64 * 64 * 64 * 8)
+        this_actor.info("Inquire 'unknown_var' with a timeout, should raise an exception")
+        try:
+            stream.inquire_variable("unknown_var", timeout=2)
+            raise AssertionError("Expected UnknownVariableException was not raised")
+        except UnknownVariableException:
+            pass
+        assert Engine.clock == 3.0
+        DTL.disconnect()
+
+    def producer():
+        dtl = DTL.connect()
+        stream = dtl.add_stream("Stream")
+        this_actor.sleep_for(1)
+        stream.define_variable("var", (64, 64, 64), (0, 0, 0), (64, 64, 64), ctypes.sizeof(ctypes.c_double))
+        DTL.disconnect()
+
+    # The consumer is created first and inquires the variable before the producer defines it
+    host.add_actor("TestActorConsumer", consumer)
+    host.add_actor("TestActorProducer", producer)
+    e.run()
+
 def run_test_get_all_variables():
     e, host = setup_platform()
 
@@ -367,6 +405,7 @@ if __name__ == '__main__':
         run_test_remove_variable,
         run_test_inquire_variable_local,
         run_test_inquire_variable_remote,
+        run_test_inquire_variable_before_definition,
         run_test_get_all_variables
     ]
 

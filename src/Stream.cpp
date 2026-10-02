@@ -390,6 +390,9 @@ std::shared_ptr<Variable> Stream::define_variable(std::string_view name, const s
     new_var->set_local_start_and_count(publisher, std::make_pair(start, count));
     new_var->create_metadata();
     variables_.try_emplace(name_str, new_var);
+    // Wake up the subscribers that may be waiting for this Variable in inquire_variable()
+    if (nb_variable_waiters_ > 0)
+      variable_defined_->notify_all();
     return new_var;
   }
 }
@@ -403,10 +406,30 @@ std::vector<std::string> Stream::get_all_variables() const
   return variable_names;
 } // LCOV_EXCL_LINE
 
-std::shared_ptr<Variable> Stream::inquire_variable(std::string_view name) const
+std::shared_ptr<Variable> Stream::inquire_variable(std::string_view name, double timeout) const
 {
   std::string name_str(name);
   auto var = variables_.find(name_str);
+  // A subscriber may inquire a Variable before a publisher defines it. Depending on timeout, wait for the
+  // definition (signaled by define_variable()) for a bounded or unbounded amount of time, or not at all.
+  // The lock is only taken when waiting: actors are scheduled cooperatively, so the lookup above cannot interleave
+  // with a define_variable(), and locking there would add a scheduling point that changes the simulated behavior.
+  if (var == variables_.end() && timeout != 0) {
+    std::unique_lock lock(*mutex_);
+    if (not variable_defined_)
+      variable_defined_ = sg4::ConditionVariable::create();
+    const double deadline = sg4::Engine::get_clock() + timeout;
+    nb_variable_waiters_++;
+    while ((var = variables_.find(name_str)) == variables_.end()) {
+      if (timeout < 0)
+        variable_defined_->wait(lock);
+      else if (variable_defined_->wait_until(lock, deadline) == std::cv_status::timeout) {
+        var = variables_.find(name_str);
+        break;
+      }
+    }
+    nb_variable_waiters_--;
+  }
   if (var == variables_.end())
     throw UnknownVariableException(XBT_THROW_POINT, name_str);
 

@@ -30,6 +30,22 @@ Improvements:
     fidelity from the accuracy bound (shape and reduced size are uninformative
     for it), so subscribers can reason about data quality, not just volume.
     Exposed in the Python bindings as ReductionMethod.get_fidelity().
+  - Stream::inquire_variable() takes a new optional timeout parameter to let a
+    subscriber wait for a Variable that no publisher has defined yet, instead
+    of depending on the order in which actors are scheduled
+    - 0 (default) keeps the previous behavior: an UnknownVariableException is
+      raised right away if the Variable is unknown
+    - A positive value waits for at most that many seconds of simulated time
+      before raising an UnknownVariableException; a negative value waits until
+      the Variable is defined, with no time limit
+    - Stream::define_variable() wakes up the waiting subscribers when it adds a
+      new Variable. It only does so when some actor is waiting, so simulations
+      that do not use the timeout keep the exact same schedule
+    - Calling inquire_variable() after the first begin_transaction() of the
+      subscriber is also safe without a timeout, as long as publishers define
+      their Variables before their first transaction
+    - Exposed in the Python bindings as the timeout keyword argument of
+      Stream.inquire_variable()
   - New Engine::cancel_pending_activities() and Engine::drain() helpers, now
     used by every transaction teardown path of the Staging and File engines,
     so that cancelling and emptying an ActivitySet is done in one place
@@ -42,6 +58,8 @@ Improvements:
       case the existing single-publisher cancellation tests could not cover
     - The test suite now aborts at startup if it loaded a libdtlmod other than
       the one just built, which LD_LIBRARY_PATH can silently cause
+    - Tests for a subscriber that inquires a Variable before the publisher
+      defines it, with and without a timeout, in C++ and Python
 
 Bug Fixes:
   - Transaction cancellation only canceled part of the in-flight activities.

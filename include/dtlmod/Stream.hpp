@@ -51,6 +51,11 @@ private:
   std::unordered_map<std::string, std::string> var_prog_file_paths_; // variable name -> prog file path
   bool metadata_exported_ = false; // true once export_metadata_to_file() has been called
   sg4::MutexPtr mutex_ = sg4::Mutex::create();
+  // Signaled each time a new Variable is added to variables_, to wake up subscribers waiting in inquire_variable().
+  // Both creating and notifying a condition variable are simcalls, hence scheduling points. To keep the simulated
+  // behavior unchanged when no actor waits, it is created by the first waiter and only notified when some actor waits.
+  mutable sg4::ConditionVariablePtr variable_defined_ = nullptr;
+  mutable unsigned int nb_variable_waiters_           = 0;
   Mode access_mode_    = Mode::Publish;
 
   std::unordered_map<std::string, std::shared_ptr<Variable>> variables_;
@@ -196,9 +201,22 @@ public:
   [[nodiscard]] std::vector<std::string> get_all_variables() const;
 
   /// @brief Retrieve a Variable information by name.
+  ///
+  /// A subscriber may call this function before the publisher has defined the Variable. The @p timeout parameter
+  /// controls what happens in that case:
+  ///   - 0 (default): do not wait, throw an UnknownVariableException right away;
+  ///   - a positive value: wait for at most @p timeout seconds (of simulated time) for a publisher to define the
+  ///     Variable, then throw an UnknownVariableException;
+  ///   - a negative value: wait until a publisher defines the Variable, with no time limit.
+  ///
+  /// Calling this function after the first Engine::begin_transaction() of the subscriber does not require any
+  /// waiting, as long as publishers define their Variables before starting their first transaction.
+  ///
   /// @param name The name of desired Variable.
-  /// @return Either a shared pointer on the Variable object if known, nullptr otherwise.
-  [[nodiscard]] std::shared_ptr<Variable> inquire_variable(std::string_view name) const;
+  /// @param timeout The maximum time to wait for the Variable to be defined, in seconds (see above).
+  /// @return A shared pointer on the Variable object.
+  /// @throws UnknownVariableException if the Variable is not defined (in time).
+  [[nodiscard]] std::shared_ptr<Variable> inquire_variable(std::string_view name, double timeout = 0) const;
 
   /// @brief Remove a Variable of the list of variables known by the Stream.
   /// @param name The name of the variable to remove.

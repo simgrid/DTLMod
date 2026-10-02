@@ -333,6 +333,81 @@ TEST_F(DTLVariableTest, InquireVariableRemote)
   });
 }
 
+TEST_F(DTLVariableTest, InquireVariableBeforeDefinition)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    // The consumer is created first and inquires the variable before the producer defines it
+    host_->add_actor("TestConsumerActor", [this]() {
+      std::shared_ptr<dtlmod::DTL> dtl;
+      std::shared_ptr<dtlmod::Stream> stream;
+      std::shared_ptr<dtlmod::Variable> var;
+      ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
+      ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
+      XBT_INFO("Inquire 'var' without waiting, should raise an exception as it is not defined yet");
+      ASSERT_THROW((void)stream->inquire_variable("var"), dtlmod::UnknownVariableException);
+      XBT_INFO("Inquire 'var' and wait until it is defined");
+      ASSERT_NO_THROW(var = stream->inquire_variable("var", -1));
+      XBT_INFO("Check that we waited for the producer and got the right variable");
+      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 1.0);
+      ASSERT_TRUE(var->get_name() == "var");
+      ASSERT_DOUBLE_EQ(var->get_global_size(), 64 * 64 * 64 * 8);
+      ASSERT_NO_THROW(dtlmod::DTL::disconnect());
+    });
+
+    host_->add_actor("TestProducerActor", [this]() {
+      std::shared_ptr<dtlmod::DTL> dtl;
+      std::shared_ptr<dtlmod::Stream> stream;
+      ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
+      ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
+      sg4::this_actor::sleep_for(1);
+      XBT_INFO("Create a 3D variable");
+      ASSERT_NO_THROW((void)stream->define_variable("var", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
+      ASSERT_NO_THROW(dtlmod::DTL::disconnect());
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLVariableTest, InquireVariableWithTimeout)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    host_->add_actor("TestConsumerActor", [this]() {
+      std::shared_ptr<dtlmod::DTL> dtl;
+      std::shared_ptr<dtlmod::Stream> stream;
+      std::shared_ptr<dtlmod::Variable> var;
+      ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
+      ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
+      XBT_INFO("Inquire 'var' with a timeout larger than the time the producer takes to define it");
+      ASSERT_NO_THROW(var = stream->inquire_variable("var", 5));
+      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 1.0);
+      ASSERT_TRUE(var->get_name() == "var");
+      XBT_INFO("Inquire 'unknown_var' with a timeout. Wakeups on other definitions should not stop the wait");
+      ASSERT_THROW((void)stream->inquire_variable("unknown_var", 2), dtlmod::UnknownVariableException);
+      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 3.0);
+      ASSERT_NO_THROW(dtlmod::DTL::disconnect());
+    });
+
+    host_->add_actor("TestProducerActor", [this]() {
+      std::shared_ptr<dtlmod::DTL> dtl;
+      std::shared_ptr<dtlmod::Stream> stream;
+      ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
+      ASSERT_NO_THROW(stream = dtl->add_stream("Stream"));
+      sg4::this_actor::sleep_for(1);
+      ASSERT_NO_THROW((void)stream->define_variable("var", {64, 64, 64}, {0, 0, 0}, {64, 64, 64}, sizeof(double)));
+      sg4::this_actor::sleep_for(1);
+      ASSERT_NO_THROW((void)stream->define_variable("other_var", {64}, {0}, {64}, sizeof(double)));
+      ASSERT_NO_THROW(dtlmod::DTL::disconnect());
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLVariableTest, GetAllVariables)
 {
   DO_TEST_WITH_FORK([this]() {

@@ -217,7 +217,10 @@ PYBIND11_MODULE(dtlmod, m)
       .def_property_readonly("all_variables", &Stream::get_all_variables, "Retrieve the list of Variables by names")
       .def_property_readonly("metadata_file_name", &Stream::get_metadata_file_name,
                              "The name of the file in which the stream stores metadata (read-only)")
-      .def("inquire_variable", &Stream::inquire_variable, py::arg("name"), "Retrieve a Variable information by name")
+      .def("inquire_variable", &Stream::inquire_variable, py::call_guard<simgrid::SimGridGilGuard>(), py::arg("name"),
+           py::arg("timeout") = 0.0,
+           "Retrieve a Variable information by name. If the Variable is not defined yet, wait for at most 'timeout' "
+           "seconds (0: do not wait, negative: wait forever) before raising an UnknownVariableException")
       .def("remove_variable", &Stream::remove_variable, py::arg("name"), "Remove a Variable from this Stream")
       .def("define_reduction_method", &Stream::define_reduction_method, py::arg("name"),
            "Define a reduction method for this Stream (e.g. 'decimation' or 'compression')");
