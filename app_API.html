@@ -151,13 +151,17 @@
 <code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">main()</span></code> function of your simulator. This function can take as an optional argument a JSON configuration
 file that describes the different <a class="reference internal" href="#concept-streams"><strong>Streams</strong></a> to be created during the simulation each with a <strong>name</strong>,
 <a class="reference internal" href="#concept-engine"><strong>Engine</strong></a> type, <a class="reference internal" href="#concept-transport"><strong>Transport</strong></a> method, and optionally a list of reduction methods and a flag to
-enable metadata export. A minimal stream entry looks like:</p>
+enable metadata export. A stream entry looks like:</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
 <span class="w">  </span><span class="nt">&quot;streams&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
 <span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;my-output&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;engine_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;File&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;transport_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;File&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;engine&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Staging&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;transport_method&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Mailbox&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;simulate_memory_copy&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;open_overhead&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.33</span>
+<span class="w">      </span><span class="p">},</span>
 <span class="w">      </span><span class="nt">&quot;reduction_methods&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;compression&quot;</span><span class="p">],</span>
 <span class="w">      </span><span class="nt">&quot;export_metadata&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span>
 <span class="w">    </span><span class="p">}</span>
@@ -165,6 +169,11 @@ enable metadata export. A minimal stream entry looks like:</p>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>The <code class="docutils literal notranslate"><span class="pre">&quot;engine&quot;</span></code> object is mandatory. Its <code class="docutils literal notranslate"><span class="pre">&quot;type&quot;</span></code> is either <code class="docutils literal notranslate"><span class="pre">&quot;File&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;Staging&quot;</span></code> and its
+<code class="docutils literal notranslate"><span class="pre">&quot;transport_method&quot;</span></code> is either <code class="docutils literal notranslate"><span class="pre">&quot;File&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;Mailbox&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;MQ&quot;</span></code>. It also accepts two optional keys:
+<code class="docutils literal notranslate"><span class="pre">&quot;simulate_memory_copy&quot;</span></code> (a boolean, equivalent to calling <a class="reference internal" href="#_CPPv4N6dtlmod6Stream24set_simulate_memory_copyEb" title="dtlmod::Stream::set_simulate_memory_copy"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::set_simulate_memory_copy</span></code></a>) to simulate a local memory copy before each put, and <code class="docutils literal notranslate"><span class="pre">&quot;open_overhead&quot;</span></code>
+(a non-negative number of seconds, equivalent to calling <a class="reference internal" href="#_CPPv4N6dtlmod6Stream17set_open_overheadEd" title="dtlmod::Stream::set_open_overhead"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::set_open_overhead</span></code></a>) to simulate a fixed delay each time an actor opens the stream. Both are
+disabled by default.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">&quot;reduction_methods&quot;</span></code> array accepts any combination of <code class="docutils literal notranslate"><span class="pre">&quot;decimation&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;compression&quot;</span></code>. Each listed
 method is pre-registered on the stream (equivalent to calling <a class="reference internal" href="#_CPPv4N6dtlmod6Stream23define_reduction_methodERKNSt6stringE" title="dtlmod::Stream::define_reduction_method"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::define_reduction_method</span></code></a>) and can then be applied to individual variables.</p>
 <p>A common in situ processing scenario is that some analyses or visualization are only needed when certain conditions
@@ -477,6 +486,20 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream17set_open_overheadEd">
+<span id="_CPPv3N6dtlmod6Stream17set_open_overheadEd"></span><span id="_CPPv2N6dtlmod6Stream17set_open_overheadEd"></span><span id="dtlmod::Stream::set_open_overhead__double"></span><span class="target" id="classdtlmod_1_1Stream_1aaf9a011458428d82a4e51054ab42c8c6"></span><span class="n"><span class="pre">Stream</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_open_overhead</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">seconds</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream17set_open_overheadEd" title="Link to this definition"></a><br /></dt>
+<dd><p>Stream configuration function: specify a fixed delay to simulate each time an actor opens this Stream, whatever its Engine type and access mode, to account for the setup cost (e.g., connection handshake) of the underlying middleware. Must be called before Stream::open. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>seconds</strong> – the open overhead in seconds (0, the default, means no overhead). </p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The calling Stream (enable method chaining). </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream23define_reduction_methodERKNSt6stringE">
 <span id="_CPPv3N6dtlmod6Stream23define_reduction_methodERKNSt6stringE"></span><span id="_CPPv2N6dtlmod6Stream23define_reduction_methodERKNSt6stringE"></span><span id="dtlmod::Stream::define_reduction_method__ssCR"></span><span class="target" id="classdtlmod_1_1Stream_1a86a7abf7f6c6e91628bccb51fc148cb0"></span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">ReductionMethod</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">define_reduction_method</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">name</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream23define_reduction_methodERKNSt6stringE" title="Link to this definition"></a><br /></dt>
 <dd><p>Define a new reduction method that can be applied to that Stream. </p>
@@ -576,6 +599,17 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 </dd></dl>
 
 <dl class="cpp function">
+<dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream17get_open_overheadEv">
+<span id="_CPPv3NK6dtlmod6Stream17get_open_overheadEv"></span><span id="_CPPv2NK6dtlmod6Stream17get_open_overheadEv"></span><span id="dtlmod::Stream::get_open_overheadC"></span><span class="target" id="classdtlmod_1_1Stream_1aa03c2e951858b751b70b08aa5dedfff8"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="kt"><span class="pre">double</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_open_overhead</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream17get_open_overheadEv" title="Link to this definition"></a><br /></dt>
+<dd><p>Helper function to know the fixed delay simulated each time an actor opens this Stream. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>the open overhead in seconds (0 if no overhead is simulated) </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK6dtlmod6Stream22get_metadata_file_nameEv">
 <span id="_CPPv3NK6dtlmod6Stream22get_metadata_file_nameEv"></span><span id="_CPPv2NK6dtlmod6Stream22get_metadata_file_nameEv"></span><span id="dtlmod::Stream::get_metadata_file_nameC"></span><span class="target" id="classdtlmod_1_1Stream_1a32045b2e5bf6e58dafc344e82428b503"></span><span class="k"><span class="pre">inline</span></span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">string</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">get_metadata_file_name</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Stream22get_metadata_file_nameEv" title="Link to this definition"></a><br /></dt>
 <dd><p>Get the name of the file in which the stream stores metadata. </p>
@@ -609,6 +643,7 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 <p>
 When multiple actors open the same Stream, only the first one to call this function is in charge of creating an Engine object for that Stream. The Engine creation is thus in a critical section. Each actor calling the open() function is considered as a subscriber to the created Engine.</p>
 <p>Both Engine::Type and Transport::Method have to be specified before opening a Stream.</p>
+<p>If an open overhead was set with set_open_overhead(), the calling actor then sleeps for that duration.</p>
 <p>For the FileEngine engine type, name corresponds to a fullpath to where to write data. This fullpath is structured as follows: netzone_name:file_system_name:/path/to/file_name. </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
