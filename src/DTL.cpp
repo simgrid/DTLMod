@@ -18,6 +18,50 @@ namespace sg4 = simgrid::s4u;
 namespace dtlmod {
 
 /// \cond EXCLUDE_FROM_DOCUMENTATION
+namespace {
+Engine::Type parse_engine_type(const nlohmann::json& engine)
+{
+  if (engine["type"] == "File")
+    return Engine::Type::File;
+  if (engine["type"] == "Staging")
+    return Engine::Type::Staging;
+  throw UnknownEngineTypeException(XBT_THROW_POINT, "");
+}
+
+Transport::Method parse_transport_method(const nlohmann::json& engine)
+{
+  if (engine["transport_method"] == "File")
+    return Transport::Method::File;
+  if (engine["transport_method"] == "Mailbox")
+    return Transport::Method::Mailbox;
+  if (engine["transport_method"] == "MQ")
+    return Transport::Method::MQ;
+  throw UnknownTransportMethodException(XBT_THROW_POINT, "");
+}
+
+/// Apply the optional settings of a stream entry of the configuration file to the corresponding Stream.
+void configure_stream_options(Stream& stream, const nlohmann::json& config)
+{
+  const auto& engine = config["engine"];
+  // Check if a local memory copy overhead must be simulated before a put on this stream
+  if (engine.contains("simulate_memory_copy"))
+    stream.set_simulate_memory_copy(engine["simulate_memory_copy"].get<bool>());
+
+  // Check if a fixed delay must be simulated each time an actor opens this stream
+  if (engine.contains("open_overhead"))
+    stream.set_open_overhead(engine["open_overhead"].get<double>());
+
+  // Check if a reduction method must be defined for the stream
+  if (config.contains("reduction_methods"))
+    for (const auto& method : config["reduction_methods"])
+      stream.define_reduction_method(method.get<std::string>());
+
+  // Check if metadata must be exported for this stream
+  if (config.contains("export_metadata") && config["export_metadata"].get<bool>())
+    stream.set_metadata_export();
+}
+} // namespace
+
 DTL::DTL(std::string_view filename)
 {
   // No configuration file has been provided. Nothing else to do
@@ -29,51 +73,18 @@ DTL::DTL(std::string_view filename)
   auto data = nlohmann::json::parse(f);
 
   // Get the list of declared Streams
-  for (auto const& stream : data["streams"]) {
-    // Get the Stream name
-    auto name = stream["name"].get<std::string>();
-    // Parse the Engine type
-    Engine::Type type;
-    if (stream["engine"]["type"] == "File")
-      type = Engine::Type::File;
-    else if (stream["engine"]["type"] == "Staging")
-      type = Engine::Type::Staging;
-    else
-      throw UnknownEngineTypeException(XBT_THROW_POINT, "");
-
-    // Parse the Transport Method
-    Transport::Method transport_method;
-    if (stream["engine"]["transport_method"] == "File")
-      transport_method = Transport::Method::File;
-    else if (stream["engine"]["transport_method"] == "Mailbox")
-      transport_method = Transport::Method::Mailbox;
-    else if (stream["engine"]["transport_method"] == "MQ")
-      transport_method = Transport::Method::MQ;
-    else
-      throw UnknownTransportMethodException(XBT_THROW_POINT, "");
+  for (auto const& config : data["streams"]) {
+    auto name             = config["name"].get<std::string>();
+    auto type             = parse_engine_type(config["engine"]);
+    auto transport_method = parse_transport_method(config["engine"]);
 
     // If the Stream doesn't exist yet, create it
     if (streams_.find(name) == streams_.end())
       streams_.try_emplace(name, std::make_shared<Stream>(name, this));
     // And set its engine type and transport method
-    streams_[name]->set_engine_type(type).set_transport_method(transport_method);
-
-    // Check if a local memory copy overhead must be simulated before a put on this stream
-    if (stream["engine"].contains("simulate_memory_copy"))
-      streams_[name]->set_simulate_memory_copy(stream["engine"]["simulate_memory_copy"].get<bool>());
-
-    // Check if a fixed delay must be simulated each time an actor opens this stream
-    if (stream["engine"].contains("open_overhead"))
-      streams_[name]->set_open_overhead(stream["engine"]["open_overhead"].get<double>());
-
-    // Check if a reduction method must be defined for the stream
-    if (stream.contains("reduction_methods"))
-      for (const auto& method : stream["reduction_methods"])
-        streams_[name]->define_reduction_method(method.get<std::string>());
-
-    // Check if metadata must be exported for this stream
-    if (stream.contains("export_metadata") && stream["export_metadata"].get<bool>())
-      streams_[name]->set_metadata_export();
+    auto& stream = *streams_[name];
+    stream.set_engine_type(type).set_transport_method(transport_method);
+    configure_stream_options(stream, config);
   }
 }
 
