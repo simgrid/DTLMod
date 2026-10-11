@@ -62,15 +62,18 @@ DTL::DTL(std::string_view filename)
     if (stream["engine"].contains("simulate_memory_copy"))
       streams_[name]->set_simulate_memory_copy(stream["engine"]["simulate_memory_copy"].get<bool>());
 
+    // Check if a fixed delay must be simulated each time an actor opens this stream
+    if (stream["engine"].contains("open_overhead"))
+      streams_[name]->set_open_overhead(stream["engine"]["open_overhead"].get<double>());
+
     // Check if a reduction method must be defined for the stream
     if (stream.contains("reduction_methods"))
       for (const auto& method : stream["reduction_methods"])
         streams_[name]->define_reduction_method(method.get<std::string>());
 
     // Check if metadata must be exported for this stream
-    if (stream.contains("export_metadata")) {
+    if (stream.contains("export_metadata") && stream["export_metadata"].get<bool>())
       streams_[name]->set_metadata_export();
-    }
   }
 }
 

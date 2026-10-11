@@ -322,6 +322,75 @@ TEST_F(DTLStagingEngineTest, MultiplePubSingleSubMailbox)
   });
 }
 
+TEST_F(DTLStagingEngineTest, MultiplePubMultipleSubWithOpenOverhead)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    std::vector<sg4::Host*> pub_hosts = {sg4::Host::by_name("host-0.prod"), sg4::Host::by_name("host-1.prod")};
+    std::vector<sg4::Host*> sub_hosts = {sg4::Host::by_name("host-0.cons"), sg4::Host::by_name("host-1.cons")};
+
+    for (long unsigned int i = 0; i < 2; i++) {
+      pub_hosts[i]->add_actor("Pub" + std::to_string(i), [this, i]() {
+        auto dtl    = dtlmod::DTL::connect();
+        auto stream = dtl->add_stream("my-output");
+        stream->set_engine_type(dtlmod::Engine::Type::Staging);
+        stream->set_transport_method(dtlmod::Transport::Method::Mailbox);
+        XBT_INFO("Simulate a 0.33 second overhead each time an actor opens this Stream");
+        ASSERT_NO_THROW(stream->set_open_overhead(0.33));
+        auto var = stream->define_variable("var", {10000, 10000}, {0, 2500 * 3 * i}, {10000, 7500 - (5000 * i)},
+                                           sizeof(double));
+        double open_start = sg4::Engine::get_clock();
+        auto engine       = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+        XBT_INFO("Opening the stream took %g seconds", sg4::Engine::get_clock() - open_start);
+        // All actors open the stream at time 0 and pay the overhead concurrently, not one after the other.
+        ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 0.33);
+
+        XBT_INFO("Start a Transaction");
+        ASSERT_NO_THROW(engine->begin_transaction());
+        XBT_INFO("Put Variable 'var' into the DTL");
+        ASSERT_NO_THROW(engine->put(var));
+        XBT_INFO("End a Transaction");
+        ASSERT_NO_THROW(engine->end_transaction());
+
+        XBT_INFO("Close the engine");
+        ASSERT_NO_THROW(engine->close());
+        XBT_INFO("Disconnect the actor");
+        dtlmod::DTL::disconnect();
+      });
+    }
+
+    for (long unsigned int i = 0; i < 2; i++) {
+      sub_hosts[i]->add_actor("Sub" + std::to_string(i), [this, i]() {
+        auto dtl          = dtlmod::DTL::connect();
+        auto stream       = dtl->add_stream("my-output");
+        double open_start = sg4::Engine::get_clock();
+        auto engine       = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+        XBT_INFO("Opening the stream took %g seconds", sg4::Engine::get_clock() - open_start);
+        ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), 0.33);
+        auto var_sub = stream->inquire_variable("var");
+
+        XBT_INFO("Set a selection for 'var_sub': get 3/4 and 1/4 of the first dimension respectively");
+        ASSERT_NO_THROW(var_sub->set_selection({2500 * 3 * i, 0}, {7500 - (5000 * i), 10000}));
+        XBT_INFO("Start a Transaction");
+        ASSERT_NO_THROW(engine->begin_transaction());
+        XBT_INFO("Get the Variable 'var_sub' from the DTL");
+        ASSERT_NO_THROW(engine->get(var_sub));
+        XBT_INFO("End a Transaction");
+        ASSERT_NO_THROW(engine->end_transaction());
+        ASSERT_DOUBLE_EQ(var_sub->get_local_size(), 8. * 10000 * 10000 * (3 - 2 * i) / 4);
+
+        XBT_INFO("Close the engine");
+        ASSERT_NO_THROW(engine->close());
+        XBT_INFO("Disconnect the actor");
+        dtlmod::DTL::disconnect();
+      });
+    }
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
 TEST_F(DTLStagingEngineTest, MetadataExport)
 {
   DO_TEST_WITH_FORK([this]() {

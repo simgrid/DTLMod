@@ -8,7 +8,7 @@ import sys
 import multiprocessing
 from simgrid import Engine, this_actor
 from fsmod import FileSystem, OneDiskStorage
-from dtlmod import DTL, Stream, Transport, Engine as DTLEngine
+from dtlmod import DTL, Stream, Transport, Engine as DTLEngine, InvalidOpenOverheadException
 
 # Locate DTL-config.json relative to this script rather than to the current working directory, so the test can be
 # launched from anywhere. CMake stages the file under <build>/config_files/test/ (canonical, used by CI); the second
@@ -52,8 +52,12 @@ def run_test_config_file():
         dtl = DTL.connect()
         this_actor.info("Create a stream")
         stream = dtl.add_stream("Stream1")
+        this_actor.info("Check that opening this stream is set to take 0.33 second")
+        assert stream.open_overhead == 0.33
         this_actor.info("Open the stream")
+        open_start = e.clock
         engine = stream.open("root:fs:/scratch/file", Stream.Mode.Publish)
+        assert abs(e.clock - open_start - 0.33) < 1e-9
         this_actor.info(f"Stream 1 is opened ({stream.engine_type},{stream.transport_method})")
         assert stream.engine_type == DTLEngine.Type.File
         assert stream.transport_method == Transport.Method.File
@@ -72,8 +76,20 @@ def run_test_config_file():
         stream = dtl.stream_by_name("Stream2")
         this_actor.info("Try to get a stream by name from the DTL that doesn't exist. Should return None")
         assert None == dtl.stream_by_name("Unknown Stream")
+        this_actor.info("Check if this stream is set to export metadata (it is not, \"export_metadata\" is false)")
+        assert False == stream.metadata_export
+        this_actor.info("This stream has no open overhead (the default)")
+        assert stream.open_overhead == 0
+        this_actor.info("Try to set a negative open overhead. Should raise an InvalidOpenOverheadException")
+        try:
+            stream.set_open_overhead(-1)
+            assert False, "set_open_overhead(-1) should have raised"
+        except InvalidOpenOverheadException:
+            pass
         this_actor.info("Open the stream")
+        open_start = e.clock
         engine = stream.open("staging", Stream.Mode.Publish)
+        assert e.clock == open_start
         this_actor.info(f"Stream 1 is opened ({stream.engine_type_str},{stream.transport_method_str})")
         assert stream.engine_type == DTLEngine.Type.Staging
         assert stream.transport_method == Transport.Method.MQ

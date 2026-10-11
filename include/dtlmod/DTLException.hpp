@@ -44,6 +44,7 @@ DECLARE_DTLMOD_EXCEPTION(MultipleTransportMethodException,
 DECLARE_DTLMOD_EXCEPTION(InvalidEngineAndTransportCombinationException,
                          "Invalid combination between Engine::Type and Transport::Method");
 DECLARE_DTLMOD_EXCEPTION(OpenStreamFailureException, "Failed to open Stream");
+DECLARE_DTLMOD_EXCEPTION(InvalidOpenOverheadException, "Open overhead must be a non-negative number of seconds");
 
 DECLARE_DTLMOD_EXCEPTION(UnknownOpenModeException, "Unknown open mode. Should be Publish or Subscribe");
 

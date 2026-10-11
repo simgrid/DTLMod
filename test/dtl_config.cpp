@@ -65,8 +65,12 @@ TEST_F(DTLConfigTest, ConfigFile)
       ASSERT_NO_THROW(dtl = dtlmod::DTL::connect());
       XBT_INFO("Create a stream");
       ASSERT_NO_THROW(stream = dtl->add_stream("Stream1"));
+      XBT_INFO("Check that opening this stream is set to take 0.33 second");
+      ASSERT_DOUBLE_EQ(stream->get_open_overhead(), 0.33);
       XBT_INFO("Open the stream");
+      double open_start = sg4::Engine::get_clock();
       ASSERT_NO_THROW(engine = stream->open("root:fs:/scratch/file", dtlmod::Stream::Mode::Publish));
+      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock() - open_start, 0.33);
       XBT_INFO("Stream 1 is opened (%s, %s)", stream->get_engine_type_str().value_or("Unknown"),
                stream->get_transport_method_str().value_or("Unknown"));
       ASSERT_TRUE(strcmp(stream->get_engine_type_str().value(), "Engine::Type::File") == 0);
@@ -87,8 +91,16 @@ TEST_F(DTLConfigTest, ConfigFile)
       ASSERT_NO_THROW(stream = dtl->get_stream_by_name("Stream2").value());
       XBT_INFO("Try to get a stream by name from the DTL that doesn't exist. Should return std::nullopt");
       ASSERT_FALSE(dtl->get_stream_by_name("Unknown Stream").has_value());
+      XBT_INFO("Check if this stream is set to export metadata (it is not, \"export_metadata\" is false)");
+      ASSERT_FALSE(stream->does_export_metadata());
+      XBT_INFO("This stream has no open overhead (the default)");
+      ASSERT_DOUBLE_EQ(stream->get_open_overhead(), 0.);
+      XBT_INFO("Try to set a negative open overhead. Should throw an InvalidOpenOverheadException");
+      ASSERT_THROW(stream->set_open_overhead(-1), dtlmod::InvalidOpenOverheadException);
       XBT_INFO("Open the stream");
+      open_start = sg4::Engine::get_clock();
       ASSERT_NO_THROW(engine = stream->open("staging", dtlmod::Stream::Mode::Publish));
+      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock() - open_start, 0.);
       XBT_INFO("Stream 2 is opened (%s, %s)", stream->get_engine_type_str().value_or("Unknown"),
                stream->get_transport_method_str().value_or("Unknown"));
       ASSERT_TRUE(strcmp(stream->get_engine_type_str().value(), "Engine::Type::Staging") == 0);

@@ -17,6 +17,19 @@ Improvements:
       Note: applies to Engine::put() only, not Engine::get()
     - Exposed in the Python bindings as Stream.set_simulate_memory_copy() and
       the read-only Stream.simulate_memory_copy property
+  - Optional simulation of a fixed overhead when opening a Stream, to account
+    for the setup cost (e.g., connection handshake) of the underlying
+    middleware
+    - Every actor calling Stream::open() sleeps for that duration, whatever the
+      Engine type and the access mode (publishers and subscribers alike).
+      Actors opening the same Stream concurrently pay it in parallel
+    - Off by default (0 second). Set per Stream with the new
+      Stream::set_open_overhead(double seconds) (must be called before
+      Stream::open()), or via a new "open_overhead" number (in seconds) in the
+      "engine" section of the DTL configuration file. A negative value raises
+      the new InvalidOpenOverheadException
+    - Exposed in the Python bindings as Stream.set_open_overhead(), the
+      read-only Stream.open_overhead property, and InvalidOpenOverheadException
   - End-of-stream signaling. Once the last publisher closes an engine, a
     subscriber that requests a transaction which was never produced is now
     released with a new EndOfStreamException instead of blocking forever
@@ -79,6 +92,9 @@ Bug Fixes:
   - pub_close() and sub_close() canceled the leftover activities
     unconditionally, flipping the state of those that had already completed
     and firing their completion callbacks a second time
+  - The "export_metadata" key of the DTL configuration file enabled metadata
+    export whatever its value, as only its presence was checked. Setting it to
+    false now leaves metadata export disabled
 
 ----------------------------------------------------------------------------
 

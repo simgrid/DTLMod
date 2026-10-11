@@ -28,7 +28,7 @@ A |Concept_DTL|_ is created by calling :cpp:func:`DTL::create() <dtlmod::DTL::cr
 :cpp:func:`main()` function of your simulator. This function can take as an optional argument a JSON configuration
 file that describes the different |Concept_Streams|_ to be created during the simulation each with a **name**,
 |Concept_Engine|_ type, |Concept_Transport|_ method, and optionally a list of reduction methods and a flag to
-enable metadata export. A minimal stream entry looks like:
+enable metadata export. A stream entry looks like:
 
 .. code-block:: json
 
@@ -36,13 +36,25 @@ enable metadata export. A minimal stream entry looks like:
      "streams": [
        {
          "name": "my-output",
-         "engine_type": "File",
-         "transport_method": "File",
+         "engine": {
+           "type": "Staging",
+           "transport_method": "Mailbox",
+           "simulate_memory_copy": true,
+           "open_overhead": 0.33
+         },
          "reduction_methods": ["compression"],
          "export_metadata": true
        }
      ]
    }
+
+The ``"engine"`` object is mandatory. Its ``"type"`` is either ``"File"`` or ``"Staging"`` and its
+``"transport_method"`` is either ``"File"``, ``"Mailbox"``, or ``"MQ"``. It also accepts two optional keys:
+``"simulate_memory_copy"`` (a boolean, equivalent to calling :cpp:func:`Stream::set_simulate_memory_copy
+<dtlmod::Stream::set_simulate_memory_copy()>`) to simulate a local memory copy before each put, and ``"open_overhead"``
+(a non-negative number of seconds, equivalent to calling :cpp:func:`Stream::set_open_overhead
+<dtlmod::Stream::set_open_overhead()>`) to simulate a fixed delay each time an actor opens the stream. Both are
+disabled by default.
 
 The ``"reduction_methods"`` array accepts any combination of ``"decimation"`` and ``"compression"``. Each listed
 method is pre-registered on the stream (equivalent to calling :cpp:func:`Stream::define_reduction_method
@@ -318,6 +330,7 @@ Configuration
       .. doxygenfunction:: dtlmod::Stream::set_metadata_export()
       .. doxygenfunction:: dtlmod::Stream::unset_metadata_export()
       .. doxygenfunction:: dtlmod::Stream::set_simulate_memory_copy(bool value)
+      .. doxygenfunction:: dtlmod::Stream::set_open_overhead(double seconds)
       .. doxygenfunction:: dtlmod::Stream::define_reduction_method(const std::string& name)
 
    .. group-tab:: Python
@@ -327,6 +340,7 @@ Configuration
       .. automethod:: dtlmod.Stream.set_metadata_export
       .. automethod:: dtlmod.Stream.unset_metadata_export
       .. automethod:: dtlmod.Stream.set_simulate_memory_copy
+      .. automethod:: dtlmod.Stream.set_open_overhead
       .. automethod:: dtlmod.Stream.define_reduction_method
 
 Properties
@@ -342,6 +356,7 @@ Properties
       .. doxygenfunction:: dtlmod::Stream::get_access_mode_str() const
       .. doxygenfunction:: dtlmod::Stream::does_export_metadata() const
       .. doxygenfunction:: dtlmod::Stream::should_simulate_memory_copy() const
+      .. doxygenfunction:: dtlmod::Stream::get_open_overhead() const
       .. doxygenfunction:: dtlmod::Stream::get_metadata_file_name() const
       .. doxygenfunction:: dtlmod::Stream::get_reduction_method(std::string_view name) const
 
@@ -354,6 +369,7 @@ Properties
       .. autoproperty:: dtlmod.Stream.access_mode
       .. autoproperty:: dtlmod.Stream.metadata_export
       .. autoproperty:: dtlmod.Stream.simulate_memory_copy
+      .. autoproperty:: dtlmod.Stream.open_overhead
       .. autoproperty:: dtlmod.Stream.metadata_file_name
 
 Engine factory

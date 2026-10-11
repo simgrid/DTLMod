@@ -47,6 +47,7 @@ private:
   Transport::Method transport_method_ = Transport::Method::Undefined;
   bool metadata_export_               = false;
   bool simulate_memory_copy_          = false;
+  double open_overhead_               = 0.0;
   std::string metadata_file_;
   std::unordered_map<std::string, std::string> var_prog_file_paths_; // variable name -> prog file path
   bool metadata_exported_ = false; // true once export_metadata_to_file() has been called
@@ -133,6 +134,9 @@ public:
   ///        Stream before a put.
   /// @return a boolean indicating if the memory copy overhead must be simulated or not
   [[nodiscard]] bool should_simulate_memory_copy() const noexcept { return simulate_memory_copy_; }
+  /// @brief Helper function to know the fixed delay simulated each time an actor opens this Stream.
+  /// @return the open overhead in seconds (0 if no overhead is simulated)
+  [[nodiscard]] double get_open_overhead() const noexcept { return open_overhead_; }
 
   /// @brief Stream configuration function: set the Engine type to create.
   /// @param engine_type The type of Engine to create when opening the Stream.
@@ -153,6 +157,12 @@ public:
   /// @param value true to simulate the memory copy overhead, false otherwise.
   /// @return The calling Stream (enable method chaining).
   Stream& set_simulate_memory_copy(bool value) noexcept;
+  /// @brief Stream configuration function: specify a fixed delay to simulate each time an actor opens this Stream,
+  ///        whatever its Engine type and access mode, to account for the setup cost (e.g., connection handshake) of
+  ///        the underlying middleware. Must be called before Stream::open.
+  /// @param seconds the open overhead in seconds (0, the default, means no overhead).
+  /// @return The calling Stream (enable method chaining).
+  Stream& set_open_overhead(double seconds);
   /// @brief Get the name of the file in which the stream stores metadata
   /// @return The name of the file.
   [[nodiscard]] const std::string& get_metadata_file_name() const noexcept { return metadata_file_; }

@@ -160,6 +160,14 @@ Stream& Stream::set_simulate_memory_copy(bool value) noexcept
   return *this;
 }
 
+Stream& Stream::set_open_overhead(double seconds)
+{
+  if (seconds < 0)
+    throw InvalidOpenOverheadException(XBT_THROW_POINT, std::to_string(seconds));
+  open_overhead_ = seconds;
+  return *this;
+}
+
 void Stream::export_metadata_to_file()
 {
   metadata_exported_ = true;
@@ -273,6 +281,8 @@ void Stream::register_actor_with_engine(Mode mode) const
 ///
 /// Both Engine::Type and Transport::Method have to be specified before opening a Stream.
 ///
+/// If an open overhead was set with set_open_overhead(), the calling actor then sleeps for that duration.
+///
 /// For the FileEngine engine type, name corresponds to a fullpath to where to write data. This fullpath is
 /// structured as follows: netzone_name:file_system_name:/path/to/file_name.
 std::shared_ptr<Engine> Stream::open(std::string_view name, Mode mode)
@@ -280,6 +290,10 @@ std::shared_ptr<Engine> Stream::open(std::string_view name, Mode mode)
   validate_open_parameters(name, mode);
   create_engine_if_needed(name, mode);
   register_actor_with_engine(mode);
+  // Simulate the setup cost of the middleware. Done outside of the critical section of create_engine_if_needed() so
+  // that actors opening this Stream concurrently pay this overhead in parallel.
+  if (open_overhead_ > 0)
+    sg4::this_actor::sleep_for(open_overhead_);
   XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(),
             get_engine_type_str().value_or("Unknown"), get_transport_method_str().value_or("Unknown"),
             engine_->get_publishers().count(), engine_->get_subscribers().count());

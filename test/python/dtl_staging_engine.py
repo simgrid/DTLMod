@@ -263,12 +263,69 @@ def run_test_multiple_pub_single_sub_mailbox():
 
     e.run()
 
+def run_test_multiple_pub_multiple_sub_with_open_overhead():
+    e = setup_platform()
+
+    def pub_test_actor(id):
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output").set_engine_type(DTLEngine.Type.Staging).set_transport_method(Transport.Method.Mailbox)
+        this_actor.info("Simulate a 0.33 second overhead each time an actor opens this Stream")
+        stream.set_open_overhead(0.33)
+        assert stream.open_overhead == 0.33
+        var = stream.define_variable("var", (10000, 10000), (0, 2500 * 3 * id), (10000, 7500 - (5000 * id)), ctypes.sizeof(ctypes.c_double))
+        open_start = e.clock
+        engine = stream.open("my-output", Stream.Mode.Publish)
+        this_actor.info(f"Opening the stream took {e.clock - open_start} seconds")
+        # All actors open the stream at time 0 and pay the overhead concurrently, not one after the other.
+        assert abs(e.clock - 0.33) < 1e-9
+
+        this_actor.info("Start a transaction")
+        engine.begin_transaction()
+        engine.put(var, var.local_size)
+        this_actor.info("End the transaction")
+        engine.end_transaction()
+
+        this_actor.info("Close the engine")
+        engine.close()
+        this_actor.info("Disconnect from the DTL")
+        DTL.disconnect()
+
+    def sub_test_actor(id):
+        dtl = DTL.connect()
+        stream = dtl.add_stream("my-output")
+        open_start = e.clock
+        engine = stream.open("my-output", Stream.Mode.Subscribe)
+        this_actor.info(f"Opening the stream took {e.clock - open_start} seconds")
+        assert abs(e.clock - 0.33) < 1e-9
+        var_sub = stream.inquire_variable("var")
+
+        this_actor.info("Set a selection for 'var_sub': get 3/4 and 1/4 of the first dimension respectively")
+        var_sub.set_selection((2500 * 3 * id , 0), (7500 - (5000 * id), 10000))
+        this_actor.info("Start a transaction")
+        engine.begin_transaction()
+        engine.get(var_sub)
+        this_actor.info("End the transaction")
+        engine.end_transaction()
+        assert var_sub.local_size == 8 * 10000 * 10000 * (3 - 2 * id) / 4
+
+        this_actor.info("Close the engine")
+        engine.close()
+        this_actor.info("Disconnect from the DTL")
+        DTL.disconnect()
+
+    for i in range(2):
+        Host.by_name(f"host-{i}.prod").add_actor(f"PubTestActor{i}", pub_test_actor, i)
+        Host.by_name(f"host-{i}.cons").add_actor(f"SubTestActor{i}", sub_test_actor, i)
+
+    e.run()
+
 if __name__ == '__main__':
     tests = [
         run_test_single_pub_single_sub_same_cluster,
         run_test_single_pub_single_sub_same_cluster_with_simulated_memory_copy,
         run_test_multiple_pub_single_sub_message_queue,
-        run_test_multiple_pub_single_sub_mailbox
+        run_test_multiple_pub_single_sub_mailbox,
+        run_test_multiple_pub_multiple_sub_with_open_overhead
     ]
 
     all_passed = True

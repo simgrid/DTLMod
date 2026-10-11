@@ -66,6 +66,7 @@ PYBIND11_MODULE(dtlmod, m)
   py::register_exception<dtlmod::InvalidEngineAndTransportCombinationException>(
       m, "InvalidEngineAndTransportCombinationException");
   py::register_exception<dtlmod::OpenStreamFailureException>(m, "OpenStreamFailureException");
+  py::register_exception<dtlmod::InvalidOpenOverheadException>(m, "InvalidOpenOverheadException");
 
   py::register_exception<dtlmod::UnknownOpenModeException>(m, "UnknownOpenModeException");
 
@@ -181,6 +182,8 @@ PYBIND11_MODULE(dtlmod, m)
       .def_property_readonly("simulate_memory_copy", &Stream::should_simulate_memory_copy,
                              "Do Engines opened on this Stream simulate a local memory copy overhead before a put "
                              "(read only)")
+      .def_property_readonly("open_overhead", &Stream::get_open_overhead,
+                             "Fixed delay (in seconds) simulated each time an actor opens this Stream (read only)")
       .def("set_engine_type", &Stream::set_engine_type, py::arg("type"),
            "Set the engine type associated to this Stream")
       .def("set_transport_method", &Stream::set_transport_method, py::arg("method"),
@@ -192,6 +195,9 @@ PYBIND11_MODULE(dtlmod, m)
       .def("set_simulate_memory_copy", &Stream::set_simulate_memory_copy, py::arg("value"),
            "Specify whether Engines opened on this Stream should simulate a local memory copy overhead before a "
            "put. Must be called before Stream.open")
+      .def("set_open_overhead", &Stream::set_open_overhead, py::arg("seconds"),
+           "Specify a fixed delay (in seconds) to simulate each time an actor opens this Stream, whatever its engine "
+           "type and access mode. Must be called before Stream.open")
       // Engine factory
       .def("open", &Stream::open, py::arg("name"), py::call_guard<simgrid::SimGridGilGuard>(), py::arg("mode"),
            "Open a Stream and create an Engine")
