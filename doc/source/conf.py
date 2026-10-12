@@ -17,7 +17,7 @@ if read_the_docs_build:
 
 # -- Project information -----------------------------------------------------
 
-version = u'0.2.0'
+version = u'0.6'
 project = u'DTLMod'
 copyright = u'2022-2026, The SWAT Team'
 author = u'The SWAT Team'
