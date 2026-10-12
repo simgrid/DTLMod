@@ -135,6 +135,50 @@ public:
 
     dtlmod::DTL::create();
   }
+  // A publisher writes a 8MB Variable in a single transaction on node-0's slow local disk (8s), that a subscriber then
+  // reads back (8s more). A canceller cancels that transaction at cancel_time. Whether the subscriber's
+  // end_transaction() threw a TransactionCanceledException is reported in sub_canceled, to be checked once the
+  // simulation is over: an assertion in the actor would not run (and thus not fail) if the subscriber blocked.
+  static void cancel_while_subscriber_reads(double cancel_time, bool& sub_canceled)
+  {
+    sg4::Host::by_name("node-0")->add_actor("PubTestActor", [cancel_time]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto engine = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Publish);
+
+      sg4::Host::by_name("node-2")->add_actor("Canceller", [engine, cancel_time]() {
+        sg4::this_actor::sleep_for(cancel_time);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+      sg4::this_actor::sleep_for(20.0); // stay alive until the transaction is canceled
+      dtlmod::DTL::disconnect();
+    });
+
+    sg4::Host::by_name("node-1")->add_actor("SubTestActor", [&sub_canceled]() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+      engine->begin_transaction();
+      engine->get(var_sub);
+      XBT_INFO("End T1 (will block waiting for the writes, then for the reads on the slow disk)");
+      try {
+        engine->end_transaction();
+      } catch (const dtlmod::TransactionCanceledException&) {
+        XBT_INFO("Subscriber caught TransactionCanceledException in T1 end_transaction() as expected");
+        sub_canceled = true;
+      }
+      dtlmod::DTL::disconnect();
+    });
+  }
 };
 
 // Publisher is stuck in begin_transaction() waiting for a subscriber that never shows up.
@@ -685,54 +729,32 @@ TEST_F(DTLCancelTest, CancelFileEngineTransaction_SubWaitingForPubWrites)
   });
 }
 
-// Publisher writes 8MB to slow disk (~2.67s on 3MBps RAID5). Writes complete before the cancel at 4s.
-// Subscriber starts reading after writes complete; canceller fires at 4s during the slow reads
-// (FileEngine lines 31, 250-258). Subscriber's end_transaction() catches TransactionCanceledException.
+// Publisher writes 8MB to node-0's slow local disk (1MBps), which takes 8s. The subscriber then reads them back, which
+// takes another 8s. The canceller fires at 12s, i.e., during the reads: the read activities are canceled and the
+// subscriber's end_transaction() throws a TransactionCanceledException. Cancelling before 8s would release the
+// subscriber while it waits for the writes instead (see CancelFileEngineTransaction_SubWaitingForPubWrites).
 TEST_F(DTLCancelTest, CancelFileEngineTransaction_SubMidRead)
 {
   DO_TEST_WITH_FORK([this]() {
     this->setup_slow_file_platform();
-    auto* pub_host  = sg4::Host::by_name("node-0");
-    auto* sub_host  = sg4::Host::by_name("node-1");
-    auto* wdog_host = sg4::Host::by_name("node-2");
-
-    pub_host->add_actor("PubTestActor", [wdog_host]() {
-      auto dtl    = dtlmod::DTL::connect();
-      auto stream = dtl->add_stream("my-output");
-      stream->set_transport_method(dtlmod::Transport::Method::File);
-      stream->set_engine_type(dtlmod::Engine::Type::File);
-      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
-      auto engine = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Publish);
-
-      wdog_host->add_actor("Canceller", [engine]() {
-        sg4::this_actor::sleep_for(4.0); // after writes finish (~2.67s) but during reads
-        XBT_INFO("Cancelling the transaction");
-        engine->cancel_transaction(engine->get_current_transaction());
-      });
-
-      ASSERT_NO_THROW(engine->begin_transaction());
-      ASSERT_NO_THROW(engine->put(var));
-      ASSERT_NO_THROW(engine->end_transaction());
-      sg4::this_actor::sleep_for(10.0);
-      dtlmod::DTL::disconnect();
-    });
-
-    sub_host->add_actor("SubTestActor", []() {
-      auto dtl     = dtlmod::DTL::connect();
-      auto stream  = dtl->add_stream("my-output");
-      auto engine  = stream->open("cluster:my_fs:/node-0/scratch/my-output", dtlmod::Stream::Mode::Subscribe);
-      auto var_sub = stream->inquire_variable("var");
-
-      // T1: begin/get/end — end_transaction blocks during slow reads, canceled at 4s
-      ASSERT_NO_THROW(engine->begin_transaction());
-      ASSERT_NO_THROW(engine->get(var_sub));
-      XBT_INFO("End T1 (will block waiting for reads to complete on slow disk)");
-      ASSERT_THROW(engine->end_transaction(), dtlmod::TransactionCanceledException);
-      XBT_INFO("Subscriber caught TransactionCanceledException in T1 end_transaction() as expected");
-      dtlmod::DTL::disconnect();
-    });
-
+    bool sub_canceled = false;
+    cancel_while_subscriber_reads(12.0, sub_canceled);
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_TRUE(sub_canceled);
+  });
+}
+
+// Same scenario, but the canceller fires at 16s, exactly when the reads complete. The subscriber is woken up by the
+// completion of its reads, but the canceller runs first: the reads were not canceled, yet the transaction is. The
+// subscriber's end_transaction() must still throw a TransactionCanceledException.
+TEST_F(DTLCancelTest, CancelFileEngineTransaction_SubReadsCompleteWhenCanceled)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_slow_file_platform();
+    bool sub_canceled = false;
+    cancel_while_subscriber_reads(16.0, sub_canceled);
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_TRUE(sub_canceled);
   });
 }
 

@@ -264,8 +264,9 @@ void FileEngine::end_sub_transaction()
   try {
     file_sub_transaction_[self].wait_all();
   } catch (const simgrid::CancelException&) {
+    // The reads can only be canceled through cancel_transaction()
     if (!is_canceled())
-      throw;
+      throw; // LCOV_EXCL_LINE
     drain(file_sub_transaction_[self]);
     transport->close_sub_files(self);
     transport->clear_to_read_in_transaction(self);
