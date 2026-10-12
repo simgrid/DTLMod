@@ -15,10 +15,12 @@ namespace sg4 = simgrid::s4u;
 
 namespace dtlmod {
 
+/// \cond EXCLUDE_FROM_DOCUMENTATION
 Engine::Engine(const std::string& name, std::shared_ptr<Stream> stream, Type type)
     : name_(name), type_(type), stream_(stream), simulate_memory_copy_(stream->should_simulate_memory_copy())
 {
 }
+/// \endcond
 
 ////////////////////////////////////////////
 ///////////// PUBLIC INTERFACE /////////////

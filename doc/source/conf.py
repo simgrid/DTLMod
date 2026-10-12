@@ -93,7 +93,6 @@ html_css_files = [
 ]
 html_theme_options = {
     'logo_only': True,
-    'display_version': True,
 }
 
 # -- Extension configuration -------------------------------------------------

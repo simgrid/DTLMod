@@ -65,6 +65,7 @@ public:
   [[nodiscard]] bool is_last_at_barrier() { return barrier_ && barrier_->wait(); }
   [[nodiscard]] sg4::MutexPtr get_mutex() noexcept { return mutex_; };
 };
+/// \endcond
 
 } // namespace dtlmod
 #endif

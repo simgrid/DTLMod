@@ -127,7 +127,6 @@ public:
   [[nodiscard]] std::optional<std::shared_ptr<ReductionMethod>>
   get_reduction_method(std::string_view name) const noexcept;
   /// @brief Helper function to know if the Stream does export metadata or not
-  /// @param name the name of the reduction method
   /// @return a boolean indicating if the Stream does export metadata or not
   [[nodiscard]] bool does_export_metadata() const noexcept { return metadata_export_; }
   /// @brief Helper function to know if a local memory copy overhead should be simulated by Engines opened on this
