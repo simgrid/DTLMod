@@ -78,13 +78,16 @@ def setup_file_platform():
     return e
 
 
-def make_publisher(engine_type, method, engine_name, n_tx):
+def make_publisher(engine_type, method, engine_name, n_tx, delay_before_close=0):
     def pub_actor():
         dtl = DTL.connect()
         stream = dtl.add_stream("my-output")
         stream.set_engine_type(engine_type).set_transport_method(method)
         var = stream.define_variable("var", (100, 100), (0, 0), (100, 100), ctypes.sizeof(ctypes.c_double))
         engine = stream.open(engine_name, Stream.Mode.Publish)
+        # Stay open long enough for the subscriber to open the stream before this publisher closes
+        if delay_before_close > 0:
+            this_actor.sleep_for(delay_before_close)
         for _ in range(n_tx):
             engine.begin_transaction()
             engine.put(var)
@@ -162,12 +165,26 @@ def run_test_file_engine_single_subscriber():
     assert result["reads"] == 2, f'read {result["reads"]} transactions, expected 2'
 
 
+def run_test_staging_publishers_close_without_transaction():
+    # Publishers that close without ever starting a transaction must also signal the end of stream
+    e = setup_staging_platform()
+    result = {"reads": 0, "eos": False}
+    for p in range(2):
+        Host.by_name(f"host-{p}.prod").add_actor(
+            f"Pub{p}", make_publisher(DTLEngine.Type.Staging, Transport.Method.MQ, "my-output", 0, 1))
+    Host.by_name("host-0.cons").add_actor("Sub", make_subscriber("my-output", result))
+    e.run()
+    assert result["eos"], "subscriber did not reach end of stream"
+    assert result["reads"] == 0, f'read {result["reads"]} transactions, expected 0'
+
+
 if __name__ == '__main__':
     tests = [
         run_test_staging_single_subscriber_mq,
         run_test_staging_single_subscriber_mailbox,
         run_test_staging_multiple_subscribers_mq,
         run_test_file_engine_single_subscriber,
+        run_test_staging_publishers_close_without_transaction,
     ]
 
     all_passed = True

@@ -14,6 +14,7 @@
 
 #include "./test_util.hpp"
 #include "dtlmod/DTL.hpp"
+#include "dtlmod/DTLException.hpp"
 
 XBT_LOG_NEW_DEFAULT_CATEGORY(dtlmod_test_staging_engine, "Logging category for this dtlmod test");
 
@@ -387,6 +388,56 @@ TEST_F(DTLStagingEngineTest, MultiplePubMultipleSubWithOpenOverhead)
     }
 
     // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+TEST_F(DTLStagingEngineTest, LastPublisherClosesDuringSubscriberOpenOverhead)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+
+    sg4::Host::by_name("host-0.prod")->add_actor("Pub", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::Mailbox);
+      stream->set_open_overhead(0.33);
+      auto var    = stream->define_variable("var", {100}, {0}, {100}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+      sg4::this_actor::sleep_for(0.5);
+      XBT_INFO("Close the engine while the late subscriber is still opening the stream");
+      ASSERT_NO_THROW(engine->close());
+      dtlmod::DTL::disconnect();
+    });
+
+    sg4::Host::by_name("host-0.cons")->add_actor("Sub", [this]() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->get(var_sub));
+      ASSERT_NO_THROW(engine->end_transaction());
+      ASSERT_NO_THROW(engine->close());
+      dtlmod::DTL::disconnect();
+    });
+
+    sg4::Host::by_name("host-1.cons")->add_actor("LateSub", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      sg4::this_actor::sleep_for(0.6);
+      std::shared_ptr<dtlmod::Engine> engine;
+      XBT_INFO("Open the stream. The last publisher closes it during the open overhead");
+      ASSERT_NO_THROW(engine = stream->open("my-output", dtlmod::Stream::Mode::Subscribe));
+      ASSERT_NE(engine, nullptr);
+      XBT_INFO("Opened at %g", sg4::Engine::get_clock());
+      dtlmod::DTL::disconnect();
+    });
+
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
   });
 }

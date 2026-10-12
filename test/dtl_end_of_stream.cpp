@@ -218,3 +218,56 @@ TEST_F(DTLEndOfStreamTest, FileEngineSingleSubscriber)
     ASSERT_EQ(reads, 2);
   });
 }
+
+// Publishers that close without ever starting a transaction must also signal the end of stream. They stay open for a
+// while so that the subscriber opens the stream (and blocks waiting for a first transaction) before they close.
+static void open_and_close_without_transaction(dtlmod::Engine::Type type, dtlmod::Transport::Method method,
+                                               const std::string& engine_name)
+{
+  auto dtl    = dtlmod::DTL::connect();
+  auto stream = dtl->add_stream("my-output");
+  stream->set_engine_type(type);
+  stream->set_transport_method(method);
+  [[maybe_unused]] auto var = stream->define_variable("var", {100, 100}, {0, 0}, {100, 100}, sizeof(double));
+  auto engine               = stream->open(engine_name, dtlmod::Stream::Mode::Publish);
+  sg4::this_actor::sleep_for(1);
+  engine->close();
+  dtlmod::DTL::disconnect();
+}
+
+TEST_F(DTLEndOfStreamTest, StagingPublishersCloseWithoutTransaction)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_staging_platform();
+    int reads = 0;
+    bool eos  = false;
+    for (int p = 0; p < 2; p++)
+      sg4::Host::by_name("host-" + std::to_string(p) + ".prod")->add_actor("Pub" + std::to_string(p), []() {
+        open_and_close_without_transaction(dtlmod::Engine::Type::Staging, dtlmod::Transport::Method::MQ, "my-output");
+      });
+    sg4::Host::by_name("host-0.cons")->add_actor("Sub", [&reads, &eos]() {
+      consume_until_eos("my-output", reads, eos);
+    });
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_TRUE(eos);
+    ASSERT_EQ(reads, 0);
+  });
+}
+
+TEST_F(DTLEndOfStreamTest, FileEnginePublisherClosesWithoutTransaction)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_file_platform();
+    int reads                     = 0;
+    bool eos                      = false;
+    const std::string engine_name = "cluster:my_fs:/node-0/scratch/my-output";
+    sg4::Host::by_name("node-0")->add_actor("Pub", [engine_name]() {
+      open_and_close_without_transaction(dtlmod::Engine::Type::File, dtlmod::Transport::Method::File, engine_name);
+    });
+    sg4::Host::by_name("node-1")->add_actor(
+        "Sub", [&reads, &eos, engine_name]() { consume_until_eos(engine_name, reads, eos); });
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_TRUE(eos);
+    ASSERT_EQ(reads, 0);
+  });
+}

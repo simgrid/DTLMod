@@ -1,8 +1,8 @@
 #include <gtest/gtest.h>
 #include <xbt.h>
 
-#include <cstring>
 #include <dlfcn.h>
+#include <filesystem>
 #include <iostream>
 
 #include "dtlmod/DTL.hpp"
@@ -17,7 +17,15 @@ static bool running_against_built_library()
   if (dladdr(reinterpret_cast<void*>(&dtlmod::DTL::create), &info) == 0 || info.dli_fname == nullptr)
     return true; // Cannot tell, do not get in the way.
 
-  if (std::strstr(info.dli_fname, DTLMOD_BUILT_LIB_DIR) != nullptr)
+  // Compare the directories once symbolic links and relative components are resolved: a mere substring match would
+  // also accept a copy installed in a subdirectory of the build tree, and reject the right library reached through a
+  // symbolic link.
+  std::error_code ec;
+  auto loaded_dir = std::filesystem::canonical(std::filesystem::path(info.dli_fname).parent_path(), ec);
+  if (ec)
+    return true; // Cannot tell, do not get in the way.
+  auto built_dir = std::filesystem::canonical(DTLMOD_BUILT_LIB_DIR, ec);
+  if (ec || loaded_dir == built_dir)
     return true;
 
   std::cerr << "FATAL: the tests are loading " << info.dli_fname << "\n"
