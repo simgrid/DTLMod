@@ -77,14 +77,13 @@ double CompressionReductionMethod::derive_compression_ratio(double accuracy, std
     double beta  = 0.181;
     return std::max(1.0, alpha * std::pow(accuracy, beta) * (0.5 + data_smoothness));
   }
-  if (profile == "zfp") {
-    // ZFP-like transform-based compressor: rate = bits-per-value derived from accuracy.
-    // 64 bits (double) / rate gives the compression ratio.
-    double rate = std::max(1.0, -std::log2(accuracy) + 1.0);
-    return std::max(1.0, 64.0 / rate);
-  }
-  // "fixed" profile: ratio must be user-specified (handled by the caller)
-  return 1.0;
+  // The "fixed" profile has no derived ratio: resolve_compression_ratio() requires an explicit one instead.
+  xbt_assert(profile == "zfp", "No compression ratio can be derived for the '%.*s' profile",
+             static_cast<int>(profile.size()), profile.data());
+  // ZFP-like transform-based compressor: rate = bits-per-value derived from accuracy.
+  // 64 bits (double) / rate gives the compression ratio.
+  double rate = std::max(1.0, -std::log2(accuracy) + 1.0);
+  return std::max(1.0, 64.0 / rate);
 }
 
 void CompressionReductionMethod::validate_compressor_profile(std::string_view profile)

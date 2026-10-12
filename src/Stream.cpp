@@ -301,7 +301,7 @@ std::shared_ptr<Engine> Stream::open(std::string_view name, Mode mode)
             get_engine_type_str().value_or("Unknown"), get_transport_method_str().value_or("Unknown"),
             engine->get_publishers().count(), engine->get_subscribers().count());
   return engine;
-}
+} // LCOV_EXCL_LINE
 
 /****** Variable Factory ******/
 

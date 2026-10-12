@@ -126,8 +126,9 @@ void DecimationReductionMethod::parameterize_for_variable(
 void DecimationReductionMethod::propagate_for_subscriber(const Variable& publisher_var, const Variable& subscriber_var)
 {
   auto it = per_variable_parameterizations_.find(&publisher_var);
+  // Only called for a Variable this method has been applied to, hence parameterized for. Defensive check.
   if (it == per_variable_parameterizations_.end())
-    return;
+    return; // LCOV_EXCL_LINE
 
   auto pub_param = it->second;
   auto sub_param = std::make_shared<ParameterizedDecimation>(subscriber_var, pub_param->get_stride(),

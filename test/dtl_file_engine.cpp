@@ -383,12 +383,12 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
       dtl    = dtlmod::DTL::connect();
       engine = stream->open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Subscribe);
       auto var_sub = stream->inquire_variable("var");
-      XBT_INFO("Select transaction #1 (the second one, 0 is first)");
+      XBT_INFO("Select transaction #1 (the first one)");
       ASSERT_NO_THROW(var_sub->set_transaction_selection(1));
       engine->begin_transaction();
       ASSERT_NO_THROW(engine->get(var_sub));
       engine->end_transaction();
-      XBT_INFO("Select transaction #4 (the last one)");
+      XBT_INFO("Select transaction #4 (the next to last one)");
       ASSERT_NO_THROW(var_sub->set_transaction_selection(4));
       engine->begin_transaction();
       engine->get(var_sub);
@@ -403,6 +403,12 @@ TEST_F(DTLFileEngineTest, SetTransactionSelection)
       engine->end_transaction();
       XBT_INFO("Check local size of var_sub. Should be 6,400,000,000 bytes as we store 2 steps");
       ASSERT_DOUBLE_EQ(var_sub->get_local_size(), 2 * 8. * 20000 * 20000);
+
+      XBT_INFO("Select transactions #5 and #6. #6 was never produced, should fail");
+      ASSERT_NO_THROW(var_sub->set_transaction_selection(5, 2));
+      engine->begin_transaction();
+      ASSERT_THROW(engine->get(var_sub), dtlmod::GetWhenNoTransactionException);
+      engine->end_transaction();
 
       XBT_INFO("Close the engine");
       ASSERT_NO_THROW(engine->close());
@@ -572,5 +578,103 @@ TEST_F(DTLFileEngineTest, MetadataExportProgressiveFlushing)
 
     // The .prog file must have been removed by export_metadata_to_file after merging
     ASSERT_FALSE(std::ifstream(metadata_file_name + ".var.prog").good());
+  });
+}
+
+TEST_F(DTLFileEngineTest, SimulatedMemoryCopyWithSimulatedSize)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    sg4::Host::by_name("node-0")->add_actor("TestActor", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      stream->set_simulate_memory_copy(true);
+      auto var = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto engine =
+          stream->open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      engine->begin_transaction();
+      XBT_INFO("Put 'var' with a simulated size of 0 byte: there is nothing to copy");
+      double start = sg4::Engine::get_clock();
+      ASSERT_NO_THROW(engine->put(var, 0));
+      ASSERT_DOUBLE_EQ(sg4::Engine::get_clock(), start);
+      XBT_INFO("Put 'var' with a simulated size of 1GB: the copy takes time on the loopback link");
+      ASSERT_NO_THROW(engine->put(var, 1000 * 1000 * 1000));
+      ASSERT_GT(sg4::Engine::get_clock(), start);
+      engine->end_transaction();
+      ASSERT_NO_THROW(engine->close());
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// When the metadata of a transaction are flushed, a Variable that was not put in that transaction has nothing to write.
+TEST_F(DTLFileEngineTest, MetadataExportVariableMissingFromTransaction)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    std::string metadata_file_name;
+
+    sg4::Host::by_name("node-0")->add_actor("node-0_pub", [&metadata_file_name]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_transport_method(dtlmod::Transport::Method::File);
+      stream->set_engine_type(dtlmod::Engine::Type::File);
+      stream->set_metadata_export();
+      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto late   = stream->define_variable("late", {1000}, {0}, {1000}, sizeof(double));
+      auto engine = stream->open("cluster:my_fs:/pfs/my-working-dir/my-output", dtlmod::Stream::Mode::Publish);
+      sg4::this_actor::sleep_for(0.5); // Let subscriber join the engine
+
+      XBT_INFO("Transaction 1 only contains 'var'");
+      engine->begin_transaction();
+      engine->put(var);
+      engine->end_transaction();
+      XBT_INFO("Stay alive while the subscriber reads (and flushes) Transaction 1");
+      sg4::this_actor::sleep_for(100.0);
+
+      XBT_INFO("Transaction 2 contains both 'var' and 'late'");
+      engine->begin_transaction();
+      engine->put(var);
+      engine->put(late);
+      engine->end_transaction();
+
+      ASSERT_NO_THROW(engine->close());
+      metadata_file_name = stream->get_metadata_file_name();
+      dtlmod::DTL::disconnect();
+    });
+
+    sg4::Host::by_name("node-1")->add_actor("node-1_sub", []() {
+      auto dtl = dtlmod::DTL::connect();
+      sg4::this_actor::sleep_for(0.5);
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("cluster:my_fs:/pfs/my-working-dir/my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+      for (int i = 0; i < 2; i++) {
+        engine->begin_transaction();
+        engine->get(var_sub);
+        engine->end_transaction();
+      }
+      ASSERT_NO_THROW(engine->close());
+      dtlmod::DTL::disconnect();
+    });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+
+    std::ifstream file(metadata_file_name);
+    ASSERT_TRUE(file.is_open());
+    std::string file_contents((std::istreambuf_iterator<char>(file)), std::istreambuf_iterator<char>());
+    file.close();
+    std::remove(metadata_file_name.c_str());
+    // Variables are stored in an unordered map: check each entry separately rather than the whole file.
+    XBT_INFO("'var' has both transactions, 'late' only has Transaction 2");
+    ASSERT_NE(file_contents.find("8\tvar\t2*{1000,1000}\n  Transaction 1:\n"), std::string::npos) << file_contents;
+    ASSERT_NE(file_contents.find("8\tlate\t1*{1000}\n  Transaction 2:\n"), std::string::npos) << file_contents;
+    ASSERT_EQ(file_contents.find("8\tlate\t1*{1000}\n  Transaction 1:"), std::string::npos) << file_contents;
   });
 }

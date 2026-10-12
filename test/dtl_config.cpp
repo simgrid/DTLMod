@@ -75,6 +75,8 @@ TEST_F(DTLConfigTest, ConfigFile)
                stream->get_transport_method_str().value_or("Unknown"));
       ASSERT_TRUE(strcmp(stream->get_engine_type_str().value(), "Engine::Type::File") == 0);
       ASSERT_TRUE(strcmp(stream->get_transport_method_str().value(), "Transport::Method::File") == 0);
+      ASSERT_EQ(stream->get_engine_type(), dtlmod::Engine::Type::File);
+      ASSERT_EQ(stream->get_transport_method(), dtlmod::Transport::Method::File);
       ASSERT_TRUE(strcmp(stream->get_access_mode_str(), "Mode::Publish") == 0);
       ASSERT_EQ(stream->get_access_mode(), dtlmod::Stream::Mode::Publish);
       XBT_INFO("Check if this stream is set to export metadata (it is)");

@@ -10,7 +10,7 @@ import sys
 import multiprocessing
 from simgrid import Engine, Host, this_actor, Link, LinkInRoute
 from fsmod import FileSystem, OneDiskStorage, JBODStorage
-from dtlmod import DTL, Engine as DTLEngine, Stream, Transport
+from dtlmod import DTL, Engine as DTLEngine, Stream, Transport, GetWhenNoTransactionException
 
 def setup_platform():
     e = Engine(sys.argv)
@@ -299,12 +299,12 @@ def run_test_set_transation_selection():
         DTL.connect()
         engine = stream.open("cluster:my_fs:/node-0/scratch/my-working-dir/my-output", Stream.Mode.Subscribe)
         var_sub = stream.inquire_variable("var")
-        this_actor.info("Select transaction #1 (the second one, 0 is first)")
+        this_actor.info("Select transaction #1 (the first one)")
         var_sub.set_transaction_selection(1)
         engine.begin_transaction()
         engine.get(var_sub)
         engine.end_transaction()
-        this_actor.info("Select transaction #4 (the last one)")
+        this_actor.info("Select transaction #4 (the next to last one)")
         var_sub.set_transaction_selection(4)
         engine.begin_transaction()
         engine.get(var_sub)
@@ -319,6 +319,16 @@ def run_test_set_transation_selection():
         engine.end_transaction()
         this_actor.info("Check local size of var_sub. Should be 6,400,000,000 bytes as we store 2 steps")
         assert var_sub.local_size == 2 * 8 * 20000 * 20000
+
+        this_actor.info("Select transactions #5 and #6. #6 was never produced, should fail")
+        var_sub.set_transaction_selection(5, 2)
+        engine.begin_transaction()
+        try:
+            engine.get(var_sub)
+            assert False, "get() should have raised a GetWhenNoTransactionException"
+        except GetWhenNoTransactionException:
+            pass
+        engine.end_transaction()
 
         this_actor.info("Close the engine")
         engine.close()

@@ -32,7 +32,7 @@ namespace dtlmod {
 
 // All these exceptions derive from simgrid::Exception (but are in the dtlmod namespace)
 DECLARE_DTLMOD_EXCEPTION(UnknownEngineTypeException, "Unknown Engine Type");
-DECLARE_DTLMOD_EXCEPTION(TransportEngineMismatchException, "Transport and Engine mismatch");
+DECLARE_DTLMOD_EXCEPTION(TransportEngineMismatchException, "Transport and Engine mismatch"); // LCOV_EXCL_LINE
 DECLARE_DTLMOD_EXCEPTION(UndefinedEngineTypeException, "Undefined Engine Type. Cannot open Stream");
 DECLARE_DTLMOD_EXCEPTION(MultipleEngineTypeException, "Stream can only use one engine type. Check your code.");
 
@@ -54,7 +54,7 @@ DECLARE_DTLMOD_EXCEPTION(InconsistentVariableDefinitionException, "Inconsistent 
 DECLARE_DTLMOD_EXCEPTION(IncorrectPathDefinitionException, "Fullpath must be structured as follows: "
                                                            "netzone_name:file_system_name:/path/to/file_name");
 
-DECLARE_DTLMOD_EXCEPTION(InvalidTransactionIdException,
+DECLARE_DTLMOD_EXCEPTION(InvalidTransactionIdException, // LCOV_EXCL_LINE
                          "Impossible to get. This transaction doesn't exist for variable yet");
 DECLARE_DTLMOD_EXCEPTION(GetWhenNoTransactionException, "Impossible to get. No transaction exists for variable");
 

@@ -81,6 +81,14 @@ TEST_F(DTLReductionTest, BogusDecimationSetting)
       XBT_INFO("Assign the decimation method to 'var3D' with an unknown interpolation method, should fail");
       ASSERT_THROW(var->set_reduction_operation(decimator, {{"stride", "1,2,4"}, {"interpolation", "bogus"}}),
                    dtlmod::UnknownDecimationInterpolationException);
+      XBT_INFO("Assign a quadratic interpolation to a 1D variable (needs 2 dimensions), should fail");
+      auto var1D = stream->define_variable("var1D", {640}, {0}, {640}, sizeof(double));
+      ASSERT_THROW(var1D->set_reduction_operation(decimator, {{"stride", "2"}, {"interpolation", "quadratic"}}),
+                   dtlmod::InconsistentDecimationInterpolationException);
+      XBT_INFO("Assign a cubic interpolation to a 2D variable (needs 3 dimensions), should fail");
+      auto var2D = stream->define_variable("var2D", {640, 640}, {0, 0}, {640, 640}, sizeof(double));
+      ASSERT_THROW(var2D->set_reduction_operation(decimator, {{"stride", "2,2"}, {"interpolation", "cubic"}}),
+                   dtlmod::InconsistentDecimationInterpolationException);
 
       XBT_INFO("Disconnect the actor from the DTL");
       dtlmod::DTL::disconnect();
@@ -147,7 +155,14 @@ TEST_F(DTLReductionTest, SimpleDecimationFileEngine)
       XBT_INFO("Create a second 3D variable");
       auto var2 = stream->define_variable("var3D_2", {640, 640, 640}, {0, 0, 0}, {640, 640, 640}, sizeof(double));
       XBT_INFO("Assign the decimation method to 'var3D_2'");
-      ASSERT_NO_THROW(var2->set_reduction_operation(decimator, {{"stride", "2,2,2"}, {"interpolation", "quadratic"}}));
+      XBT_INFO("Check that the reduction cost depends on the interpolation (x2 linear, x4 quadratic, x8 cubic)");
+      const double var2_size = 8. * 640 * 640 * 640;
+      ASSERT_NO_THROW(var2->set_reduction_operation(decimator, {{"stride", "2,2,2"}, {"interpolation", "linear"}}));
+      ASSERT_DOUBLE_EQ(decimator->get_flop_amount_to_reduce_variable(*var2), 2 * var2_size);
+      ASSERT_NO_THROW(var2->set_reduction_operation(decimator, {{"interpolation", "cubic"}}));
+      ASSERT_DOUBLE_EQ(decimator->get_flop_amount_to_reduce_variable(*var2), 8 * var2_size);
+      ASSERT_NO_THROW(var2->set_reduction_operation(decimator, {{"interpolation", "quadratic"}}));
+      ASSERT_DOUBLE_EQ(decimator->get_flop_amount_to_reduce_variable(*var2), 4 * var2_size);
       XBT_INFO("Start a Transaction");
       engine->begin_transaction();
       XBT_INFO("Put reduced Variable 'var2' into the DTL");
