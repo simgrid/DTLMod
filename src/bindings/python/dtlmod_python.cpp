@@ -98,7 +98,8 @@ PYBIND11_MODULE(dtlmod, m)
       m, "Engine", "An Engine defines how data is transferred between the applications and the DTL");
   engine.def_property_readonly("name", &Engine::get_name, "The name of the Engine (read-only)")
       .def("begin_transaction", &Engine::begin_transaction, py::call_guard<simgrid::SimGridGilGuard>(),
-           "Begin a transaction on this Engine")
+           "Begin a transaction on this Engine. On the subscriber side, raises an EndOfStreamException if all the "
+           "publishers have closed the Engine and the requested transaction will never be produced")
       .def("put", py::overload_cast<const std::shared_ptr<Variable>&>(&Engine::put, py::const_), py::arg("var"),
            py::call_guard<simgrid::SimGridGilGuard>(), "Put a Variable in the DTL using this Engine")
       .def("put", py::overload_cast<const std::shared_ptr<Variable>&, size_t>(&Engine::put, py::const_), py::arg("var"),
@@ -112,8 +113,11 @@ PYBIND11_MODULE(dtlmod, m)
                              "The id of the current transaction on this Engine (read-only)")
       .def("cancel_transaction", &Engine::cancel_transaction, py::call_guard<simgrid::SimGridGilGuard>(),
            py::arg("transaction_id"),
-           "Cancel all in-flight activities of a specific transaction (must be called from an external actor)")
-      .def("close", &Engine::close, py::call_guard<simgrid::SimGridGilGuard>(), "Close this Engine");
+           "Cancel all in-flight activities of a specific transaction (must be called from an external actor). A "
+           "simulated memory copy in progress before a put is not interrupted")
+      .def("close", &Engine::close, py::call_guard<simgrid::SimGridGilGuard>(),
+           "Close this Engine. Publishers block until every publisher has closed it, and so do subscribers once they "
+           "have started a transaction");
 
   py::enum_<Engine::Type>(engine, "Type", "The type of Engine")
       .value("Undefined", Engine::Type::Undefined)
@@ -226,7 +230,8 @@ PYBIND11_MODULE(dtlmod, m)
       .def("inquire_variable", &Stream::inquire_variable, py::call_guard<simgrid::SimGridGilGuard>(), py::arg("name"),
            py::arg("timeout") = 0.0,
            "Retrieve a Variable information by name. If the Variable is not defined yet, wait for at most 'timeout' "
-           "seconds (0: do not wait, negative: wait forever) before raising an UnknownVariableException")
+           "seconds (0: do not wait, negative: wait forever) before raising an UnknownVariableException. A negative "
+           "timeout is not released by the end of stream")
       .def("remove_variable", &Stream::remove_variable, py::arg("name"), "Remove a Variable from this Stream")
       .def("define_reduction_method", &Stream::define_reduction_method, py::arg("name"),
            "Define a reduction method for this Stream (e.g. 'decimation' or 'compression')");

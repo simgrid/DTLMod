@@ -290,14 +290,17 @@ std::shared_ptr<Engine> Stream::open(std::string_view name, Mode mode)
   validate_open_parameters(name, mode);
   create_engine_if_needed(name, mode);
   register_actor_with_engine(mode);
+  // Keep a handle on the Engine: the sleep below is a scheduling point at which the last actor closing the Engine on
+  // the other side can reset engine_.
+  auto engine = engine_;
   // Simulate the setup cost of the middleware. Done outside of the critical section of create_engine_if_needed() so
   // that actors opening this Stream concurrently pay this overhead in parallel.
   if (open_overhead_ > 0)
     sg4::this_actor::sleep_for(open_overhead_);
   XBT_DEBUG("Stream '%s' uses engine '%s' and transport '%s' (%zu Pub. / %zu Sub.)", get_cname(),
             get_engine_type_str().value_or("Unknown"), get_transport_method_str().value_or("Unknown"),
-            engine_->get_publishers().count(), engine_->get_subscribers().count());
-  return engine_;
+            engine->get_publishers().count(), engine->get_subscribers().count());
+  return engine;
 }
 
 /****** Variable Factory ******/

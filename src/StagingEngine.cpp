@@ -129,6 +129,10 @@ void StagingEngine::pub_close()
   auto self = sg4::Actor::self();
 
   XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());
+  // A publisher may close without having ever ended a transaction, in which case the barrier used below to detect the
+  // last publisher to close does not exist yet. Create it now, while all the publishers are still registered.
+  if (auto pub_barrier = get_publishers().get_or_create_barrier())
+    XBT_DEBUG("Barrier created for %zu publishers", get_publishers().count());
   if (!pub_closing_) {
     // I'm the first to close
     pub_closing_ = true;
@@ -174,8 +178,9 @@ void StagingEngine::await_first_pub_transaction()
     first_pub_transaction_started_->wait(lock);
   if (is_transaction_canceled(current_sub_transaction_id_ + 1))
     throw TransactionCanceledException(XBT_THROW_POINT);
-  // All publishers closed before ever starting a transaction: nothing will ever come.
-  if (current_pub_transaction_id_ == 0 && pub_stream_ended())
+  // All publishers closed before ever completing a transaction: nothing will ever come. Checking the completed (and
+  // not the current) transaction id matters, as the first publisher to close increments the current one.
+  if (completed_pub_transaction_id_ == 0 && pub_stream_ended())
     throw EndOfStreamException(XBT_THROW_POINT);
   XBT_DEBUG("Publishers have started a transaction, create rendez-vous points");
   // We now know the number of publishers, subscriber can create mailboxes/mqs with publishers

@@ -166,6 +166,10 @@ void FileEngine::pub_close()
   auto transport = get_file_transport();
 
   XBT_DEBUG("Publisher '%s' is closing the engine '%s'", self->get_cname(), get_cname());
+  // A publisher may close without having ever ended a transaction, in which case the barrier used below to detect the
+  // last publisher to close does not exist yet. Create it now, while all the publishers are still registered.
+  if (auto pub_barrier = get_publishers().get_or_create_barrier())
+    XBT_DEBUG("Barrier created for %zu publishers", get_publishers().count());
 
   XBT_DEBUG("[%s] Wait for the completion of %u publish activities from the previous transaction", get_cname(),
             file_pub_transaction_[self].size());
