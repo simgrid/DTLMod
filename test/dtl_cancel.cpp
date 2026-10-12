@@ -542,6 +542,59 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
   });
 }
 
+// Both sides close the engine while the data of T1 is still transferring over the slow link (8MB at 1MBps): the
+// publisher right after its end_transaction(), the subscriber right after its get(), i.e., in the middle of T1.
+// Engine::close() waits for these transfers to complete. The canceller fires at 0.5s, which releases both close()
+// calls at that time, long before the transfer would have completed.
+TEST_F(DTLCancelTest, CancelStagingTransaction_ClosingMidTransfer_Mailbox)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_slow_staging_platform();
+    double pub_closed_at = -1;
+    double sub_closed_at = -1;
+
+    sg4::Host::by_name("host-0.prod")->add_actor("PubTestActor", [&pub_closed_at]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::Mailbox);
+      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+
+      sg4::Host::by_name("host-1.prod")->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(0.5);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      engine->begin_transaction();
+      engine->put(var);
+      engine->end_transaction();
+      XBT_INFO("Close the engine while the data is still being sent");
+      engine->close();
+      pub_closed_at = sg4::Engine::get_clock();
+      dtlmod::DTL::disconnect();
+    });
+
+    sg4::Host::by_name("host-0.cons")->add_actor("SubTestActor", [&sub_closed_at]() {
+      auto dtl     = dtlmod::DTL::connect();
+      auto stream  = dtl->add_stream("my-output");
+      auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub = stream->inquire_variable("var");
+      engine->begin_transaction();
+      engine->get(var_sub);
+      XBT_INFO("Close the engine in the middle of the transaction, while the data is still being received");
+      engine->close();
+      sub_closed_at = sg4::Engine::get_clock();
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_DOUBLE_EQ(pub_closed_at, 0.5);
+    ASSERT_DOUBLE_EQ(sub_closed_at, 0.5);
+  });
+}
+
 // Publisher begins T1 and then sleeps (simulating slow computation before end_transaction).
 // Subscriber connects and immediately calls begin_transaction(), which blocks waiting for the publisher
 // to signal pub_transaction_completed (StagingEngine lines 202-204).
