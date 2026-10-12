@@ -154,6 +154,7 @@ public:
   Stream& unset_metadata_export() noexcept;
   /// @brief Stream configuration function: specify whether Engines opened on this Stream should simulate the cost
   ///        of a local memory copy (as a loopback network transfer) before a put. Must be called before Stream::open.
+  ///        This copy is not part of the transaction, hence Engine::cancel_transaction() does not interrupt it.
   /// @param value true to simulate the memory copy overhead, false otherwise.
   /// @return The calling Stream (enable method chaining).
   Stream& set_simulate_memory_copy(bool value) noexcept;
@@ -217,7 +218,10 @@ public:
   ///   - 0 (default): do not wait, throw an UnknownVariableException right away;
   ///   - a positive value: wait for at most @p timeout seconds (of simulated time) for a publisher to define the
   ///     Variable, then throw an UnknownVariableException;
-  ///   - a negative value: wait until a publisher defines the Variable, with no time limit.
+  ///   - a negative value: wait until a publisher defines the Variable, with no time limit. Unlike
+  ///     Engine::begin_transaction(), this wait is not released by the end of stream: if all the publishers close
+  ///     the Stream without defining the Variable, the subscriber blocks forever. Prefer a positive timeout when the
+  ///     publishers may stop early.
   ///
   /// Calling this function after the first Engine::begin_transaction() of the subscriber does not require any
   /// waiting, as long as publishers define their Variables before starting their first transaction.

@@ -150,11 +150,16 @@ public:
   [[nodiscard]] const char* get_cname() const noexcept { return name_.c_str(); }
 
   /// @brief Start a transaction on an Engine.
+  /// @throws EndOfStreamException on the subscriber side, if all the publishers have closed the Engine and the
+  ///         requested transaction will thus never be produced. This includes publishers that closed the Engine
+  ///         without ever starting a transaction.
+  /// @throws TransactionCanceledException if the transaction has been canceled with cancel_transaction().
   void begin_transaction();
 
   /// @brief Put a Variable in the DTL using a specific Engine. If the Stream this Engine belongs to was configured
   ///        with Stream::set_simulate_memory_copy(true), a local memory copy overhead is simulated first.
   /// @param var The variable to put in the DTL
+  /// @note The simulated memory copy is not part of the transaction: cancel_transaction() does not interrupt it.
   void put(const std::shared_ptr<Variable>& var) const;
 
   /// @brief Put a Variable in the DTL using a specific Engine. If the Stream this Engine belongs to was configured
@@ -178,9 +183,15 @@ public:
   /// @param transaction_id The id of the transaction to cancel. If both sides have already moved past this
   ///        transaction, the call is a no-op to avoid accidentally cancelling a subsequent transaction.
   /// @note Must be called from an external actor not participating in the transaction.
+  /// @note A local memory copy simulated before a put (see Stream::set_simulate_memory_copy()) is not interrupted:
+  ///       the publisher only notices the cancellation once this copy is over.
   void cancel_transaction(unsigned int transaction_id);
 
   /// @brief Close the Engine associated to a Stream.
+  /// @note Publishers synchronize when closing the Engine: this call blocks until every publisher has called close(),
+  ///       whether or not they started a transaction. Subscribers do the same once they have started a transaction.
+  ///       Once the last publisher has closed the Engine, subscribers waiting for a transaction that was never
+  ///       produced are released with an EndOfStreamException.
   void close();
 };
 
