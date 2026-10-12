@@ -119,6 +119,11 @@ void StagingEngine::end_pub_transaction()
   // Wait for the put requests and actually put (asynchrously) comm/mess in Mbox/MQ
   get_staging_transport()->get_requests_and_do_put(sg4::Actor::self());
   XBT_DEBUG("Start publish activities for the transaction");
+  // The transaction may have been canceled while this publisher was waiting for the put requests. Then, the
+  // subscribers already gave up and the activities just started will never be matched: cancel them too, so that the
+  // publisher is released when it waits for their completion in its next begin_transaction() or in close().
+  if (is_transaction_canceled(current_pub_transaction_id_))
+    cancel_pending_activities(get_pub_transaction());
 
   if (get_publishers().is_last_at_barrier()) // Mark this transaction as over
     pub_transaction_in_progress_ = false;
