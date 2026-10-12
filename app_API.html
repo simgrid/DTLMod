@@ -45,7 +45,7 @@
               <img src="_static/DTLMod_logo.png" class="logo" alt="Logo"/>
           </a>
               <div class="version">
-                0.2.0
+                0.6
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
@@ -176,6 +176,8 @@ enable metadata export. A stream entry looks like:</p>
 disabled by default.</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">&quot;reduction_methods&quot;</span></code> array accepts any combination of <code class="docutils literal notranslate"><span class="pre">&quot;decimation&quot;</span></code> and <code class="docutils literal notranslate"><span class="pre">&quot;compression&quot;</span></code>. Each listed
 method is pre-registered on the stream (equivalent to calling <a class="reference internal" href="#_CPPv4N6dtlmod6Stream23define_reduction_methodERKNSt6stringE" title="dtlmod::Stream::define_reduction_method"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::define_reduction_method</span></code></a>) and can then be applied to individual variables.</p>
+<p>The optional <code class="docutils literal notranslate"><span class="pre">&quot;export_metadata&quot;</span></code> key must be a boolean (equivalent to calling <a class="reference internal" href="#_CPPv4N6dtlmod6Stream19set_metadata_exportEv" title="dtlmod::Stream::set_metadata_export"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Stream::set_metadata_export</span></code></a> when <code class="docutils literal notranslate"><span class="pre">true</span></code>). Metadata export is disabled when the key is <code class="docutils literal notranslate"><span class="pre">false</span></code> or
+absent, and any non-boolean value is rejected when the configuration file is loaded.</p>
 <p>A common in situ processing scenario is that some analyses or visualization are only needed when certain conditions
 are met. In such cases, a new process is spawned, subscribes to some variables, and analyzes or visualizes data.
 DTLMod has been designed to enable the development of simulators in which actors can connect to or disconnect from the
@@ -474,7 +476,7 @@ transaction(s) when retrieving data from the <a class="reference internal" href=
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Stream24set_simulate_memory_copyEb">
 <span id="_CPPv3N6dtlmod6Stream24set_simulate_memory_copyEb"></span><span id="_CPPv2N6dtlmod6Stream24set_simulate_memory_copyEb"></span><span id="dtlmod::Stream::set_simulate_memory_copy__b"></span><span class="target" id="classdtlmod_1_1Stream_1ac20f4327b7c41bde65f41d5780b43260"></span><span class="n"><span class="pre">Stream</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Stream</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">set_simulate_memory_copy</span></span></span><span class="sig-paren">(</span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">value</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">noexcept</span></span><a class="headerlink" href="#_CPPv4N6dtlmod6Stream24set_simulate_memory_copyEb" title="Link to this definition"></a><br /></dt>
-<dd><p>Stream configuration function: specify whether Engines opened on this Stream should simulate the cost of a local memory copy (as a loopback network transfer) before a put. Must be called before Stream::open. </p>
+<dd><p>Stream configuration function: specify whether Engines opened on this Stream should simulate the cost of a local memory copy (as a loopback network transfer) before a put. Must be called before Stream::open. This copy is not part of the transaction, hence Engine::cancel_transaction() does not interrupt it. </p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>value</strong> – true to simulate the memory copy overhead, false otherwise. </p>
@@ -733,7 +735,7 @@ This function creates a new Variable and the corresponding entry in the internal
 <p>A subscriber may call this function before the publisher has defined the Variable. The <code class="docutils literal notranslate"><span class="pre">timeout</span></code> parameter controls what happens in that case:<ul class="simple">
 <li><p>0 (default): do not wait, throw an UnknownVariableException right away;</p></li>
 <li><p>a positive value: wait for at most <code class="docutils literal notranslate"><span class="pre">timeout</span></code> seconds (of simulated time) for a publisher to define the Variable, then throw an UnknownVariableException;</p></li>
-<li><p>a negative value: wait until a publisher defines the Variable, with no time limit.</p></li>
+<li><p>a negative value: wait until a publisher defines the Variable, with no time limit. Unlike Engine::begin_transaction(), this wait is not released by the end of stream: if all the publishers close the Stream without defining the Variable, the subscriber blocks forever. Prefer a positive timeout when the publishers may stop early.</p></li>
 </ul>
 </p>
 <p>Calling this function after the first Engine::begin_transaction() of the subscriber does not require any waiting, as long as publishers define their Variables before starting their first transaction.</p>
@@ -825,12 +827,21 @@ This function creates a new Variable and the corresponding entry in the internal
 <dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Engine17begin_transactionEv">
 <span id="_CPPv3N6dtlmod6Engine17begin_transactionEv"></span><span id="_CPPv2N6dtlmod6Engine17begin_transactionEv"></span><span id="dtlmod::Engine::begin_transaction"></span><span class="target" id="classdtlmod_1_1Engine_1aa1a277ccd8e262dd9f77ba400df6c5ec"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">begin_transaction</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Engine17begin_transactionEv" title="Link to this definition"></a><br /></dt>
 <dd><p>Start a transaction on an Engine. </p>
-<p>All put and get operations must take place within a transaction (in a sense close to that used for databases). When multiple actors have opened the same Stream and thus subscribed to the same Engine, only one of them has to do the following when a transaction begins, this function is a no-op for the other subscribers:<ol class="loweralpha simple">
+<p>
+All put and get operations must take place within a transaction (in a sense close to that used for databases). When multiple actors have opened the same Stream and thus subscribed to the same Engine, only one of them has to do the following when a transaction begins, this function is a no-op for the other subscribers:<ol class="loweralpha simple">
 <li><p>if no transaction is currently in progress, start one, exit otherwise</p></li>
 <li><p>if this is the first transaction for that Engine, create a synchronization barrier among all the subscribers.</p></li>
 <li><p>Otherwise, wait for the completion of the simulated activities started by the previous transaction. </p></li>
 </ol>
 </p>
+<dl class="field-list simple">
+<dt class="field-odd">Throws<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><span><span class="cpp-expr sig sig-inline cpp"><span class="n">EndOfStreamException</span></span></span> – on the subscriber side, if all the publishers have closed the Engine and the requested transaction will thus never be produced. This includes publishers that closed the Engine without ever starting a transaction. </p></li>
+<li><p><span><span class="cpp-expr sig sig-inline cpp"><span class="n">TransactionCanceledException</span></span></span> – if the transaction has been canceled with cancel_transaction().</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="cpp function">
@@ -838,6 +849,10 @@ This function creates a new Variable and the corresponding entry in the internal
 <span id="_CPPv3NK6dtlmod6Engine3putERKNSt10shared_ptrI8VariableEE"></span><span id="_CPPv2NK6dtlmod6Engine3putERKNSt10shared_ptrI8VariableEE"></span><span id="dtlmod::Engine::put__std::shared_ptr:Variable:CRC"></span><span class="target" id="classdtlmod_1_1Engine_1aa159cde7eef87449f9d00837e33fa2e3"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">put</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><span class="n"><span class="pre">std</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">shared_ptr</span></span><span class="p"><span class="pre">&lt;</span></span><span class="n"><span class="pre">Variable</span></span><span class="p"><span class="pre">&gt;</span></span><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">var</span></span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK6dtlmod6Engine3putERKNSt10shared_ptrI8VariableEE" title="Link to this definition"></a><br /></dt>
 <dd><p>Put a Variable in the DTL using a specific Engine. If the Stream this Engine belongs to was configured with Stream::set_simulate_memory_copy(true), a local memory copy overhead is simulated first. </p>
 <p>The actual data transport is delegated to the Transport method associated to the Engine.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The simulated memory copy is not part of the transaction: cancel_transaction() does not interrupt it. </p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>var</strong> – The variable to put in the DTL </p>
@@ -887,6 +902,10 @@ This function creates a new Variable and the corresponding entry in the internal
 <p class="admonition-title">Note</p>
 <p>Must be called from an external actor not participating in the transaction. </p>
 </div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>A local memory copy simulated before a put (see Stream::set_simulate_memory_copy()) is not interrupted: the publisher only notices the cancellation once this copy is over. </p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>transaction_id</strong> – The id of the transaction to cancel. If both sides have already moved past this transaction, the call is a no-op to avoid accidentally cancelling a subsequent transaction. </p>
@@ -898,7 +917,12 @@ This function creates a new Variable and the corresponding entry in the internal
 <dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Engine5closeEv">
 <span id="_CPPv3N6dtlmod6Engine5closeEv"></span><span id="_CPPv2N6dtlmod6Engine5closeEv"></span><span id="dtlmod::Engine::close"></span><span class="target" id="classdtlmod_1_1Engine_1a6397d82f52676da0dcb9ba29bca094f3"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">close</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Engine5closeEv" title="Link to this definition"></a><br /></dt>
 <dd><p>Close the Engine associated to a Stream. </p>
-<p>This function is called by all the actors that have opened that Stream. The first subscriber to enter that function waits for the completion of the activities of last transaction on that Engine. Then all the subscribers are synchronized before the Engine is properly closed (and destroyed). </p>
+<p>
+This function is called by all the actors that have opened that Stream. The first subscriber to enter that function waits for the completion of the activities of last transaction on that Engine. Then all the subscribers are synchronized before the Engine is properly closed (and destroyed). </p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Publishers synchronize when closing the Engine: this call blocks until every publisher has called close(), whether or not they started a transaction. Subscribers do the same once they have started a transaction. Once the last publisher has closed the Engine, subscribers waiting for a transaction that was never produced are released with an EndOfStreamException.</p>
+</div>
 </dd></dl>
 
 </div><div aria-labelledby="tab-8-UHl0aG9u" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-8-UHl0aG9u" name="UHl0aG9u" role="tabpanel" tabindex="0"></div></div>

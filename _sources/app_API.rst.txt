@@ -60,6 +60,10 @@ The ``"reduction_methods"`` array accepts any combination of ``"decimation"`` an
 method is pre-registered on the stream (equivalent to calling :cpp:func:`Stream::define_reduction_method
 <dtlmod::Stream::define_reduction_method()>`) and can then be applied to individual variables.
 
+The optional ``"export_metadata"`` key must be a boolean (equivalent to calling :cpp:func:`Stream::set_metadata_export
+<dtlmod::Stream::set_metadata_export()>` when ``true``). Metadata export is disabled when the key is ``false`` or
+absent, and any non-boolean value is rejected when the configuration file is loaded.
+
 A common in situ processing scenario is that some analyses or visualization are only needed when certain conditions
 are met. In such cases, a new process is spawned, subscribes to some variables, and analyzes or visualizes data.
 DTLMod has been designed to enable the development of simulators in which actors can connect to or disconnect from the
