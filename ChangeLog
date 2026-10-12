@@ -15,6 +15,8 @@ Improvements:
       "engine" section of the DTL configuration file. The Engine captures the
       setting once, when it is created
       Note: applies to Engine::put() only, not Engine::get()
+      Note: the copy is not part of the transaction, so
+      Engine::cancel_transaction() does not interrupt it
     - Exposed in the Python bindings as Stream.set_simulate_memory_copy() and
       the read-only Stream.simulate_memory_copy property
   - Optional simulation of a fixed overhead when opening a Stream, to account
@@ -35,8 +37,12 @@ Improvements:
     released with a new EndOfStreamException instead of blocking forever
     (mirroring the StepStatus::EndOfStream returned by ADIOS2's BeginStep).
     This lets a consumer terminate when its upstream stops. Implemented for
-    both the Staging and File engines, for any number of subscribers. Exposed
-    in the Python bindings as EndOfStreamException.
+    both the Staging and File engines, for any number of subscribers, and
+    also when publishers close the engine without ever starting a
+    transaction (publishers now always synchronize in Engine::close()).
+    Exposed in the Python bindings as EndOfStreamException.
+    Note: Stream::inquire_variable() with a negative timeout is not released
+    by the end of stream
   - New ReductionMethod::get_fidelity(var, transaction_id) returning the
     fraction of the original information retained after reduction, in [0, 1].
     Decimation reports the retained-element fraction; compression derives a
@@ -94,7 +100,8 @@ Bug Fixes:
     and firing their completion callbacks a second time
   - The "export_metadata" key of the DTL configuration file enabled metadata
     export whatever its value, as only its presence was checked. Setting it to
-    false now leaves metadata export disabled
+    false now leaves metadata export disabled. The value must now be a
+    boolean: a non-boolean value (e.g., "yes" or 1) makes DTL::create() fail
 
 ----------------------------------------------------------------------------
 
