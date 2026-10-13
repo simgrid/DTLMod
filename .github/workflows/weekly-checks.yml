@@ -42,12 +42,18 @@ jobs:
             nlohmann-json3-dev \
             pybind11-dev
 
+      - name: Get the latest SimGrid and FSMod commits
+        id: deps
+        run: |
+          echo "simgrid=$(git ls-remote https://framagit.org/simgrid/simgrid.git HEAD | cut -f1)" >> $GITHUB_OUTPUT
+          echo "fsmod=$(git ls-remote https://github.com/simgrid/file-system-module.git HEAD | cut -f1)" >> $GITHUB_OUTPUT
+
       - name: Cache SimGrid
         uses: actions/cache@v5
         id: cache-simgrid
         with:
           path: /opt/simgrid
-          key: ${{ runner.os }}-simgrid-python-v4
+          key: ${{ runner.os }}-simgrid-python-${{ steps.deps.outputs.simgrid }}
 
       - name: Install SimGrid
         if: steps.cache-simgrid.outputs.cache-hit != 'true'
@@ -63,7 +69,7 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-python-v3
+          key: ${{ runner.os }}-fsmod-python-${{ steps.deps.outputs.fsmod }}-${{ steps.deps.outputs.simgrid }}
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
@@ -161,12 +167,18 @@ jobs:
             pybind11-dev \
             valgrind
 
+      - name: Get the latest SimGrid and FSMod commits
+        id: deps
+        run: |
+          echo "simgrid=$(git ls-remote https://framagit.org/simgrid/simgrid.git HEAD | cut -f1)" >> $GITHUB_OUTPUT
+          echo "fsmod=$(git ls-remote https://github.com/simgrid/file-system-module.git HEAD | cut -f1)" >> $GITHUB_OUTPUT
+
       - name: Cache SimGrid
         uses: actions/cache@v5
         id: cache-simgrid
         with:
           path: /opt/simgrid
-          key: ${{ runner.os }}-simgrid-python-v4
+          key: ${{ runner.os }}-simgrid-python-${{ steps.deps.outputs.simgrid }}
 
       - name: Install SimGrid
         if: steps.cache-simgrid.outputs.cache-hit != 'true'
@@ -182,7 +194,7 @@ jobs:
         id: cache-fsmod
         with:
           path: /opt/fsmod
-          key: ${{ runner.os }}-fsmod-python-v3
+          key: ${{ runner.os }}-fsmod-python-${{ steps.deps.outputs.fsmod }}-${{ steps.deps.outputs.simgrid }}
 
       - name: Install FSMod
         if: steps.cache-fsmod.outputs.cache-hit != 'true'
