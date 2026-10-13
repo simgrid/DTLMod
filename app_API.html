@@ -887,8 +887,14 @@ All put and get operations must take place within a transaction (in a sense clos
 <dt class="sig sig-object cpp" id="_CPPv4N6dtlmod6Engine15end_transactionEv">
 <span id="_CPPv3N6dtlmod6Engine15end_transactionEv"></span><span id="_CPPv2N6dtlmod6Engine15end_transactionEv"></span><span id="dtlmod::Engine::end_transaction"></span><span class="target" id="classdtlmod_1_1Engine_1a13d464cd7c821ad6684fbe6a5e6e5f29"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-prename descclassname"><span class="n"><span class="pre">dtlmod</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Engine</span></span><span class="p"><span class="pre">::</span></span></span><span class="sig-name descname"><span class="n"><span class="pre">end_transaction</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N6dtlmod6Engine15end_transactionEv" title="Link to this definition"></a><br /></dt>
 <dd><p>End a transaction on an Engine. </p>
-<p>This function first synchronizes all the subscribers thanks to the internal barrier. When the last subscriber enters the barrier, all the simulated activities registered for the current transaction are started.</p>
+<p>
+This function first synchronizes all the subscribers thanks to the internal barrier. When the last subscriber enters the barrier, all the simulated activities registered for the current transaction are started.</p>
 <p>Then it marks the transaction as done. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Throws<span class="colon">:</span></dt>
+<dd class="field-odd"><p><span><span class="cpp-expr sig sig-inline cpp"><span class="n">TransactionCanceledException</span></span></span> – if the transaction has been canceled with cancel_transaction(), on the subscriber side, and also on the publisher side with a Staging Engine. The transaction is then aborted for this actor, which can start the next one with begin_transaction().</p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="cpp function">
@@ -898,6 +904,10 @@ All put and get operations must take place within a transaction (in a sense clos
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Must be called from an external actor not participating in the transaction. </p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>With a Staging Engine, publishers start their next transaction (see get_current_transaction()) before the data of the previous one is fully transferred. Canceling the next transaction in the meantime cancels the previous one, still in flight, instead. </p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
