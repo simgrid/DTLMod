@@ -82,6 +82,11 @@ protected:
   // Protected virtual methods for derived classes to implement
   [[nodiscard]] virtual unsigned int get_current_transaction_impl() const noexcept     = 0;
   [[nodiscard]] virtual unsigned int get_current_sub_transaction_impl() const noexcept = 0;
+  // The transaction that cancel_transaction(transaction_id) actually cancels, which an Engine may adjust
+  [[nodiscard]] virtual unsigned int get_transaction_to_cancel(unsigned int transaction_id) const
+  {
+    return transaction_id;
+  }
 
   // Protected methods for derived classes only
 
@@ -173,6 +178,9 @@ public:
   void get(const std::shared_ptr<Variable>& var) const;
 
   /// @brief End a transaction on an Engine.
+  /// @throws TransactionCanceledException if the transaction has been canceled with cancel_transaction(), on the
+  ///         subscriber side, and also on the publisher side with a Staging Engine. The transaction is then aborted for
+  ///         this actor, which can start the next one with begin_transaction().
   void end_transaction();
 
   /// @brief Get the id of the current transaction (on the Publish side).
@@ -183,6 +191,9 @@ public:
   /// @param transaction_id The id of the transaction to cancel. If both sides have already moved past this
   ///        transaction, the call is a no-op to avoid accidentally cancelling a subsequent transaction.
   /// @note Must be called from an external actor not participating in the transaction.
+  /// @note With a Staging Engine, publishers start their next transaction (see get_current_transaction()) before the
+  ///       data of the previous one is fully transferred. Canceling the next transaction in the meantime cancels the
+  ///       previous one, still in flight, instead.
   /// @note A local memory copy simulated before a put (see Stream::set_simulate_memory_copy()) is not interrupted:
   ///       the publisher only notices the cancellation once this copy is over.
   void cancel_transaction(unsigned int transaction_id);

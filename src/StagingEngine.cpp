@@ -28,9 +28,22 @@ void StagingEngine::cancel_activities()
   // cleanup when the cancellation unblocks them.
   cancel_pending_activities(get_pub_transaction());
   cancel_pending_activities(get_sub_transaction());
+  // Release the publishers waiting for the put requests of subscribers that will not send them anymore
+  get_staging_transport()->cancel_pending_put_requests();
   first_pub_transaction_started_->notify_all();
   sub_transaction_started_->notify_all();
   pub_transaction_completed_->notify_all();
+}
+
+// A publisher starts its next transaction, and increments its id, before waiting for the transfers of the previous one
+// to complete. Cancelling the transaction of the publisher in the meantime means cancelling the one still in flight
+// (i.e., the last completed one), not the next one.
+unsigned int StagingEngine::get_transaction_to_cancel(unsigned int transaction_id) const
+{
+  if (transaction_id > completed_pub_transaction_id_ && completed_pub_transaction_id_ > 0 &&
+      not get_pub_transaction().empty())
+    return completed_pub_transaction_id_;
+  return transaction_id;
 }
 
 void StagingEngine::create_transport(const Transport::Method& transport_method)
@@ -55,15 +68,18 @@ std::shared_ptr<StagingTransport> StagingEngine::get_staging_transport() const
 
 void StagingEngine::begin_pub_transaction()
 {
-  if (is_transaction_canceled(current_pub_transaction_id_ + 1))
+  // The next transaction was canceled before it started: skip it, so that the next call starts the following one
+  if (!pub_transaction_in_progress_ && is_transaction_canceled(current_pub_transaction_id_ + 1)) {
+    current_pub_transaction_id_++;
     throw TransactionCanceledException(XBT_THROW_POINT);
+  }
 
   if (!pub_transaction_in_progress_) {
     pub_transaction_in_progress_ = true;
     current_pub_transaction_id_++;
     XBT_DEBUG("Publish Transaction %u started by %s", current_pub_transaction_id_, sg4::Actor::self()->get_cname());
     // Start the first transaction by notifying subscribers that all publishers are here
-    if (current_pub_transaction_id_ == 1) {
+    if (completed_pub_transaction_id_ == 0) {
       XBT_DEBUG("Notify subscribers that they can create their rendez-vous points");
       first_pub_transaction_started_->notify_all();
     }
@@ -88,18 +104,21 @@ void StagingEngine::begin_pub_transaction()
     XBT_DEBUG("All on-flight publish activities are completed. Proceed with the current transaction.");
     XBT_DEBUG("%u sub activities pending", get_sub_transaction().size());
     get_pub_transaction().clear();
-    if (is_transaction_canceled(current_pub_transaction_id_))
-      throw TransactionCanceledException(XBT_THROW_POINT);
   }
 
-  // Then we wait for all subscribers to be at the same transaction
+  // Then we wait for all subscribers to be at the same transaction. Checking the transaction id is not enough: it is
+  // shared by the subscribers and incremented by the first of them to start the transaction.
   while (!is_transaction_canceled(current_pub_transaction_id_) &&
-         (get_subscribers().is_empty() || current_pub_transaction_id_ > current_sub_transaction_id_)) {
+         (get_subscribers().is_empty() || current_pub_transaction_id_ > current_sub_transaction_id_ ||
+          num_subscribers_starting_.load() < get_subscribers().count())) {
     XBT_DEBUG("Wait for subscribers");
     sub_transaction_started_->wait(lock);
   }
-  if (is_transaction_canceled(current_pub_transaction_id_))
+  if (is_transaction_canceled(current_pub_transaction_id_)) {
+    // Abort this transaction, so that the next call starts the following one
+    pub_transaction_in_progress_ = false;
     throw TransactionCanceledException(XBT_THROW_POINT);
+  }
   // Publisher has been notified by subscribers, it can proceed with the transaction
 }
 
@@ -109,23 +128,45 @@ void StagingEngine::end_pub_transaction()
   if (auto pub_barrier = get_publishers().get_or_create_barrier())
     XBT_DEBUG("Barrier created for %zu publishers", get_publishers().count());
 
-  // A new pub transaction has been completed, notify subscribers that they can starting getting variables
-  if (get_publishers().is_last_at_barrier() && (completed_pub_transaction_id_ < current_pub_transaction_id_)) {
-    completed_pub_transaction_id_++;
+  // A new pub transaction has been completed, notify subscribers that they can starting getting variables. A canceled
+  // transaction is never completed: the subscribers waiting for it then all give up in their begin_transaction().
+  if (get_publishers().is_last_at_barrier() && (completed_pub_transaction_id_ < current_pub_transaction_id_) &&
+      !is_transaction_canceled(current_pub_transaction_id_)) {
+    completed_pub_transaction_id_ = current_pub_transaction_id_;
     pub_transaction_completed_->notify_all();
   }
 
   // Wait for the put requests and actually put (asynchrously) comm/mess in Mbox/MQ
-  get_staging_transport()->get_requests_and_do_put(sg4::Actor::self());
-  XBT_DEBUG("Start publish activities for the transaction");
-  // The transaction may have been canceled while this publisher was waiting for the put requests. Then, the
-  // subscribers already gave up and the activities just started will never be matched: cancel them too, so that the
-  // publisher is released when it waits for their completion in its next begin_transaction() or in close().
-  if (is_transaction_canceled(current_pub_transaction_id_))
-    cancel_pending_activities(get_pub_transaction());
+  auto self     = sg4::Actor::self();
+  bool canceled = false;
+  try {
+    get_staging_transport()->get_requests_and_do_put(self);
+    XBT_DEBUG("Start publish activities for the transaction");
+    // The transaction may also have been canceled before this publisher put anything, or after it received all the
+    // put requests. Then, the subscribers already gave up and the puts just started would never be matched.
+    if (is_transaction_canceled(current_pub_transaction_id_))
+      throw TransactionCanceledException(XBT_THROW_POINT);
+  } catch (const simgrid::Exception&) { // CancelException while waiting for the requests, or the throw above
+    if (!is_transaction_canceled(current_pub_transaction_id_))
+      throw; // LCOV_EXCL_LINE
+    // Abort the transaction for this publisher: forget about the requests it still waits for and the puts it already
+    // started.
+    get_staging_transport()->drop_pending_put_requests(self->get_name());
+    drain(get_pub_transaction());
+    canceled = true;
+  }
 
-  if (get_publishers().is_last_at_barrier()) // Mark this transaction as over
-    pub_transaction_in_progress_ = false;
+  // Mark this transaction as over. This must be done before the barrier below: the publishers it releases can
+  // immediately start their next transaction.
+  auto tid                     = current_pub_transaction_id_;
+  pub_transaction_in_progress_ = false;
+  // All the publishers go through this barrier, even when the transaction is canceled: one that would leave early
+  // would block the others here forever.
+  if (get_publishers().is_last_at_barrier())
+    XBT_DEBUG("All publishers ended transaction %u", tid);
+  // A canceled transaction is aborted for all the publishers, not only those that noticed it
+  if (canceled || is_transaction_canceled(tid))
+    throw TransactionCanceledException(XBT_THROW_POINT);
 }
 
 void StagingEngine::pub_close()
@@ -176,8 +217,11 @@ void StagingEngine::await_first_pub_transaction()
   while (!is_transaction_canceled(current_sub_transaction_id_ + 1) && current_pub_transaction_id_ == 0 &&
          !pub_stream_ended())
     first_pub_transaction_started_->wait(lock);
-  if (is_transaction_canceled(current_sub_transaction_id_ + 1))
+  // The next transaction was canceled before it started: skip it, as in begin_sub_transaction()
+  if (!sub_transaction_in_progress_ && is_transaction_canceled(current_sub_transaction_id_ + 1)) {
+    current_sub_transaction_id_++;
     throw TransactionCanceledException(XBT_THROW_POINT);
+  }
   // All publishers closed before ever completing a transaction: nothing will ever come. Checking the completed (and
   // not the current) transaction id matters, as the first publisher to close increments the current one.
   if (completed_pub_transaction_id_ == 0 && pub_stream_ended())
@@ -196,7 +240,10 @@ void StagingEngine::await_completed_pub_transaction()
   while (!is_transaction_canceled(current_sub_transaction_id_) &&
          completed_pub_transaction_id_ < current_sub_transaction_id_ && !pub_stream_ended())
     pub_transaction_completed_->wait(lock);
-  if (is_transaction_canceled(current_sub_transaction_id_)) {
+  // Once the publishers completed the transaction, some subscribers may already be getting their data: they all go on
+  // and learn about the cancellation together when they end the transaction.
+  if (is_transaction_canceled(current_sub_transaction_id_) &&
+      completed_pub_transaction_id_ < current_sub_transaction_id_) {
     sub_transaction_in_progress_ = false;
     num_subscribers_starting_--;
     throw TransactionCanceledException(XBT_THROW_POINT);
@@ -210,11 +257,19 @@ void StagingEngine::await_completed_pub_transaction()
 
 void StagingEngine::begin_sub_transaction()
 {
-  if (is_transaction_canceled(current_sub_transaction_id_ + 1))
+  // The next transaction was canceled before it started: skip it, so that the next call starts the following one
+  if (!sub_transaction_in_progress_ && is_transaction_canceled(current_sub_transaction_id_ + 1)) {
+    current_sub_transaction_id_++;
     throw TransactionCanceledException(XBT_THROW_POINT);
+  }
 
-  if (current_sub_transaction_id_ == 0) // This is the first transaction
+  // This is the first transaction of this subscriber, which may not be the first transaction of the stream if another
+  // subscriber started before
+  auto self = sg4::Actor::self();
+  if (subscribers_with_rendez_vous_points_.find(self) == subscribers_with_rendez_vous_points_.end()) {
     await_first_pub_transaction();
+    subscribers_with_rendez_vous_points_.insert(self);
+  }
 
   if (!sub_transaction_in_progress_) {
     current_sub_transaction_id_++;
@@ -241,30 +296,42 @@ void StagingEngine::end_sub_transaction()
   if (auto sub_barrier = get_subscribers().get_or_create_barrier())
     XBT_DEBUG("Barrier created for %zu subscribers", get_subscribers().count());
 
+  bool canceled = false;
   if (get_subscribers().is_last_at_barrier()) {
     XBT_DEBUG("Wait for the %d subscribe activities for the transaction", get_sub_transaction().size());
     try {
+      // The transaction may have been canceled before this subscriber started its gets (which then did nothing), or
+      // while it was starting them, too late for these gets to be canceled: they will never complete.
+      if (is_transaction_canceled(current_sub_transaction_id_))
+        throw TransactionCanceledException(XBT_THROW_POINT);
       get_sub_transaction().wait_all();
+      // The transaction may also have been canceled right when the gets completed
+      if (is_transaction_canceled(current_sub_transaction_id_))
+        throw TransactionCanceledException(XBT_THROW_POINT);
+      XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
+      get_sub_transaction().clear();
     } catch (const simgrid::Exception&) { // CancelException or NetworkFailureException, see begin_pub_transaction()
       if (!is_canceled())
         throw; // LCOV_EXCL_LINE
       drain(get_sub_transaction());
-      sub_transaction_in_progress_ = false;
-      num_subscribers_starting_--;
-      throw TransactionCanceledException(XBT_THROW_POINT);
+      canceled = true;
     }
-    XBT_DEBUG("All on-flight subscribe activities are completed. Proceed with the current transaction.");
-    get_sub_transaction().clear();
   }
 
-  // Prevent subscribers to start a new transaction before this one is really over
-  if (get_subscribers().is_last_at_barrier())
-    // Mark this transaction as over
-    sub_transaction_in_progress_ = false;
-  // Decrease counter for next iteration
+  // Mark this transaction as over and decrease counter for next iteration. This must be done before the barrier below:
+  // the subscribers it releases can immediately start their next transaction.
+  auto tid                     = current_sub_transaction_id_;
+  sub_transaction_in_progress_ = false;
   num_subscribers_starting_--;
-  XBT_DEBUG("Subscribe Transaction %u end by %s (%u/%lu)", current_sub_transaction_id_, sg4::Actor::self()->get_cname(),
+  XBT_DEBUG("Subscribe Transaction %u end by %s (%u/%lu)", tid, sg4::Actor::self()->get_cname(),
             num_subscribers_starting_.load(), get_subscribers().count());
+  // Prevent subscribers to start a new transaction before this one is really over. All the subscribers go through this
+  // barrier, even when the transaction is canceled: one that would leave early would block the others here forever.
+  if (get_subscribers().is_last_at_barrier())
+    XBT_DEBUG("All subscribers ended transaction %u", tid);
+  // A canceled transaction is aborted for all the subscribers, not only the one that waited for the transfers
+  if (canceled || is_transaction_canceled(tid))
+    throw TransactionCanceledException(XBT_THROW_POINT);
 }
 
 void StagingEngine::sub_close()

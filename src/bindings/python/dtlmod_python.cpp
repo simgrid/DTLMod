@@ -108,7 +108,8 @@ PYBIND11_MODULE(dtlmod, m)
       .def("get", &Engine::get, py::arg("var"), py::call_guard<simgrid::SimGridGilGuard>(),
            "Get a Variable from the DTL using this Engine")
       .def("end_transaction", &Engine::end_transaction, py::call_guard<simgrid::SimGridGilGuard>(),
-           "End a transaction on this Engine")
+           "End a transaction on this Engine. Raises a TransactionCanceledException if the transaction has been "
+           "canceled, on the subscriber side, and also on the publisher side with a Staging Engine")
       .def_property_readonly("current_transaction", &Engine::get_current_transaction,
                              "The id of the current transaction on this Engine (read-only)")
       .def("cancel_transaction", &Engine::cancel_transaction, py::call_guard<simgrid::SimGridGilGuard>(),

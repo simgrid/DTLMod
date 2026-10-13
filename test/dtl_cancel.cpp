@@ -3,6 +3,7 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
+#include <array>
 #include <gtest/gtest.h>
 
 #include <fsmod/FileSystem.hpp>
@@ -488,7 +489,8 @@ TEST_F(DTLCancelTest, CancelNoOp_BothSidesPastTransaction_FileEngine)
 // Publisher and subscriber are both engaged in a long Mailbox transfer (Mailbox simulates bandwidth; MQ does not).
 // Publisher completes T1 end_transaction() (starting slow async Comms) then blocks in T2 begin_transaction()
 // waiting for T1 sends to complete. Subscriber blocks in T1 end_transaction() waiting for receives.
-// Canceller fires after 0.5s, unblocking both with TransactionCanceledException.
+// Canceller fires after 0.5s, unblocking both with TransactionCanceledException. It cancels the current transaction
+// of the publisher, T2, but T1 is the one in flight: only T1 is canceled, and both then complete T2 normally.
 TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
 {
   DO_TEST_WITH_FORK([this]() {
@@ -496,6 +498,7 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
     auto* pub_host  = sg4::Host::by_name("host-0.prod");
     auto* sub_host  = sg4::Host::by_name("host-0.cons");
     auto* wdog_host = sg4::Host::by_name("host-1.prod");
+    size_t t2_received = 0;
 
     pub_host->add_actor("PubTestActor", [wdog_host]() {
       auto dtl    = dtlmod::DTL::connect();
@@ -520,10 +523,15 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
       XBT_INFO("Begin T2 (will block waiting for T1 sends to complete over slow link)");
       ASSERT_THROW(engine->begin_transaction(), dtlmod::TransactionCanceledException);
       XBT_INFO("Publisher caught TransactionCanceledException in T2 begin_transaction() as expected");
+      XBT_INFO("T2 was not canceled: carry on with it");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+      ASSERT_NO_THROW(engine->close());
       dtlmod::DTL::disconnect();
     });
 
-    sub_host->add_actor("SubTestActor", []() {
+    sub_host->add_actor("SubTestActor", [&t2_received]() {
       auto dtl     = dtlmod::DTL::connect();
       auto stream  = dtl->add_stream("my-output");
       auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
@@ -535,10 +543,17 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_MidTransaction_Mailbox)
       XBT_INFO("End T1 (will block waiting for receives over slow link)");
       ASSERT_THROW(engine->end_transaction(), dtlmod::TransactionCanceledException);
       XBT_INFO("Subscriber caught TransactionCanceledException in T1 end_transaction() as expected");
+      XBT_INFO("T2 was not canceled: get it");
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->get(var_sub));
+      ASSERT_NO_THROW(engine->end_transaction());
+      t2_received = var_sub->get_local_size();
+      ASSERT_NO_THROW(engine->close());
       dtlmod::DTL::disconnect();
     });
 
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_EQ(t2_received, 1000 * 1000 * sizeof(double));
   });
 }
 
@@ -597,8 +612,10 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_ClosingMidTransfer_Mailbox)
 
 // Publisher begins T1 and then sleeps (simulating slow computation before end_transaction).
 // Subscriber connects and immediately calls begin_transaction(), which blocks waiting for the publisher
-// to signal pub_transaction_completed (StagingEngine lines 202-204).
-// Canceller fires during that wait, unblocking the subscriber with TransactionCanceledException.
+// to signal pub_transaction_completed.
+// Canceller fires during that wait, unblocking the subscriber with TransactionCanceledException. As T1 is aborted for
+// everyone, the put() the publisher makes after its computation does nothing (instead of waiting for requests that
+// will never come), and the publisher gets a TransactionCanceledException when it ends T1.
 TEST_F(DTLCancelTest, CancelStagingTransaction_SubWaitingForPubToEndTx_MQ)
 {
   DO_TEST_WITH_FORK([this]() {
@@ -612,8 +629,8 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_SubWaitingForPubToEndTx_MQ)
       auto stream = dtl->add_stream("my-output");
       stream->set_engine_type(dtlmod::Engine::Type::Staging);
       stream->set_transport_method(dtlmod::Transport::Method::MQ);
-      [[maybe_unused]] auto var = stream->define_variable("var", {100}, {0}, {100}, sizeof(double));
-      auto engine               = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+      auto var    = stream->define_variable("var", {100}, {0}, {100}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
 
       wdog_host->add_actor("Canceller", [engine]() {
         sg4::this_actor::sleep_for(0.5);
@@ -623,7 +640,8 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_SubWaitingForPubToEndTx_MQ)
 
       ASSERT_NO_THROW(engine->begin_transaction());
       sg4::this_actor::sleep_for(2.0); // hold T1 open long enough for sub to block on it
-      ASSERT_NO_THROW(engine->end_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_THROW(engine->end_transaction(), dtlmod::TransactionCanceledException);
       dtlmod::DTL::disconnect();
     });
 
@@ -640,6 +658,62 @@ TEST_F(DTLCancelTest, CancelStagingTransaction_SubWaitingForPubToEndTx_MQ)
     });
 
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// Same scenario, but the publisher puts its Variable before computing, i.e., before the cancellation: it already waits
+// for the put requests of the subscriber when the transaction is canceled. When it ends T1, it must not wait for these
+// requests anymore and must get a TransactionCanceledException.
+TEST_F(DTLCancelTest, CancelStagingTransaction_PubPutBeforeCancel_MQ)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_staging_platform();
+    bool pub_canceled = false;
+    bool sub_canceled = false;
+
+    sg4::Host::by_name("host-0.prod")->add_actor("PubTestActor", [&pub_canceled]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::MQ);
+      auto var    = stream->define_variable("var", {100}, {0}, {100}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+
+      sg4::Host::by_name("host-1.prod")->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(0.5);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      engine->begin_transaction();
+      engine->put(var);
+      sg4::this_actor::sleep_for(2.0); // compute while T1 gets canceled
+      try {
+        engine->end_transaction();
+      } catch (const dtlmod::TransactionCanceledException&) {
+        XBT_INFO("Publisher caught TransactionCanceledException when ending T1, as expected");
+        pub_canceled = true;
+      }
+      dtlmod::DTL::disconnect();
+    });
+
+    sg4::Host::by_name("host-0.cons")->add_actor("SubTestActor", [&sub_canceled]() {
+      auto dtl                      = dtlmod::DTL::connect();
+      auto stream                   = dtl->add_stream("my-output");
+      auto engine                   = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      [[maybe_unused]] auto var_sub = stream->inquire_variable("var");
+      try {
+        engine->begin_transaction();
+      } catch (const dtlmod::TransactionCanceledException&) {
+        XBT_INFO("Subscriber caught TransactionCanceledException as expected");
+        sub_canceled = true;
+      }
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_TRUE(pub_canceled);
+    ASSERT_TRUE(sub_canceled);
   });
 }
 
@@ -933,5 +1007,155 @@ TEST_F(DTLCancelTest, CancelFileEngineTransaction_MultipleWrites_AllCanceled)
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
     ASSERT_EQ(canceled, 2) << "both pending writes should have been canceled";
     ASSERT_EQ(finished_after_cancel, 0) << "a write survived the cancellation and completed on its own";
+  });
+}
+
+// The publisher waits in end_transaction() for the put requests of the subscriber (one per Variable), which computes
+// for 1s between its begin_transaction() and its get()s. The transaction is canceled at 0.5s, during that wait: the
+// publisher must leave end_transaction() with a TransactionCanceledException, and so must the subscriber when it ends
+// the transaction, as nothing will be sent anymore. Both then carry on with a second transaction, which must complete
+// normally. With two Variables, the publisher is notified twice of the cancellation, but leaves at the first
+// notification: the second one is still in its queue when the second transaction starts, and must be discarded.
+TEST_F(DTLCancelTest, CancelStagingTransaction_PubWaitingForRequests_Mailbox)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_slow_staging_platform();
+    double pub_canceled_at = -1;
+    double sub_canceled_at = -1;
+    bool pub_done          = false;
+    size_t received        = 0;
+
+    sg4::Host::by_name("host-0.prod")->add_actor("PubTestActor", [&pub_canceled_at, &pub_done]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::Mailbox);
+      auto var    = stream->define_variable("var", {100, 100}, {0, 0}, {100, 100}, sizeof(double));
+      auto var2   = stream->define_variable("var2", {100, 100}, {0, 0}, {100, 100}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+
+      sg4::Host::by_name("host-1.prod")->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(0.5);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      engine->begin_transaction();
+      engine->put(var);
+      engine->put(var2);
+      try {
+        engine->end_transaction();
+      } catch (const dtlmod::TransactionCanceledException&) {
+        XBT_INFO("Caught TransactionCanceledException while waiting for the put requests, as expected");
+        pub_canceled_at = sg4::Engine::get_clock();
+      }
+      XBT_INFO("Carry on with the next transaction");
+      engine->begin_transaction();
+      engine->put(var);
+      engine->put(var2);
+      engine->end_transaction();
+      engine->close();
+      pub_done = true;
+      dtlmod::DTL::disconnect();
+    });
+
+    sg4::Host::by_name("host-0.cons")->add_actor("SubTestActor", [&sub_canceled_at, &received]() {
+      auto dtl      = dtlmod::DTL::connect();
+      auto stream   = dtl->add_stream("my-output");
+      auto engine   = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+      auto var_sub  = stream->inquire_variable("var");
+      auto var2_sub = stream->inquire_variable("var2");
+      engine->begin_transaction();
+      XBT_INFO("Compute for 1s before getting the Variables");
+      sg4::this_actor::sleep_for(1);
+      engine->get(var_sub);
+      engine->get(var2_sub);
+      try {
+        engine->end_transaction();
+      } catch (const dtlmod::TransactionCanceledException&) {
+        XBT_INFO("Caught TransactionCanceledException when ending the transaction, as expected");
+        sub_canceled_at = sg4::Engine::get_clock();
+      }
+      XBT_INFO("Carry on with the next transaction");
+      engine->begin_transaction();
+      engine->get(var_sub);
+      engine->get(var2_sub);
+      engine->end_transaction();
+      received = var_sub->get_local_size() + var2_sub->get_local_size();
+      engine->close();
+      dtlmod::DTL::disconnect();
+    });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_DOUBLE_EQ(pub_canceled_at, 0.5);
+    ASSERT_DOUBLE_EQ(sub_canceled_at, 1.0);
+    ASSERT_TRUE(pub_done);
+    ASSERT_EQ(received, 2 * 100 * 100 * sizeof(double));
+  });
+}
+
+// Cancelling a transaction must abort it for every subscriber. Two subscribers get their half of the Variable over the
+// slow link (4MB each, 8s in total), and the transaction is canceled at 0.5s while both are in end_transaction(). In
+// the Staging engine, one of them (the last to reach the barrier in end_sub_transaction()) waits for the transfers and
+// the other waits for it at a second barrier. Both must leave end_transaction() with a TransactionCanceledException,
+// and everybody must then be able to close the engine. The outcomes are checked once the simulation is over, as an
+// assertion in an actor would not run (and thus not fail) if that actor stayed blocked.
+TEST_F(DTLCancelTest, CancelStagingTransaction_MultipleSubscribers_Mailbox)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_slow_staging_platform();
+    bool pub_closed                = false;
+    std::array<bool, 2> canceled   = {false, false};
+    std::array<bool, 2> sub_closed = {false, false};
+
+    sg4::Host::by_name("host-0.prod")->add_actor("PubTestActor", [&pub_closed]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::Mailbox);
+      auto var    = stream->define_variable("var", {1000, 1000}, {0, 0}, {1000, 1000}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+
+      sg4::Host::by_name("host-1.prod")->add_actor("Canceller", [engine]() {
+        sg4::this_actor::sleep_for(0.5);
+        XBT_INFO("Cancelling the transaction");
+        engine->cancel_transaction(engine->get_current_transaction());
+      });
+
+      engine->begin_transaction();
+      engine->put(var);
+      engine->end_transaction();
+      engine->close();
+      pub_closed = true;
+      dtlmod::DTL::disconnect();
+    });
+
+    for (size_t i = 0; i < 2; i++)
+      sg4::Host::by_name("host-" + std::to_string(i) + ".cons")
+          ->add_actor("SubTestActor" + std::to_string(i), [i, &canceled, &sub_closed]() {
+            auto dtl     = dtlmod::DTL::connect();
+            auto stream  = dtl->add_stream("my-output");
+            auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+            auto var_sub = stream->inquire_variable("var");
+            var_sub->set_selection({500 * i, 0}, {500, 1000});
+            engine->begin_transaction();
+            engine->get(var_sub);
+            try {
+              engine->end_transaction();
+            } catch (const dtlmod::TransactionCanceledException&) {
+              XBT_INFO("Caught TransactionCanceledException in end_transaction() as expected");
+              canceled[i] = true;
+            }
+            engine->close();
+            sub_closed[i] = true;
+            dtlmod::DTL::disconnect();
+          });
+
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    ASSERT_TRUE(pub_closed);
+    for (size_t i = 0; i < 2; i++) {
+      ASSERT_TRUE(canceled[i]) << "subscriber " << i << " did not see the cancellation";
+      ASSERT_TRUE(sub_closed[i]) << "subscriber " << i << " did not close the engine";
+    }
   });
 }

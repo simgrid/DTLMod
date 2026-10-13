@@ -102,6 +102,7 @@ void Engine::close()
 
 void Engine::cancel_transaction(unsigned int transaction_id)
 {
+  transaction_id = get_transaction_to_cancel(transaction_id);
   // No-op if both sides have already moved past the target transaction: cancelling now would
   // affect the wrong (subsequent) transaction.
   if (get_current_transaction_impl() > transaction_id && get_current_sub_transaction_impl() > transaction_id)

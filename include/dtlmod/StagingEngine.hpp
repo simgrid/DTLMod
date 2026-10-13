@@ -7,6 +7,7 @@
 #define __DTLMOD_ENGINE_STAGING_HPP__
 
 #include <atomic>
+#include <set>
 
 #include "dtlmod/Engine.hpp"
 
@@ -31,6 +32,8 @@ class StagingEngine : public Engine {
 
   unsigned int current_sub_transaction_id_ = 0;
   bool sub_transaction_in_progress_        = false;
+  // Subscribers that created their rendez-vous points with the publishers, at their first transaction
+  std::set<sg4::ActorPtr> subscribers_with_rendez_vous_points_;
 
   void create_transport(const Transport::Method& transport_method) override;
   void begin_pub_transaction() override;
@@ -42,6 +45,7 @@ class StagingEngine : public Engine {
   void end_sub_transaction() override;
   void sub_close() override;
   void cancel_activities() override;
+  [[nodiscard]] unsigned int get_transaction_to_cancel(unsigned int transaction_id) const override;
   [[nodiscard]] unsigned int get_current_transaction_impl() const noexcept override
   {
     return current_pub_transaction_id_;

@@ -75,8 +75,8 @@ protected:
 
   // Helper methods for Stream::open
   void validate_open_parameters(std::string_view name, Mode mode) const;
-  void create_engine_if_needed(std::string_view name, Mode mode);
-  void register_actor_with_engine(Mode mode) const;
+  std::shared_ptr<Engine> create_engine_if_needed(std::string_view name, Mode mode);
+  void register_actor_with_engine(const std::shared_ptr<Engine>& engine, Mode mode) const;
 
   // Helper method for Stream::define_variable
   static void validate_variable_parameters(const std::vector<size_t>& shape, const std::vector<size_t>& start,

@@ -102,6 +102,55 @@ Bug Fixes:
     export whatever its value, as only its presence was checked. Setting it to
     false now leaves metadata export disabled. The value must now be a
     boolean: a non-boolean value (e.g., "yes" or 1) makes DTL::create() fail
+  - Several cancellations left a Staging publisher or subscriber blocked
+    forever. A canceled transaction is now aborted for everyone, and every
+    actor can carry on with the next transaction:
+    - A publisher waiting in end_transaction() for the put requests of its
+      subscribers was never released, as nothing canceled this wait. Put
+      requests now also carry their transaction id, so that a request sent
+      for a canceled transaction is discarded by the publisher
+    - A publisher or a subscriber starting its transfers right after the
+      cancellation waited forever for them to complete, as they were not
+      canceled and their peers had given up
+    - After a cancellation that interrupted data transfers, the next
+      begin_transaction() of the publisher waited forever for subscribers
+      that had given up, instead of throwing a TransactionCanceledException
+    - SimGrid raises a CancelException or a NetworkFailureException,
+      depending on whether the canceled transfer had started. Both are now
+      handled the same way
+    - With several publishers or subscribers, the ones that noticed the
+      cancellation left end_transaction() early, leaving the others blocked
+      forever on the barrier that synchronizes them. All of them now go
+      through this barrier and get a TransactionCanceledException
+    - A transaction canceled before it started was canceled again at each
+      attempt to start it. It is now skipped, and the next
+      begin_transaction() starts the following transaction
+    - Depending on the timing, some subscribers aborted the canceled
+      transaction in begin_transaction() while others went on with it, so
+      that they ended up in different transactions. A canceled transaction
+      is never marked as completed anymore, so that all subscribers make the
+      same decision
+    - A publisher starts its next transaction, and increments its id, before
+      the data of the previous one is fully transferred. Canceling its current
+      transaction in the meantime canceled both the transaction still in
+      flight and the next one. Only the transaction in flight is canceled now
+    Requires a SimGrid version that releases the actors waiting on a Comm or
+    a Mess canceled before being matched.
+    Note: a Staging publisher's end_transaction() now throws a
+    TransactionCanceledException when its transaction was canceled, like
+    subscribers already did. put() and get() do nothing in a canceled
+    transaction.
+  - A Staging subscriber starting its first transaction after another
+    subscriber had started its own crashed, as it never created its
+    rendez-vous points with the publishers
+  - Staging publishers did not always wait for all the subscribers to start a
+    transaction, only for the first one
+  - With several publishers or subscribers, one released from the barrier
+    that ends a transaction could start its next transaction before the
+    current one was marked as over, and thus join the transaction it had
+    just ended
+  - Stream::open() could crash when the last actor on the other side closed
+    the Engine right while the opening actor was registering with it
 
 ----------------------------------------------------------------------------
 

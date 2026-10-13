@@ -3,9 +3,10 @@
 /* This program is free software; you can redistribute it and/or modify it
  * under the terms of the license (GNU LGPL) which comes with this package. */
 
-#include <gtest/gtest.h>
+#include <array>
 #include <cstdio>
 #include <fstream>
+#include <gtest/gtest.h>
 #include <string>
 
 #include <simgrid/s4u/Actor.hpp>
@@ -439,6 +440,55 @@ TEST_F(DTLStagingEngineTest, LastPublisherClosesDuringSubscriberOpenOverhead)
     });
 
     ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+  });
+}
+
+// The second subscriber starts its first transaction 1s after the first one, i.e., once the publisher has started the
+// first transaction of the stream. It must still create its rendez-vous points with the publisher and get its data.
+TEST_F(DTLStagingEngineTest, LateSubscriber)
+{
+  DO_TEST_WITH_FORK([this]() {
+    this->setup_platform();
+    std::array<size_t, 2> received = {0, 0};
+
+    sg4::Host::by_name("host-0.prod")->add_actor("Pub", [this]() {
+      auto dtl    = dtlmod::DTL::connect();
+      auto stream = dtl->add_stream("my-output");
+      stream->set_engine_type(dtlmod::Engine::Type::Staging);
+      stream->set_transport_method(dtlmod::Transport::Method::MQ);
+      auto var    = stream->define_variable("var", {100, 100}, {0, 0}, {100, 100}, sizeof(double));
+      auto engine = stream->open("my-output", dtlmod::Stream::Mode::Publish);
+      ASSERT_NO_THROW(engine->begin_transaction());
+      ASSERT_NO_THROW(engine->put(var));
+      ASSERT_NO_THROW(engine->end_transaction());
+      ASSERT_NO_THROW(engine->close());
+      dtlmod::DTL::disconnect();
+    });
+
+    for (size_t i = 0; i < 2; i++)
+      sg4::Host::by_name("host-" + std::to_string(i) + ".cons")
+          ->add_actor("Sub" + std::to_string(i), [this, i, &received]() {
+            auto dtl     = dtlmod::DTL::connect();
+            auto stream  = dtl->add_stream("my-output");
+            auto engine  = stream->open("my-output", dtlmod::Stream::Mode::Subscribe);
+            auto var_sub = stream->inquire_variable("var");
+            var_sub->set_selection({50 * i, 0}, {50, 100});
+            if (i == 1) {
+              XBT_INFO("Start the first transaction 1s after the other subscriber");
+              sg4::this_actor::sleep_for(1);
+            }
+            ASSERT_NO_THROW(engine->begin_transaction());
+            ASSERT_NO_THROW(engine->get(var_sub));
+            ASSERT_NO_THROW(engine->end_transaction());
+            received[i] = var_sub->get_local_size();
+            ASSERT_NO_THROW(engine->close());
+            dtlmod::DTL::disconnect();
+          });
+
+    // Run the simulation
+    ASSERT_NO_THROW(sg4::Engine::get_instance()->run());
+    for (size_t i = 0; i < 2; i++)
+      ASSERT_EQ(received[i], 50 * 100 * sizeof(double)) << "subscriber " << i << " did not get its data";
   });
 }
 

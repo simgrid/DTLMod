@@ -242,7 +242,7 @@ void Stream::validate_open_parameters(std::string_view name, Mode mode) const
 
 /// Create the Engine if this is the first actor opening the Stream.
 /// Executed in a critical section to ensure only one Engine is created.
-void Stream::create_engine_if_needed(std::string_view name, Mode mode)
+std::shared_ptr<Engine> Stream::create_engine_if_needed(std::string_view name, Mode mode)
 {
   std::scoped_lock lock(*dtl_->mutex_);
 
@@ -264,15 +264,18 @@ void Stream::create_engine_if_needed(std::string_view name, Mode mode)
       metadata_file_ = boost::replace_all_copy(engine_->get_name(), "/", "#") + "#md." +
                        std::to_string(std::chrono::system_clock::now().time_since_epoch().count());
   }
+  // Return the Engine while still holding the lock: releasing it is a scheduling point at which the last actor closing
+  // the Engine on the other side can reset engine_.
+  return engine_;
 }
 
 /// Register the current actor as a publisher or subscriber with the Engine.
-void Stream::register_actor_with_engine(Mode mode) const
+void Stream::register_actor_with_engine(const std::shared_ptr<Engine>& engine, Mode mode) const
 {
   if (mode == Mode::Publish)
-    engine_->add_publisher(sg4::Actor::self());
+    engine->add_publisher(sg4::Actor::self());
   else
-    engine_->add_subscriber(sg4::Actor::self());
+    engine->add_subscriber(sg4::Actor::self());
 }
 
 /// When multiple actors open the same Stream, only the first one to call this function is in charge of creating an
@@ -288,11 +291,10 @@ void Stream::register_actor_with_engine(Mode mode) const
 std::shared_ptr<Engine> Stream::open(std::string_view name, Mode mode)
 {
   validate_open_parameters(name, mode);
-  create_engine_if_needed(name, mode);
-  register_actor_with_engine(mode);
-  // Keep a handle on the Engine: the sleep below is a scheduling point at which the last actor closing the Engine on
-  // the other side can reset engine_.
-  auto engine = engine_;
+  // Keep a handle on the Engine: engine_ can be reset at any scheduling point by the last actor closing the Engine on
+  // the other side.
+  auto engine = create_engine_if_needed(name, mode);
+  register_actor_with_engine(engine, mode);
   // Simulate the setup cost of the middleware. Done outside of the critical section of create_engine_if_needed() so
   // that actors opening this Stream concurrently pay this overhead in parallel.
   if (open_overhead_ > 0)

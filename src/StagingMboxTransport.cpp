@@ -26,26 +26,14 @@ void StagingMboxTransport::create_rendez_vous_points()
   }
 }
 
-void StagingMboxTransport::get_requests_and_do_put(sg4::ActorPtr publisher)
+void StagingMboxTransport::do_put(const std::string& pub_name, const std::string& sub_name, size_t size)
 {
-  auto pub_name = publisher->get_name();
-  // Wait for the reception of the messages. If something is requested, post a put in the mailbox for the
-  // corresponding publisher-subscriber couple
-  while (pending_put_requests_exist_for(pub_name)) {
-    auto request           = boost::static_pointer_cast<sg4::Mess>(wait_any_pending_put_request_for(pub_name));
-    const auto* subscriber = request->get_sender();
-    // Take ownership of the payload received from the subscriber
-    std::unique_ptr<size_t> req_size(static_cast<size_t*>(request->get_payload()));
-    if (*req_size > 0) {
-      std::string mbox_name = pub_name + "_" + subscriber->get_name() + "_mbox";
-      XBT_DEBUG("%s received a put request from %s. Put a Message in %s with %lu as payload", pub_name.c_str(),
-                subscriber->get_cname(), mbox_name.c_str(), *req_size);
-      // Send a static dummy payload - subscribers don't use the actual data, only the simulated transfer size
-      static size_t dummy = 0;
-      auto comm           = mboxes_[mbox_name]->put_init(&dummy, *req_size);
-      get_engine()->get_pub_transaction().push(comm->start());
-    }
-  }
+  std::string mbox_name = pub_name + "_" + sub_name + "_mbox";
+  XBT_DEBUG("Put a Comm of %zu bytes in %s", size, mbox_name.c_str());
+  // Send a static dummy payload - subscribers don't use the actual data, only the simulated transfer size
+  static size_t dummy = 0;
+  auto comm           = mboxes_[mbox_name]->put_init(&dummy, size);
+  get_engine()->get_pub_transaction().push(comm->start());
 }
 
 void StagingMboxTransport::get_rendez_vous_point_and_do_get(std::string_view name)
